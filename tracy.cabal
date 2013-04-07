@@ -13,7 +13,20 @@ cabal-version:       >=1.8
 executable tracy
   Hs-Source-Dirs:      src
   Main-is:             Main.hs
+  GHC-Options:         -Wall
   build-depends:
-    base == 4.5.*
+    base == 4.5.*,
+    AC-Colour,
+    lens,
+    containers,
+    linear,
+    bmp,
+    bytestring
 
---   other-modules:
+  other-modules:
+    Tracy.Types
+    Tracy.Plane
+    Tracy.Sphere
+    Tracy.World
+    Tracy.Util
+    Tracy.Constants
