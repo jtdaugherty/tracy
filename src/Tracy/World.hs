@@ -3,6 +3,8 @@ module Tracy.World where
 
 import Control.Applicative
 import Control.Lens
+import Data.List
+import Data.Maybe
 import Linear
 import Codec.BMP
 import qualified Data.ByteString as B
@@ -13,7 +15,7 @@ import Tracy.Util
 data World =
     World { _viewPlane :: ViewPlane
           , _bgColor :: Color
-          , _worldSphere :: Object
+          , _objects :: [Object]
           }
 
 makeLenses ''World
@@ -34,9 +36,17 @@ renderScene w =
                 ray = Ray { _origin = V3 x y zw
                           , _direction = rayDir
                           }
-            in case (w^.worldSphere^.hit) ray of
+            in case hitAnObject w ray of
                  Nothing -> w^.bgColor
                  Just (sh, _t) -> sh^.shadeColor
 
     in packRGBA32ToBMP (fromEnum $ w^.viewPlane^.hres)
            (fromEnum $ w^.viewPlane^.vres) bytes
+
+hitAnObject :: World -> Ray -> Maybe (Shade, Double)
+hitAnObject w r =
+    listToMaybe $ sortBy dist $ catMaybes results
+    where
+      dist a b = compare (snd a) (snd b)
+      results = tests <*> pure r
+      tests = (w^.objects) ^.. (folded . hit)

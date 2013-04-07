@@ -21,7 +21,8 @@ executable tracy
     containers,
     linear,
     bmp,
-    bytestring
+    bytestring,
+    time
 
   other-modules:
     Tracy.Types
