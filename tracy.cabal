@@ -22,7 +22,8 @@ executable tracy
     linear,
     bmp,
     bytestring,
-    time
+    time,
+    mtl
 
   other-modules:
     Tracy.Types
