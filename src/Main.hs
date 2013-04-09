@@ -56,8 +56,8 @@ main = do
              return $ foldl updateConfig defaultConfig os
            _ -> return defaultConfig
 
-  let putMsg m = if silent cfg then return () else putStrLn m
-      putLog m = if showLog cfg then putStrLn m else return ()
+  let putMsg = when (not $ silent cfg) . putStrLn
+      putLog = when (showLog cfg) . putStrLn
 
   forM_ scenes $ \(filename, w) ->
       do

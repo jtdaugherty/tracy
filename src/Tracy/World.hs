@@ -6,6 +6,7 @@ import Control.Lens
 import Control.Monad.State
 import Data.List
 import Data.Maybe
+import Data.Ord (comparing)
 import Linear
 import Codec.BMP
 import qualified Data.ByteString as B
@@ -59,8 +60,7 @@ renderScene w = do
 
 hitAnObject :: World -> Ray -> Maybe (Shade, Double)
 hitAnObject w r =
-    listToMaybe $ sortBy dist $ catMaybes results
+    listToMaybe $ sortBy (comparing snd) $ catMaybes results
     where
-      dist a b = compare (snd a) (snd b)
       results = tests <*> pure r
       tests = (w^.objects) ^.. (folded . hit)
