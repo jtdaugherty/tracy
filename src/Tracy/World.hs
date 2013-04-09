@@ -34,8 +34,8 @@ logMsg :: String -> TraceM ()
 logMsg msg =
     modify (traceLog %~ (msg:))
 
-renderScene :: World -> TraceM BMP
-renderScene w = do
+renderWorld :: World -> TraceM BMP
+renderWorld w = do
   let zw = 100
       rayDir = V3 0 0 (-1)
 

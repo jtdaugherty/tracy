@@ -32,3 +32,4 @@ executable tracy
     Tracy.World
     Tracy.Util
     Tracy.Constants
+    Tracy.Main
