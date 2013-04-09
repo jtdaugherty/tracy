@@ -31,8 +31,7 @@ makeLenses ''TraceState
 type TraceM a = State TraceState a
 
 logMsg :: String -> TraceM ()
-logMsg msg =
-    modify (traceLog %~ (msg:))
+logMsg msg = traceLog %= (msg:)
 
 renderWorld :: World -> TraceM BMP
 renderWorld w = do
