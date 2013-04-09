@@ -50,11 +50,10 @@ usage = do
 main :: IO ()
 main = do
   args <- getArgs
-  cfg <- case getOpt Permute opts args of
-           (os, _, _) -> do
-             when (Help `elem` os) usage
-             return $ foldl updateConfig defaultConfig os
-           _ -> return defaultConfig
+  let (os, _, _) = getOpt Permute opts args
+      cfg = foldl updateConfig defaultConfig os
+
+  when (Help `elem` os) usage
 
   let putMsg = when (not $ silent cfg) . putStrLn
       putLog = when (showLog cfg) . putStrLn
