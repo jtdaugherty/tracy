@@ -1,0 +1,11 @@
+- Sampling abstraction
+- Sampling implementations (n-rooks, hammersley, jittered, etc.)
+- Shading / light sources?
+- Intersection for
+  - triangle meshes
+- Camera support (perspective rendering)
+
+Much later:
+- scene description file and loader
+- OpenGL scene file viewer
+- Parallelization of rendering and other optimizations
