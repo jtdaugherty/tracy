@@ -45,14 +45,20 @@ data World =
 data TraceState =
     TraceState { _traceLog :: [String]
                , _traceRNG :: StdGen
-               , _traceSampler :: Sampler
-               , _traceNumSamples :: Int
+               , _traceConfig :: Config
                , _traceNumSampleSets :: Int
                }
 
+data Config =
+    Config { showLog :: Bool
+           , silent :: Bool
+           , sampler :: Sampler
+           , sampleRoot :: Double
+           }
+
 type TraceM = State TraceState
 
-type Sampler = Int -> Int -> TraceM [[(Double, Double)]]
+type Sampler = Double -> Int -> TraceM [[(Double, Double)]]
 
 makeLenses ''Shade
 makeLenses ''Ray

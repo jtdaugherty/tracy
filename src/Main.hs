@@ -7,6 +7,7 @@ import System.Exit
 
 import Tracy.Main
 import Tracy.Scenes
+import Tracy.Types
 
 data Arg = ShowLog
          | BeSilent

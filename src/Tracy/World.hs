@@ -20,10 +20,11 @@ logMsg msg = traceLog %= (msg:)
 
 renderWorld :: World -> TraceM BMP
 renderWorld w = do
-  numS <- _traceNumSamples <$> get
+  root <- sampleRoot <$> _traceConfig <$> get
+  sampleFunc <- sampler <$> _traceConfig <$> get
+
   numSets <- _traceNumSampleSets <$> get
-  sampleFunc <- _traceSampler <$> get
-  sampleSets <- sampleFunc numS numSets
+  sampleSets <- sampleFunc root numSets
 
   let zw = 100
       rayDir = V3 0 0 (-1)
@@ -36,7 +37,7 @@ renderWorld w = do
       getCol row col =
           let sampleSet = sampleSets !! sampleIndex
               sampleIndex = (fromEnum $ row * vp^.hres + col) `mod` numSets
-          in sum (results row col sampleSet) / grey (toEnum numS)
+          in sum (results row col sampleSet) / grey (root * root)
 
       results row col samples = result row col <$> samples
       result row col (sx, sy) =

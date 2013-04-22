@@ -11,19 +11,12 @@ import Tracy.World
 import Tracy.Types
 import Tracy.Samplers
 
-data Config =
-    Config { showLog :: Bool
-           , silent :: Bool
-           , sampler :: Sampler
-           , numSamples :: Int
-           }
-
 defaultConfig :: Config
 defaultConfig =
     Config { showLog = False
            , silent = False
            , sampler = regular
-           , numSamples = 16
+           , sampleRoot = 4
            }
 
 render :: Config -> World -> FilePath -> IO ()
@@ -39,8 +32,7 @@ render cfg w filename = do
   let (img, stNew) = runState (renderWorld w) st
       st = TraceState { _traceLog = []
                       , _traceRNG = g
-                      , _traceSampler = sampler cfg
-                      , _traceNumSamples = 16
+                      , _traceConfig = cfg
                       -- XXX: this is going to cause artifacts
                       -- later. We need the number of sets to be
                       -- relatively prime to the number of columns.  I
