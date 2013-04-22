@@ -31,3 +31,17 @@ regular numSamples numSets = do
            , j <- [0..root-1]
            ]
   return $ replicate numSets ss
+
+-- for jittered sampling, numSamples must be a perfect square.
+jittered :: Sampler
+jittered numSamples numSets =
+  let root = sqrt (toEnum numSamples)
+  in replicateM numSets $ do
+    sampleArrs <- forM [0..root-1] $ \k ->
+                  forM [0..root-1] $ \j ->
+                  do
+                    a <- getRandomUnit
+                    b <- getRandomUnit
+                    return ((k + a) / root, (j + b) / root)
+
+    return $ concat sampleArrs
