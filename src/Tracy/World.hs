@@ -3,7 +3,6 @@ module Tracy.World where
 
 import Control.Applicative
 import Control.Lens
-import Control.Monad.State
 import Data.List
 import Data.Maybe
 import Data.Ord (comparing)
@@ -20,10 +19,10 @@ logMsg msg = traceLog %= (msg:)
 
 renderWorld :: World -> TraceM BMP
 renderWorld w = do
-  root <- sampleRoot <$> _traceConfig <$> get
-  sampleFunc <- sampler <$> _traceConfig <$> get
+  root <- use (traceConfig.to sampleRoot)
+  sampleFunc <- use (traceConfig.to sampler)
+  numSets <- use traceNumSampleSets
 
-  numSets <- _traceNumSampleSets <$> get
   sampleSets <- sampleFunc root numSets
 
   let zw = 100

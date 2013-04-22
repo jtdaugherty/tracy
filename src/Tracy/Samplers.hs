@@ -1,16 +1,16 @@
 module Tracy.Samplers where
 
+import Control.Lens
 import Control.Monad
-import Control.Monad.State
 import Control.Monad.Random
 
 import Tracy.Types
 
 getRandomUnit :: TraceM Double
 getRandomUnit = do
-  st <- get
-  let (v, g) = randomR (0, 1) $ _traceRNG st
-  put $ st { _traceRNG = g }
+  g <- use traceRNG
+  let (v, g') = randomR (0, 1) g
+  traceRNG .= g'
   return v
 
 pureRandom :: Sampler
