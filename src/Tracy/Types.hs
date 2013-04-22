@@ -40,8 +40,6 @@ data World =
     World { _viewPlane :: ViewPlane
           , _bgColor :: Color
           , _objects :: [Object]
-          , _viewPlaneDistance :: Double
-          , _eyePoint :: V3 Double
           }
 
 data TraceState =
@@ -68,3 +66,6 @@ makeLenses ''Object
 makeLenses ''ViewPlane
 makeLenses ''World
 makeLenses ''TraceState
+
+logMsg :: String -> TraceM ()
+logMsg msg = traceLog %= (msg:)

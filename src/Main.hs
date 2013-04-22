@@ -43,5 +43,5 @@ main = do
 
   when (Help `elem` os) usage
 
-  forM_ scenes $ \(filename, w) ->
-      render cfg w filename
+  forM_ scenes $ \(filename, (cam, w)) ->
+      render cfg cam w filename

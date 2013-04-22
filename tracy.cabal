@@ -31,8 +31,8 @@ executable tracy
     Tracy.Types
     Tracy.Plane
     Tracy.Sphere
-    Tracy.World
     Tracy.Util
     Tracy.Constants
     Tracy.Main
     Tracy.Samplers
+    Tracy.Cameras

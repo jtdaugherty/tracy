@@ -7,9 +7,9 @@ import System.Random
 import Codec.BMP
 import Data.Time.Clock
 
-import Tracy.World
 import Tracy.Types
 import Tracy.Samplers
+import Tracy.Cameras
 
 defaultConfig :: Config
 defaultConfig =
@@ -19,8 +19,8 @@ defaultConfig =
            , sampleRoot = 4
            }
 
-render :: Config -> World -> FilePath -> IO ()
-render cfg w filename = do
+render :: Config -> Camera a -> World -> FilePath -> IO ()
+render cfg cam w filename = do
   let putMsg = when (not $ silent cfg) . putStrLn
       putLog = when (showLog cfg) . putStrLn
 
@@ -29,7 +29,7 @@ render cfg w filename = do
 
   t1 <- getCurrentTime
   g <- getStdGen
-  let (img, stNew) = runState (renderWorld w) st
+  let (img, stNew) = runState ((cam^.cameraRenderWorld) cam w) st
       st = TraceState { _traceLog = []
                       , _traceRNG = g
                       , _traceConfig = cfg
