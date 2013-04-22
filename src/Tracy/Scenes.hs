@@ -6,7 +6,6 @@ import Data.Colour
 import Tracy.Types
 import Tracy.Sphere
 import Tracy.Plane
-import Tracy.World
 
 defaultVp :: ViewPlane
 defaultVp =

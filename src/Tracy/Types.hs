@@ -1,7 +1,9 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, TypeSynonymInstances, FlexibleInstances #-}
 module Tracy.Types where
 
 import Control.Lens
+import Control.Monad.State
+import Control.Monad.Random
 import Linear
 import Data.Colour
 
@@ -34,7 +36,27 @@ data ViewPlane =
               }
     deriving (Show)
 
+data World =
+    World { _viewPlane :: ViewPlane
+          , _bgColor :: Color
+          , _objects :: [Object]
+          }
+
+data TraceState =
+    TraceState { _traceLog :: [String]
+               , _traceRNG :: StdGen
+               , _traceSampler :: Sampler
+               , _traceNumSamples :: Int
+               , _traceNumSampleSets :: Int
+               }
+
+type TraceM = State TraceState
+
+type Sampler = Int -> Int -> TraceM [[(Double, Double)]]
+
 makeLenses ''Shade
 makeLenses ''Ray
 makeLenses ''Object
 makeLenses ''ViewPlane
+makeLenses ''World
+makeLenses ''TraceState

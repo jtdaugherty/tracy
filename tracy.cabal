@@ -20,10 +20,12 @@ executable tracy
     lens,
     containers,
     linear,
-    bmp,
+    bmp >= 1.2.4.1,
     bytestring,
     time,
-    mtl
+    mtl,
+    MonadRandom,
+    random
 
   other-modules:
     Tracy.Types
@@ -33,3 +35,4 @@ executable tracy
     Tracy.Util
     Tracy.Constants
     Tracy.Main
+    Tracy.Samplers

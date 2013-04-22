@@ -7,6 +7,7 @@ import Control.Monad.State
 import Data.List
 import Data.Maybe
 import Data.Ord (comparing)
+import Data.Colour
 import Linear
 import Codec.BMP
 import qualified Data.ByteString as B
@@ -14,27 +15,16 @@ import qualified Data.ByteString as B
 import Tracy.Types
 import Tracy.Util
 
-data World =
-    World { _viewPlane :: ViewPlane
-          , _bgColor :: Color
-          , _objects :: [Object]
-          }
-
-data TraceState =
-    TraceState { _traceLog :: [String]
-               }
-    deriving (Show)
-
-makeLenses ''World
-makeLenses ''TraceState
-
-type TraceM a = State TraceState a
-
 logMsg :: String -> TraceM ()
 logMsg msg = traceLog %= (msg:)
 
 renderWorld :: World -> TraceM BMP
 renderWorld w = do
+  numS <- _traceNumSamples <$> get
+  numSets <- _traceNumSampleSets <$> get
+  sampleFunc <- _traceSampler <$> get
+  sampleSets <- sampleFunc numS numSets
+
   let zw = 100
       rayDir = V3 0 0 (-1)
 
@@ -44,8 +34,14 @@ renderWorld w = do
       getRows = getRow <$> [0..vp^.vres-1]
       getRow r = getCol r <$> [0..vp^.hres-1]
       getCol row col =
-          let x = vp^.pixelSize * (col - 0.5 * (vp^.hres - 1))
-              y = vp^.pixelSize * (row - 0.5 * (vp^.vres - 1))
+          let sampleSet = sampleSets !! sampleIndex
+              sampleIndex = (fromEnum $ row * vp^.hres + col) `mod` numSets
+          in sum (results row col sampleSet) / grey (toEnum numS)
+
+      results row col samples = result row col <$> samples
+      result row col (sx, sy) =
+          let x = vp^.pixelSize * (col - (0.5 * vp^.hres) + sx)
+              y = vp^.pixelSize * (row - (0.5 * vp^.vres) + sy)
               ray = Ray { _origin = V3 x y zw
                         , _direction = rayDir
                         }
