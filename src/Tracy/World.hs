@@ -25,10 +25,7 @@ renderWorld w = do
 
   sampleSets <- sampleFunc root numSets
 
-  let zw = 100
-      rayDir = V3 0 0 (-1)
-
-      vp = w^.viewPlane
+  let vp = w^.viewPlane
       bytes = B.concat $ getColorBytes <$> colors
       colors = concat getRows
       getRows = getRow <$> [0..vp^.vres-1]
@@ -42,8 +39,9 @@ renderWorld w = do
       result row col (sx, sy) =
           let x = vp^.pixelSize * (col - (0.5 * vp^.hres) + sx)
               y = vp^.pixelSize * (row - (0.5 * vp^.vres) + sy)
-              ray = Ray { _origin = V3 x y zw
-                        , _direction = rayDir
+              rayDir = V3 x y (-1 * w^.viewPlaneDistance)
+              ray = Ray { _origin = w^.eyePoint
+                        , _direction = signorm rayDir
                         }
           in case hitAnObject w ray of
                Nothing -> w^.bgColor

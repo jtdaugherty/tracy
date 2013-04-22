@@ -9,8 +9,8 @@ import Tracy.Plane
 
 defaultVp :: ViewPlane
 defaultVp =
-    ViewPlane { _hres = 200
-              , _vres = 200
+    ViewPlane { _hres = 400
+              , _vres = 400
               , _pixelSize = 1.0
               , _gamma = 1.0
               , _inverseGamma = 1.0
@@ -22,6 +22,8 @@ world1 =
     in World { _viewPlane = defaultVp
              , _objects = [s]
              , _bgColor = cBlack
+             , _viewPlaneDistance = 50
+             , _eyePoint = V3 0 0 100
              }
 
 world2 :: World
@@ -31,15 +33,19 @@ world2 =
     in World { _viewPlane = defaultVp
              , _objects = [s, s2]
              , _bgColor = cBlack
+             , _viewPlaneDistance = 200
+             , _eyePoint = V3 0 0 100
              }
 
 world3 :: World
 world3 =
     let s = sphere (V3 0 0 11) 30.0 cBlue
-        p = plane (V3 0 0 0) (V3 0 1 1) cGreen
+        p = plane (V3 0 0 0) (V3 0 1 0.1) cGreen
     in World { _viewPlane = defaultVp
              , _objects = [s, p]
              , _bgColor = cBlack
+             , _viewPlaneDistance = 200
+             , _eyePoint = V3 0 0 100
              }
 
 scenes :: [(FilePath, World)]

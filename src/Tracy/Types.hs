@@ -40,6 +40,8 @@ data World =
     World { _viewPlane :: ViewPlane
           , _bgColor :: Color
           , _objects :: [Object]
+          , _viewPlaneDistance :: Double
+          , _eyePoint :: V3 Double
           }
 
 data TraceState =
