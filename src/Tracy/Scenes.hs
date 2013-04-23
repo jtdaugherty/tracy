@@ -89,12 +89,12 @@ world5 =
                ]
     in ( lensCam, world spheres )
 
-scenes :: [(FilePath, World, TraceM BMP)]
+scenes :: [(FilePath, (World, TraceM BMP))]
 scenes =
-    let render (c, w) = (c^.cameraRenderWorld) c w
-    in [ ("world1.bmp", world1^._2, render world1)
-       , ("world2.bmp", world2^._2, render world2)
-       , ("world3.bmp", world3^._2, render world3)
-       , ("world4.bmp", world4^._2, render world4)
-       , ("world5.bmp", world5^._2, render world5)
+    let render (c, w) = (w, (c^.cameraRenderWorld) c w)
+    in [ ("world1.bmp", render world1)
+       , ("world2.bmp", render world2)
+       , ("world3.bmp", render world3)
+       , ("world4.bmp", render world4)
+       , ("world5.bmp", render world5)
        ]
