@@ -49,7 +49,7 @@ toDisk (x, y) =
         spy = 2.0 * y - 1.0
         (r, phi) = if spx > -spy
                    then if spx > spy
-                        then (spx, spy / spx)
+                        then ( spx, spy / spx)
                         else ( spy, 2 - (spx / spy) )
                    else if spx < spy
                         then ( -spx, 4 + spy / spx )
