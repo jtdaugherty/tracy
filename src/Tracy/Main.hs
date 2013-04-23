@@ -37,7 +37,7 @@ render cfg w tracer filename = do
                       -- relatively prime to the number of columns.  I
                       -- picked the hres here to force aliasing
                       -- artifacts so I'll fix this later.
-                      , _traceNumSampleSets = w^.viewPlane.hres.from enum
+                      , _traceNumSampleSets = w^.viewPlane.hres.to (*1.3).from enum
                       }
 
   writeBMP filename img

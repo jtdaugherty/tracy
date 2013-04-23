@@ -38,7 +38,7 @@ lensCam =
                        1.0
                        300
                        300
-                       50.0
+                       40.0
                        (toUnitDisk jittered)
 
 vpd :: Double -> Camera Pinhole -> Camera Pinhole
