@@ -51,7 +51,7 @@ main = do
                       , _traceNumSampleSets = 1
                       }
 
-  let sideLen = 100.0
+  let sideLen = 200.0
       blank = Colour 0 0 0
       hitColor = Colour 1 0 0
 
