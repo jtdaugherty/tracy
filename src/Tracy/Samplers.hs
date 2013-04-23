@@ -22,7 +22,6 @@ pureRandom root numSets =
                            b <- getRandomUnit
                            return (a, b)
 
--- for regular sampling, numSamples must be a perfect square.
 regular :: Sampler (Double, Double)
 regular root numSets = do
   let slice = 1.0 / root
@@ -32,7 +31,6 @@ regular root numSets = do
            ]
   return $ replicate numSets ss
 
--- for jittered sampling, numSamples must be a perfect square.
 jittered :: Sampler (Double, Double)
 jittered root numSets =
     replicateM numSets $ do
