@@ -1,9 +1,8 @@
-- Sampling abstraction
 - Sampling implementations (n-rooks, hammersley, jittered, etc.)
-- Shading / light sources?
+- Shading / light sources? Emission material?
 - Intersection for
   - triangle meshes
-- Camera support (perspective rendering)
+- JuicyPixels for image I/O
 
 Much later:
 - scene description file and loader
