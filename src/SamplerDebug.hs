@@ -51,9 +51,6 @@ main = do
                       , _traceNumSampleSets = 1
                       }
 
-  -- Create an image whose side length is 50 times the aaRoot.  This
-  -- gives us better precision in locating the random values and
-  -- identifying good distribution.
   let sideLen = 100.0
       blank = Colour 0 0 0
       hitColor = Colour 1 0 0
