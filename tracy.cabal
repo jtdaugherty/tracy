@@ -10,6 +10,32 @@ category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.8
 
+library
+  Hs-Source-Dirs:      src
+  GHC-Options:         -Wall
+  build-depends:
+    base == 4.5.*,
+    AC-Colour,
+    lens,
+    containers,
+    linear,
+    bmp >= 1.2.4.1,
+    bytestring,
+    time,
+    mtl,
+    MonadRandom,
+    random
+
+  exposed-modules:
+    Tracy.Types
+    Tracy.Plane
+    Tracy.Sphere
+    Tracy.Util
+    Tracy.Constants
+    Tracy.Main
+    Tracy.Samplers
+    Tracy.Cameras
+
 executable tracy
   Hs-Source-Dirs:      src
   Main-is:             Main.hs
@@ -27,12 +53,19 @@ executable tracy
     MonadRandom,
     random
 
-  other-modules:
-    Tracy.Types
-    Tracy.Plane
-    Tracy.Sphere
-    Tracy.Util
-    Tracy.Constants
-    Tracy.Main
-    Tracy.Samplers
-    Tracy.Cameras
+executable tracy-debug-samplers
+  Hs-Source-Dirs:      src
+  Main-is:             SamplerDebug.hs
+  GHC-Options:         -Wall
+  build-depends:
+    base == 4.5.*,
+    AC-Colour,
+    lens,
+    containers,
+    linear,
+    bmp >= 1.2.4.1,
+    bytestring,
+    time,
+    mtl,
+    MonadRandom,
+    random
