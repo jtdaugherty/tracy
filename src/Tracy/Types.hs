@@ -52,13 +52,13 @@ data TraceState =
 data Config =
     Config { showLog :: Bool
            , silent :: Bool
-           , sampler :: Sampler
+           , vpSampler :: Sampler (Double, Double)
            , sampleRoot :: Double
            }
 
 type TraceM = State TraceState
 
-type Sampler = Double -> Int -> TraceM [[(Double, Double)]]
+type Sampler a = Double -> Int -> TraceM [[a]]
 
 makeLenses ''Shade
 makeLenses ''Ray

@@ -3,6 +3,7 @@ module Tracy.Samplers where
 import Control.Lens
 import Control.Monad
 import Control.Monad.Random
+import Linear
 
 import Tracy.Types
 
@@ -13,7 +14,7 @@ getRandomUnit = do
   traceRNG .= g'
   return v
 
-pureRandom :: Sampler
+pureRandom :: Sampler (Double, Double)
 pureRandom root numSets =
     replicateM numSets $ do
       replicateM (fromEnum $ root * root) $ do
@@ -22,7 +23,7 @@ pureRandom root numSets =
                            return (a, b)
 
 -- for regular sampling, numSamples must be a perfect square.
-regular :: Sampler
+regular :: Sampler (Double, Double)
 regular root numSets = do
   let slice = 1.0 / root
       ss = [ (i*slice, j*slice) |
@@ -32,7 +33,7 @@ regular root numSets = do
   return $ replicate numSets ss
 
 -- for jittered sampling, numSamples must be a perfect square.
-jittered :: Sampler
+jittered :: Sampler (Double, Double)
 jittered root numSets =
     replicateM numSets $ do
       sampleArrs <- forM [0..root-1] $ \k ->
@@ -43,3 +44,42 @@ jittered root numSets =
                       return ((k + a) / root, (j + b) / root)
 
       return $ concat sampleArrs
+
+toDisk :: (Double, Double) -> (Double, Double)
+toDisk (x, y) =
+    let spx = 2.0 * x - 1.0
+        spy = 2.0 * y - 1.0
+        (r, phi) = if spx > -spy
+                   then if spx > spy
+                        then (spx, spy / spx)
+                        else ( spy, 2 - (spx / spy) )
+                   else if spx < spy
+                        then ( -spx, 4 + spy / spx )
+                        else ( -spy, if spy /= 0 then 6 - (spx / spy) else 0 )
+        phi' = phi * (pi / 4.0)
+    in (r * cos phi', r * sin phi')
+
+toHemi :: (Double, Double) -> V3 Double
+toHemi (x, y) =
+    let pu = sin_theta * cos_phi
+        pv = sin_theta * sin_phi
+        pw = cos_theta
+
+        cos_phi = cos $ 2.0 * pi * x
+        sin_phi = sin $ 2.0 * pi * x
+        cos_theta = (1.0 - y) ** (1.0 / (exp 1.0 + 1.0))
+        sin_theta = sqrt $ 1.0 - cos_theta * cos_theta
+
+    in V3 pu pv pw
+
+transSample :: (a -> b) -> Sampler a -> Sampler b
+transSample f s =
+    \root numSets -> do
+      theSets <- s root numSets
+      return $ over (mapped.mapped) f theSets
+
+toUnitDisk :: Sampler (Double, Double) -> Sampler (Double, Double)
+toUnitDisk = transSample toDisk
+
+toUnitHemisphere :: Sampler (Double, Double) -> Sampler (V3 Double)
+toUnitHemisphere = transSample toHemi
