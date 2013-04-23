@@ -74,8 +74,12 @@ world4 =
 
 world5 :: (Camera ThinLens, World)
 world5 =
-    let spheres = concat [ ss y | y <- [-200, -100, 0, 100, 200] ]
-        pairs = [ (-300, cWhite)
+    let spheres = concat [ ss y | y <- [-500, -400, -300, -200, -100, 0, 100, 200, 300, 400, 500] ]
+        pairs = [ (-500, cRed)
+                , (-450, cMagenta)
+                , (-400, cBlue)
+                , (-350, cGreen)
+                , (-300, cWhite)
                 , (-250, cYellow)
                 , (-200, cCyan)
                 , (-150, cRed)
