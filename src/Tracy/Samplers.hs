@@ -26,7 +26,7 @@ pureRandom root numSets =
 regular :: Sampler (Double, Double)
 regular root numSets = do
   let slice = 1.0 / root
-      ss = [ (i*slice, j*slice) |
+      ss = [ ((i+0.5)*slice, (j+0.5)*slice) |
              i <- [0..root-1]
            , j <- [0..root-1]
            ]
