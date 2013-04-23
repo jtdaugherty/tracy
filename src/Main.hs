@@ -1,5 +1,6 @@
 module Main where
 
+import Control.Applicative
 import Control.Monad
 import System.Console.GetOpt
 import System.Environment
@@ -31,17 +32,23 @@ updateConfig c (SampleRoot s) = c { sampleRoot = read s }
 usage :: IO ()
 usage = do
   pn <- getProgName
-  let header = "Usage: " ++ pn ++ " [options]"
+  let header = "Usage: " ++ pn ++ " [options] [scene name]"
   putStrLn $ usageInfo header opts
   exitFailure
 
 main :: IO ()
 main = do
   args <- getArgs
-  let (os, _, _) = getOpt Permute opts args
+  let (os, rest, _) = getOpt Permute opts args
       cfg = foldl updateConfig defaultConfig os
 
   when (Help `elem` os) usage
 
-  forM_ scenes $ \(filename, (w, act)) ->
-      render cfg w act filename
+  let toRender = if null rest
+                 then fst <$> scenes
+                 else rest
+
+  forM_ toRender $ \n -> do
+         case lookup n scenes of
+           Nothing -> putStrLn $ "No such scene: " ++ n
+           Just (w, act) -> render cfg w act $ n ++ ".bmp"

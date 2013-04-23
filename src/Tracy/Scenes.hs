@@ -38,11 +38,8 @@ lensCam =
                        1.0
                        300
                        300
-                       40.0
+                       25.0
                        (toUnitDisk jittered)
-
-vpd :: Double -> Camera Pinhole -> Camera Pinhole
-vpd d cam = cam & (cameraData.pinholeVPDistance) .~ d
 
 world :: [Object] -> World
 world os = World { _viewPlane = defaultVp
@@ -77,8 +74,12 @@ world4 =
 
 world5 :: (Camera ThinLens, World)
 world5 =
-    let spheres = concat [ ss y | y <- [-100, 0, 100] ]
-        pairs = [ (-100, cRed)
+    let spheres = concat [ ss y | y <- [-200, -100, 0, 100, 200] ]
+        pairs = [ (-300, cWhite)
+                , (-250, cYellow)
+                , (-200, cCyan)
+                , (-150, cRed)
+                , (-100, cMagenta)
                 , (-50, cBlue)
                 , (0, cGreen)
                 , (50, cWhite)
@@ -89,12 +90,12 @@ world5 =
                ]
     in ( lensCam, world spheres )
 
-scenes :: [(FilePath, (World, TraceM BMP))]
+scenes :: [(String, (World, TraceM BMP))]
 scenes =
     let render (c, w) = (w, (c^.cameraRenderWorld) c w)
-    in [ ("world1.bmp", render world1)
-       , ("world2.bmp", render world2)
-       , ("world3.bmp", render world3)
-       , ("world4.bmp", render world4)
-       , ("world5.bmp", render world5)
+    in [ ("world1", render world1)
+       , ("world2", render world2)
+       , ("world3", render world3)
+       , ("world4", render world4)
+       , ("world5", render world5)
        ]
