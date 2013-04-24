@@ -7,13 +7,14 @@ import Data.List
 import Data.Maybe
 import Data.Ord (comparing)
 import Data.Colour
+import qualified Data.Vector as V
 import Linear
 
 import Tracy.Types
 
 type CameraRenderer a = Camera a
-                      -> [[(Double, Double)]]
-                      -> [[(Double, Double)]]
+                      -> V.Vector [(Double, Double)]
+                      -> V.Vector [(Double, Double)]
                       -> Int
                       -> Config
                       -> Int
@@ -73,11 +74,12 @@ thinLensRayDir cam pixelPoint lensPoint =
 
     in signorm raydir
 
-clampColor :: Color -> Color
-clampColor (Colour r g b) = Colour r' g' b'
+maxToOne :: Color -> Color
+maxToOne (Colour r g b) = Colour r' g' b'
     where
-      (r', g', b') = if r > 1 || g > 1 || b > 1
-                     then (1, 0, 0)
+      m = maximum [r, g, b]
+      (r', g', b') = if m > 1
+                     then (r/m, g/m, b/m)
                      else (r, g, b)
 
 thinLensRender :: CameraRenderer ThinLens
@@ -87,11 +89,11 @@ thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
       vp = w^.viewPlane
       colors = getCol (toEnum theRow) <$> [0..vp^.hres-1]
       getCol row col =
-          let squareSampleSet = squareSampleSets !! sampleIndex
-              diskSampleSet = diskSampleSets !! sampleIndex
+          let squareSampleSet = squareSampleSets V.! sampleIndex
+              diskSampleSet = diskSampleSets V.! sampleIndex
               sampleIndex = (fromEnum $ row * vp^.hres + col) `mod` numSets
 
-          in clampColor ((sum (results row col squareSampleSet diskSampleSet) / grey (root * root)) *
+          in maxToOne ((sum (results row col squareSampleSet diskSampleSet) / grey (root * root)) *
               grey (cam^.exposureTime))
 
       results row col pixelSamples diskSamples = result row col <$> (zip pixelSamples diskSamples)

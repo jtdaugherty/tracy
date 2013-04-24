@@ -12,6 +12,10 @@ lambertian s cd kd =
     let dat = BRDFData kd cd
     in BRDF lambFunc lambSample lambRhoFunc s dat
 
+glossySpecular :: Color -> Double -> BRDF
+glossySpecular ks glossyExp =
+    BRDF (glossySpecularFunc ks glossyExp) undefined glossyRhoFunc undefined undefined
+
 lambFunc :: BRDFData -> Shade -> V3 Double -> V3 Double -> Color
 lambFunc dat _ _ _ = (grey $ dat^.brdfKD) * (dat^.brdfColor) * (grey invPI)
 
@@ -28,3 +32,16 @@ lambSample dat sh _ _ sp =
 
 lambRhoFunc :: BRDFData -> Shade -> V3 Double -> Color
 lambRhoFunc dat _ _ = grey (dat^.brdfKD) * (dat^.brdfColor)
+
+glossySpecularFunc :: Color -> Double -> BRDFData
+                   -> Shade -> V3 Double -> V3 Double -> Color
+glossySpecularFunc ks glossyExp dat sh wi wo =
+    let ndotwi = (sh^.normal) `dot` wi
+        r = ((-1) *^ wi) + (2.0 * ndotwi *^ sh^.normal)
+        rdotwo = r `dot` wo
+    in if rdotwo > 0
+       then ks * (grey $ rdotwo ** glossyExp)
+       else cBlack
+
+glossyRhoFunc :: BRDFData -> Shade -> V3 Double -> Color
+glossyRhoFunc _ _ _ = cBlack

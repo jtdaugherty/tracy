@@ -12,7 +12,7 @@ cabal-version:       >=1.8
 
 library
   Hs-Source-Dirs:      src
-  GHC-Options:         -Wall
+  GHC-Options:         -O2 -Wall
   build-depends:
     base == 4.5.*,
     AC-Colour,
@@ -26,7 +26,8 @@ library
     MonadRandom,
     random,
     strict-concurrency,
-    deepseq
+    deepseq,
+    vector
 
   exposed-modules:
     Tracy.Types
@@ -45,9 +46,7 @@ library
 executable tracy
   Hs-Source-Dirs:      programs
   Main-is:             Main.hs
-  -- -prof -auto-all -caf-all
-  -- GHC-Options:         -Wall -threaded -rtsopts
-  GHC-Options:         -Wall
+  GHC-Options:         -O2 -Wall -rtsopts -threaded
   build-depends:
     base == 4.5.*,
     tracy
@@ -55,7 +54,7 @@ executable tracy
 executable tracy-debug-samplers
   Hs-Source-Dirs:      programs
   Main-is:             SamplerDebug.hs
-  GHC-Options:         -Wall -threaded
+  GHC-Options:         -O2 -Wall -threaded
   build-depends:
     base == 4.5.*,
     tracy,

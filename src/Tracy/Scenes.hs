@@ -32,10 +32,17 @@ defCamera =
                        300
                        25.0
                        (toUnitDisk jittered)
+
 mat :: Color -> Material
 mat c = matte
         (lambertian (toUnitHemisphere jittered) c 0.25)
         (lambertian (toUnitHemisphere jittered) c 0.65)
+
+ph :: Color -> Double -> Material
+ph c e = phong
+         (lambertian (toUnitHemisphere jittered) c 0.25)
+         (lambertian (toUnitHemisphere jittered) c 0.65)
+         (glossySpecular c e)
 
 world :: [Object] -> [Light] -> World
 world os ls = World { _viewPlane = defaultVp
@@ -48,7 +55,7 @@ world os ls = World { _viewPlane = defaultVp
 
 world1 :: (Camera ThinLens, World)
 world1 =
-    let s = sphere (V3 0 0 0) 85.0 (mat cRed)
+    let s = sphere (V3 0 0 0) 85.0 (ph cRed 100)
     in ( defCamera, world [s] [] )
 
 world2 :: (Camera ThinLens, World)
@@ -74,19 +81,19 @@ world4 =
 world5 :: (Camera ThinLens, World)
 world5 =
     let spheres = concat [ ss y | y <- [-500, -400, -300, -200, -100, 0, 100, 200, 300, 400, 500] ]
-        pairs = [ (-500, (mat cRed))
-                , (-450, (mat cMagenta))
-                , (-400, (mat cBlue))
-                , (-350, (mat cGreen))
-                , (-300, (mat cWhite))
-                , (-250, (mat cYellow))
-                , (-200, (mat cCyan))
-                , (-150, (mat cRed))
-                , (-100, (mat cMagenta))
-                , (-50, (mat cBlue))
-                , (0, (mat cGreen))
-                , (50, (mat cWhite))
-                , (100, (mat cYellow))
+        pairs = [ (-500, (ph cRed 100))
+                , (-450, (ph cMagenta 100))
+                , (-400, (ph cBlue 100))
+                , (-350, (ph cGreen 100))
+                , (-300, (ph cWhite 100))
+                , (-250, (ph cYellow 100))
+                , (-200, (ph cCyan 100))
+                , (-150, (ph cRed 100))
+                , (-100, (ph cMagenta 100))
+                , (-50, (ph cBlue 100))
+                , (0, (ph cGreen 100))
+                , (50, (ph cWhite 100))
+                , (100, (ph cYellow 100))
                 ]
         ss y = [ sphere (V3 xz y xz) 30.0 c
                  | (xz, c) <- pairs

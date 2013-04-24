@@ -14,6 +14,7 @@ import Data.Time.Clock
 import Data.Colour
 import qualified Data.Map as M
 import qualified Data.ByteString as B
+import qualified Data.Vector as V
 
 import Tracy.Types
 import Tracy.Samplers
@@ -43,18 +44,23 @@ instance NFData Colour where
 
 render :: Config -> Camera ThinLens -> World -> FilePath -> IO ()
 render cfg cam w filename = do
+  let root = cfg^.to sampleRoot
   putStrLn $ "Rendering " ++ filename ++ " ..."
+  putStrLn $ "  Sampler root: " ++ (root^.to show) ++ " (" ++ (root^.to (**2).to show) ++ " samples per pixel)"
   putStrLn $ "  Objects: " ++ (w^.objects.to length.to show)
 
   t1 <- getCurrentTime
 
-  let numSets = fromEnum (w^.viewPlane.hres * 1.7)
+  let numSets = fromEnum (w^.viewPlane.hres * 2.3)
       squareSampler = cfg^.to vpSampler
       diskSampler = cam^.cameraData.lensSampler
 
   -- Generate sample data for square and disk samplers
-  squareSamples <- replicateM numSets $ squareSampler (cfg^.to sampleRoot)
-  diskSamples <- replicateM numSets $ diskSampler (cfg^.to sampleRoot)
+  squareSamples <- V.replicateM numSets $ squareSampler (cfg^.to sampleRoot)
+  diskSamples <- V.replicateM numSets $ diskSampler (cfg^.to sampleRoot)
+
+  putStrLn $ "  Square sample sets: " ++ (show $ V.length squareSamples)
+  putStrLn $ "  Disk sample sets: " ++ (show $ V.length diskSamples)
 
   let renderer = cam^.cameraRenderWorld
 
@@ -71,7 +77,7 @@ render cfg cam w filename = do
             let m' = M.insert finishedRow rowColors m
                 perc :: Int
                 perc = truncate $ ((100.0 * (toEnum $ M.size m')) / w^.viewPlane.vres)
-            putStr $ "\r" ++ (show perc) ++ "% ... "
+            putStr $ "\r  Completed " ++ (show perc) ++ "% ... "
             hFlush stdout
             if M.size m' == (fromEnum $ w^.viewPlane.vres) then
                 return m' else
@@ -81,7 +87,7 @@ render cfg cam w filename = do
 
   dataChan <- newChan
 
-  putStrLn $ "Worker threads: " ++ (cfg^.to numThreads.to show)
+  putStrLn $ "  Worker threads: " ++ (cfg^.to numThreads.to show)
 
   forM_ rowBatches $ \rows ->
       do
@@ -103,4 +109,4 @@ render cfg cam w filename = do
 
   t2 <- getCurrentTime
 
-  putStrLn $ "done. Total time: " ++ (show $ diffUTCTime t2 t1)
+  putStrLn $ "done.\n  Total time: " ++ (show $ diffUTCTime t2 t1)
