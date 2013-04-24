@@ -6,7 +6,6 @@ import Control.Monad.State
 import Codec.BMP
 import System.Environment
 import System.Exit
-import System.Random
 import qualified Data.Map as M
 import Data.Colour
 import qualified Data.ByteString as B
@@ -39,25 +38,16 @@ main = do
               _ -> usage
 
 
-  g <- getStdGen
-  let cfg = Config { vpSampler = const $ const $ return []
-                   , sampleRoot = aaRoot
-                   , numThreads = 1
-                   }
-      st = TraceState { _traceRNG = g
-                      , _traceConfig = cfg
-                      , _traceNumSampleSets = 1
-                      }
-
   let sideLen = 200.0
       blank = Colour 0 0 0
       hitColor = Colour 1 0 0
 
   forM_ samplers $ \(name, path, s, isDisk) -> do
          putStrLn $ "Sampling " ++ show name ++ " to " ++ path
-         let vals = (runState (s aaRoot 1) st)^._1.to concat
 
-             offsetVals = if isDisk
+         vals <- s aaRoot
+
+         let offsetVals = if isDisk
                           then (mapped.both %~ ((*0.5). (+1.0))) vals
                           else vals
 

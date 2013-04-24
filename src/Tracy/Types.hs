@@ -2,7 +2,6 @@
 module Tracy.Types where
 
 import Control.Lens
-import Control.Monad.State
 import Control.Monad.Random
 import Linear
 import Data.Colour
@@ -82,9 +81,7 @@ data Material =
     Material { _doShading :: World -> Shade -> Color
              }
 
-type TraceM = State TraceState
-
-type Sampler a = Double -> Int -> TraceM [[a]]
+type Sampler a = Double -> IO [a]
 
 makeLenses ''Shade
 makeLenses ''Ray

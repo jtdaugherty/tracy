@@ -1,47 +1,41 @@
 module Tracy.Samplers where
 
-import Control.Lens
+import Control.Applicative
 import Control.Monad
 import Control.Monad.Random
 import Linear
 
 import Tracy.Types
 
-getRandomUnit :: TraceM Double
-getRandomUnit = do
-  g <- use traceRNG
-  let (v, g') = randomR (0, 1) g
-  traceRNG .= g'
-  return v
+getRandomUnit :: IO Double
+getRandomUnit = randomRIO (0, 1)
 
 pureRandom :: Sampler (Double, Double)
-pureRandom root numSets =
-    replicateM numSets $ do
-      replicateM (fromEnum $ root * root) $ do
-                           a <- getRandomUnit
-                           b <- getRandomUnit
-                           return (a, b)
+pureRandom root =
+    replicateM (fromEnum $ root * root) $ do
+      a <- getRandomUnit
+      b <- getRandomUnit
+      return (a, b)
 
 regular :: Sampler (Double, Double)
-regular root numSets = do
+regular root = do
   let slice = 1.0 / root
       ss = [ ((i+0.5)*slice, (j+0.5)*slice) |
              i <- [0..root-1]
            , j <- [0..root-1]
            ]
-  return $ replicate numSets ss
+  return ss
 
 jittered :: Sampler (Double, Double)
-jittered root numSets =
-    replicateM numSets $ do
-      sampleArrs <- forM [0..root-1] $ \k ->
-                    forM [0..root-1] $ \j ->
+jittered root =do
+  sampleArrs <- forM [0..root-1] $ \k ->
+                forM [0..root-1] $ \j ->
                     do
                       a <- getRandomUnit
                       b <- getRandomUnit
                       return ((k + a) / root, (j + b) / root)
 
-      return $ concat sampleArrs
+  return $ concat sampleArrs
 
 toDisk :: (Double, Double) -> (Double, Double)
 toDisk (x, y) =
@@ -71,10 +65,9 @@ toHemi (x, y) =
     in V3 pu pv pw
 
 transSample :: (a -> b) -> Sampler a -> Sampler b
-transSample f s =
-    \root numSets -> do
-      theSets <- s root numSets
-      return $ over (mapped.mapped) f theSets
+transSample f s root = do
+  vs <- s root
+  return $ f <$> vs
 
 toUnitDisk :: Sampler (Double, Double) -> Sampler (Double, Double)
 toUnitDisk = transSample toDisk

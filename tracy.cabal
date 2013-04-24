@@ -45,7 +45,9 @@ library
 executable tracy
   Hs-Source-Dirs:      programs
   Main-is:             Main.hs
-  GHC-Options:         -Wall -threaded -rtsopts -prof -auto-all -caf-all
+  -- -prof -auto-all -caf-all
+  -- GHC-Options:         -Wall -threaded -rtsopts
+  GHC-Options:         -Wall
   build-depends:
     base == 4.5.*,
     tracy

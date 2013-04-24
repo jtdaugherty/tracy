@@ -41,8 +41,9 @@ world :: [Object] -> [Light] -> World
 world os ls = World { _viewPlane = defaultVp
                     , _objects = os
                     , _bgColor = cBlack
-                    , _lights = pointLight 3.0 cWhite (V3 (-200) 200 400) : ls
-                    , _ambient = ambientLight 1.0 cWhite
+                    , _lights = pointLight 2 cWhite (V3 (-500) 500 500) :
+                                ls
+                    , _ambient = ambientLight 1 cWhite
                     }
 
 world1 :: (Camera ThinLens, World)

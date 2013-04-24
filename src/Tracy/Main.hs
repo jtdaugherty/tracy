@@ -6,9 +6,7 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.Chan.Strict
 import Control.Lens
 import Control.Monad
-import Control.Monad.State
 import Control.DeepSeq
-import System.Random
 import System.IO
 import Codec.BMP
 import Data.Maybe
@@ -49,29 +47,16 @@ render cfg cam w filename = do
   putStrLn $ "  Objects: " ++ (w^.objects.to length.to show)
 
   t1 <- getCurrentTime
-  g <- getStdGen
 
-  -- Generate sample data for square and disk samplers
-  let numSets = w^.viewPlane.hres.to (*1.3).from enum
-      ((squareSamples, diskSamples), _) =
-          runState (genSamples squareSampler diskSampler) st
+  let numSets = fromEnum (w^.viewPlane.hres * 1.7)
       squareSampler = cfg^.to vpSampler
       diskSampler = cam^.cameraData.lensSampler
-      st = TraceState { _traceRNG = g
-                      , _traceConfig = cfg
-                      -- XXX: this is going to cause artifacts
-                      -- later. We need the number of sets to be
-                      -- relatively prime to the number of columns.  I
-                      -- picked the hres here to force aliasing
-                      -- artifacts so I'll fix this later.
-                      , _traceNumSampleSets = numSets
-                      }
-      genSamples ss ds = do
-        ssData <- ss (cfg^.to sampleRoot) numSets
-        dsData <- ds (cfg^.to sampleRoot) numSets
-        return (ssData, dsData)
 
-      renderer = cam^.cameraRenderWorld
+  -- Generate sample data for square and disk samplers
+  squareSamples <- replicateM numSets $ squareSampler (cfg^.to sampleRoot)
+  diskSamples <- replicateM numSets $ diskSampler (cfg^.to sampleRoot)
+
+  let renderer = cam^.cameraRenderWorld
 
       workerThread ch rows =
           do
@@ -84,7 +69,8 @@ render cfg cam w filename = do
           do
             (finishedRow, rowColors) <- readChan ch
             let m' = M.insert finishedRow rowColors m
-                perc = ((100.0 * (toEnum $ M.size m')) / w^.viewPlane.vres)
+                perc :: Int
+                perc = truncate $ ((100.0 * (toEnum $ M.size m')) / w^.viewPlane.vres)
             putStr $ "\r" ++ (show perc) ++ "% ... "
             hFlush stdout
             if M.size m' == (fromEnum $ w^.viewPlane.vres) then
@@ -117,4 +103,4 @@ render cfg cam w filename = do
 
   t2 <- getCurrentTime
 
-  putStrLn $ "\ndone. Total time: " ++ (show $ diffUTCTime t2 t1)
+  putStrLn $ "done. Total time: " ++ (show $ diffUTCTime t2 t1)
