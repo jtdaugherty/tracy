@@ -24,7 +24,9 @@ library
     time,
     mtl,
     MonadRandom,
-    random
+    random,
+    strict-concurrency,
+    deepseq
 
   exposed-modules:
     Tracy.Types
@@ -35,40 +37,31 @@ library
     Tracy.Main
     Tracy.Samplers
     Tracy.Cameras
+    Tracy.Scenes
     Tracy.BRDF
     Tracy.Lights
     Tracy.Materials
 
 executable tracy
-  Hs-Source-Dirs:      src
+  Hs-Source-Dirs:      programs
   Main-is:             Main.hs
-  GHC-Options:         -Wall
+  GHC-Options:         -Wall -threaded -rtsopts -prof -auto-all -caf-all
   build-depends:
     base == 4.5.*,
-    AC-Colour,
-    lens,
-    containers,
-    linear,
-    bmp >= 1.2.4.1,
-    bytestring,
-    time,
-    mtl,
-    MonadRandom,
-    random
+    tracy
 
 executable tracy-debug-samplers
-  Hs-Source-Dirs:      src
+  Hs-Source-Dirs:      programs
   Main-is:             SamplerDebug.hs
-  GHC-Options:         -Wall
+  GHC-Options:         -Wall -threaded
   build-depends:
     base == 4.5.*,
+    tracy,
     AC-Colour,
     lens,
     containers,
-    linear,
     bmp >= 1.2.4.1,
     bytestring,
-    time,
     mtl,
     MonadRandom,
     random

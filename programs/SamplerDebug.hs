@@ -40,13 +40,11 @@ main = do
 
 
   g <- getStdGen
-  let cfg = Config { showLog = False
-                   , silent = True
-                   , vpSampler = const $ const $ return []
+  let cfg = Config { vpSampler = const $ const $ return []
                    , sampleRoot = aaRoot
+                   , numThreads = 1
                    }
-      st = TraceState { _traceLog = []
-                      , _traceRNG = g
+      st = TraceState { _traceRNG = g
                       , _traceConfig = cfg
                       , _traceNumSampleSets = 1
                       }

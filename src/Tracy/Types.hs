@@ -48,17 +48,15 @@ data World =
           }
 
 data TraceState =
-    TraceState { _traceLog :: [String]
-               , _traceRNG :: StdGen
+    TraceState { _traceRNG :: StdGen
                , _traceConfig :: Config
                , _traceNumSampleSets :: Int
                }
 
 data Config =
-    Config { showLog :: Bool
-           , silent :: Bool
-           , vpSampler :: Sampler (Double, Double)
+    Config { vpSampler :: Sampler (Double, Double)
            , sampleRoot :: Double
+           , numThreads :: Int
            }
 
 data BRDF =
@@ -98,6 +96,3 @@ makeLenses ''BRDF
 makeLenses ''BRDFData
 makeLenses ''Light
 makeLenses ''Material
-
-logMsg :: String -> TraceM ()
-logMsg msg = traceLog %= (msg:)

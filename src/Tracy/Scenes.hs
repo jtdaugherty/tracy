@@ -1,9 +1,7 @@
 module Tracy.Scenes where
 
-import Control.Lens
 import Data.Colour
 import Linear
-import Codec.BMP
 
 import Tracy.Types
 import Tracy.Sphere
@@ -23,17 +21,8 @@ defaultVp =
               , _inverseGamma = 1.0
               }
 
-defCamera :: Camera Pinhole
+defCamera :: Camera ThinLens
 defCamera =
-    pinholeCamera (V3 0 0 500)
-                  (V3 0 0 0)
-                  (V3 0 1 0)
-                  1.0
-                  1.0
-                  500
-
-lensCam :: Camera ThinLens
-lensCam =
     thinLensCamera (V3 0 0 300)
                        (V3 0 0 0)
                        (V3 0 1 0)
@@ -56,24 +45,24 @@ world os ls = World { _viewPlane = defaultVp
                     , _ambient = ambientLight 1.0 cWhite
                     }
 
-world1 :: (Camera Pinhole, World)
+world1 :: (Camera ThinLens, World)
 world1 =
     let s = sphere (V3 0 0 0) 85.0 (mat cRed)
     in ( defCamera, world [s] [] )
 
-world2 :: (Camera Pinhole, World)
+world2 :: (Camera ThinLens, World)
 world2 =
     let s = sphere (V3 0 0 11) 30.0 (mat cBlue)
         s2 = sphere (V3 0 0 0) 40.0 (mat cGreen)
     in ( defCamera, world [s, s2] [] )
 
-world3 :: (Camera Pinhole, World)
+world3 :: (Camera ThinLens, World)
 world3 =
     let s = sphere (V3 0 0 11) 30.0 (mat cBlue)
         p = plane (V3 0 0 0) (V3 0 1 0.1) (mat cGreen)
     in ( defCamera, world [s, p] [] )
 
-world4 :: (Camera Pinhole, World)
+world4 :: (Camera ThinLens, World)
 world4 =
     let s = sphere (V3 0 0 11) 30.0 (mat cBlue)
         p = plane (V3 0 0 0) (V3 0 1 0.1) (mat cGreen)
@@ -101,14 +90,13 @@ world5 =
         ss y = [ sphere (V3 xz y xz) 30.0 c
                  | (xz, c) <- pairs
                ]
-    in ( lensCam, world spheres [] )
+    in ( defCamera, world spheres [] )
 
-scenes :: [(String, (World, TraceM BMP))]
+scenes :: [(String, (Camera ThinLens, World))]
 scenes =
-    let render (c, w) = (w, (c^.cameraRenderWorld) c w)
-    in [ ("world1", render world1)
-       , ("world2", render world2)
-       , ("world3", render world3)
-       , ("world4", render world4)
-       , ("world5", render world5)
-       ]
+    [ ("world1", world1)
+    , ("world2", world2)
+    , ("world3", world3)
+    , ("world4", world4)
+    , ("world5", world5)
+    ]
