@@ -1,5 +1,6 @@
 module Tracy.Scenes where
 
+import Control.Lens
 import Data.Colour
 import Linear
 
@@ -56,19 +57,19 @@ world os ls = World { _viewPlane = defaultVp
 world1 :: (Camera ThinLens, World)
 world1 =
     let s = sphere (V3 0 0 0) 85.0 (ph cRed 100)
-    in ( defCamera, world [s] [] )
+    in ( defCamera & cameraData.lensRadius .~ 0, world [s] [] )
 
 world2 :: (Camera ThinLens, World)
 world2 =
     let s = sphere (V3 0 0 11) 30.0 (mat cBlue)
         s2 = sphere (V3 0 0 0) 40.0 (mat cGreen)
-    in ( defCamera, world [s, s2] [] )
+    in ( defCamera & cameraData.lensRadius .~ 0, world [s, s2] [] )
 
 world3 :: (Camera ThinLens, World)
 world3 =
     let s = sphere (V3 0 0 11) 30.0 (mat cBlue)
         p = plane (V3 0 0 0) (V3 0 1 0.1) (mat cGreen)
-    in ( defCamera, world [s, p] [] )
+    in ( defCamera & cameraData.lensRadius .~ 0, world [s, p] [] )
 
 world4 :: (Camera ThinLens, World)
 world4 =
@@ -76,28 +77,40 @@ world4 =
         p = plane (V3 0 0 0) (V3 0 1 0.1) (mat cGreen)
         s2 = sphere (V3 50 5 0) 10.0 (mat cMagenta)
         s3 = sphere (V3 (-50) 10 0) 15.0 (mat cYellow)
-    in ( defCamera, world [s, p, s2, s3] [] )
+    in ( defCamera & cameraData.lensRadius .~ 0, world [s, p, s2, s3] [] )
 
 world5 :: (Camera ThinLens, World)
 world5 =
-    let spheres = concat [ ss y | y <- [-500, -400, -300, -200, -100, 0, 100, 200, 300, 400, 500] ]
-        pairs = [ (-500, (ph cRed 100))
-                , (-450, (ph cMagenta 100))
-                , (-400, (ph cBlue 100))
-                , (-350, (ph cGreen 100))
-                , (-300, (ph cWhite 100))
-                , (-250, (ph cYellow 100))
-                , (-200, (ph cCyan 100))
-                , (-150, (ph cRed 100))
-                , (-100, (ph cMagenta 100))
-                , (-50, (ph cBlue 100))
-                , (0, (ph cGreen 100))
-                , (50, (ph cWhite 100))
-                , (100, (ph cYellow 100))
+    let spheres = concat [ ss y e | (y, e) <- params ]
+        params = [ (-500, 1)
+                 , (-400, 10)
+                 , (-300, 10)
+                 , (-200, 20)
+                 , (-100, 75)
+                 , (0, 200)
+                 , (100, 75)
+                 , (200, 20)
+                 , (300, 10)
+                 , (400, 10)
+                 , (500, 1)
+                 ]
+        pairs = [ (-500, (ph cRed))
+                , (-450, (ph cMagenta))
+                , (-400, (ph cBlue))
+                , (-350, (ph cGreen))
+                , (-300, (ph cWhite))
+                , (-250, (ph cYellow))
+                , (-200, (ph cCyan))
+                , (-150, (ph cRed))
+                , (-100, (ph cMagenta))
+                , (-50, (ph cBlue))
+                , (0, (ph cGreen))
+                , (50, (ph cWhite))
+                , (100, (ph cYellow))
                 ]
-        ss y = [ sphere (V3 xz y xz) 30.0 c
-                 | (xz, c) <- pairs
-               ]
+        ss y e = [ sphere (V3 xz y xz) 30.0 (mkMat e)
+                   | (xz, mkMat) <- pairs
+                 ]
     in ( defCamera, world spheres [] )
 
 scenes :: [(String, (Camera ThinLens, World))]
