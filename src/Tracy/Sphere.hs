@@ -5,16 +5,17 @@ import Linear
 
 import Tracy.Types
 import Tracy.Constants
+import Tracy.Util
 
-sphere :: V3 Double -> Double -> Color -> Object
-sphere p rad c =
-    Object { _objectColor = c
-           , _hit = hitSphere p rad c
+sphere :: V3 Double -> Double -> Material -> Object
+sphere p rad m =
+    Object { _objectMaterial = m
+           , _hit = hitSphere p rad m
            }
 
-hitSphere :: V3 Double -> Double -> Color -> Ray
+hitSphere :: V3 Double -> Double -> Material -> Ray
           -> Maybe (Shade, Double)
-hitSphere p rad color ray =
+hitSphere p rad mat ray =
     let temp = ray^.origin - p
         a = (ray^.direction) `dot` (ray^.direction)
         b = (2 * temp) `dot` (ray^.direction)
@@ -28,10 +29,10 @@ hitSphere p rad color ray =
 
         makeShade tval = (sh, tval)
             where
-              sh = Shade { _localHitPoint = ray^.origin + (tval *^ ray^.direction)
-                         , _shadeColor = color
-                         , _normal = (temp + (tval *^ ray^.direction)) ^/ rad
-                         }
+              sh = defaultShade { _localHitPoint = ray^.origin + (tval *^ ray^.direction)
+                                , _material = mat
+                                , _normal = (temp + (tval *^ ray^.direction)) ^/ rad
+                                }
 
     in if t1 > epsilon
        then Just $ makeShade t1

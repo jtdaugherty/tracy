@@ -82,11 +82,18 @@ thinLensRayDir cam pixelPoint lensPoint =
         r = f / d
         px = pixelPoint^._x * r
         py = pixelPoint^._y * r
-        dir = ((px - lensPoint^._x) *^ cam^.cameraU) +
-              ((py - lensPoint^._y) *^ cam^.cameraV) -
-              (f *^ cam^.cameraW)
+        raydir = ((px - lensPoint^._x) *^ cam^.cameraU) +
+                 ((py - lensPoint^._y) *^ cam^.cameraV) -
+                 (f *^ cam^.cameraW)
 
-    in signorm dir
+    in signorm raydir
+
+clampColor :: Color -> Color
+clampColor (Colour r g b) = Colour r' g' b'
+    where
+      (r', g', b') = if r > 1 || g > 1 || b > 1
+                     then (1, 0, 0)
+                     else (r, g, b)
 
 thinLensRender :: Camera ThinLens -> World -> TraceM BMP
 thinLensRender cam w = do
@@ -109,8 +116,8 @@ thinLensRender cam w = do
               diskSampleSet = diskSampleSets !! sampleIndex
               sampleIndex = (fromEnum $ row * vp^.hres + col) `mod` numSets
 
-          in (sum (results row col squareSampleSet diskSampleSet) / grey (root * root)) *
-             grey (cam^.exposureTime)
+          in clampColor ((sum (results row col squareSampleSet diskSampleSet) / grey (root * root)) *
+              grey (cam^.exposureTime))
 
       results row col pixelSamples diskSamples = result row col <$> (zip pixelSamples diskSamples)
       result row col ((sx, sy), (dx, dy)) =
@@ -131,7 +138,7 @@ thinLensRender cam w = do
                         }
           in case hitAnObject w ray of
                Nothing -> w^.bgColor
-               Just (sh, _t) -> sh^.shadeColor
+               Just (sh, _t) -> (sh^.material.doShading) w sh
 
   logMsg "Tracing using thin lens camera."
   return $ packRGBA32ToBMP (fromEnum $ w^.viewPlane^.hres)
@@ -166,7 +173,7 @@ pinholeRender cam w = do
                         }
           in case hitAnObject w ray of
                Nothing -> w^.bgColor
-               Just (sh, _t) -> sh^.shadeColor
+               Just (sh, _t) -> (sh^.material.doShading) w sh
 
   logMsg "Tracing using pinhole camera."
   return $ packRGBA32ToBMP (fromEnum $ w^.viewPlane^.hres)

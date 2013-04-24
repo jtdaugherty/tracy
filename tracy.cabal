@@ -35,6 +35,9 @@ library
     Tracy.Main
     Tracy.Samplers
     Tracy.Cameras
+    Tracy.BRDF
+    Tracy.Lights
+    Tracy.Materials
 
 executable tracy
   Hs-Source-Dirs:      src
