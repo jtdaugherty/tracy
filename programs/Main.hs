@@ -5,6 +5,7 @@ import Control.Monad
 import System.Console.GetOpt
 import System.Environment
 import System.Exit
+import GHC.Conc
 
 import Tracy.Main
 import Tracy.Scenes
@@ -32,6 +33,8 @@ usage = do
 
 main :: IO ()
 main = do
+  setNumCapabilities =<< getNumProcessors
+
   args <- getArgs
   let (os, rest, _) = getOpt Permute opts args
       cfg = foldl updateConfig defaultConfig os
