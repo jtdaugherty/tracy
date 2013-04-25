@@ -1,4 +1,4 @@
-- Sampling implementations (n-rooks, hammersley, jittered, etc.)
+- Sampling implementations (n-rooks, hammersley, etc.)
 - Shading / light sources? Emission material?
 - Intersection for
   - triangle meshes
@@ -7,4 +7,4 @@
 Much later:
 - scene description file and loader
 - OpenGL scene file viewer
-- Parallelization of rendering and other optimizations
+- Optimizations
