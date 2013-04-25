@@ -55,7 +55,6 @@ data TraceState =
 data Config =
     Config { vpSampler :: Sampler (Double, Double)
            , sampleRoot :: Double
-           , numThreads :: Int
            }
 
 data BRDF =

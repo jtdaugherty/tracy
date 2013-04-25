@@ -35,7 +35,7 @@ lambRhoFunc dat _ _ = grey (dat^.brdfKD) * (dat^.brdfColor)
 
 glossySpecularFunc :: Color -> Double -> BRDFData
                    -> Shade -> V3 Double -> V3 Double -> Color
-glossySpecularFunc ks glossyExp dat sh wi wo =
+glossySpecularFunc ks glossyExp _dat sh wi wo =
     let ndotwi = (sh^.normal) `dot` wi
         r = ((-1) *^ wi) + (2.0 * ndotwi *^ sh^.normal)
         rdotwo = r `dot` wo

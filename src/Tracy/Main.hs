@@ -2,17 +2,14 @@
 module Tracy.Main where
 
 import Control.Applicative
-import Control.Concurrent (forkIO)
-import Control.Concurrent.Chan.Strict
+import Control.Concurrent (getNumCapabilities)
+import Control.Parallel.Strategies
 import Control.Lens
-import Control.Monad
 import Control.DeepSeq
-import System.IO
 import Codec.BMP
-import Data.Maybe
 import Data.Time.Clock
 import Data.Colour
-import qualified Data.Map as M
+import System.IO
 import qualified Data.ByteString as B
 import qualified Data.Vector as V
 
@@ -25,19 +22,7 @@ defaultConfig :: Config
 defaultConfig =
     Config { vpSampler = regular
            , sampleRoot = 4
-           , numThreads = 1
            }
-
-batch :: Int -> [a] -> [[a]]
-batch batches vals = reverse $ batch_ (length vals) batches vals []
-
-batch_ :: Int -> Int -> [a] -> [[a]] -> [[a]]
-batch_ _ _ [] r = r
-batch_ tot sz xs (r:rs)
-    | length xs < (tot `div` sz) = (r ++ xs) : rs
-batch_ tot sz vals result =
-    let (a, b) = splitAt (tot `div` sz) vals
-    in batch_ tot sz b (a : result)
 
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
@@ -63,45 +48,16 @@ render cfg cam w filename = do
   putStrLn $ "  Disk sample sets: " ++ (show $ V.length diskSamples)
 
   let renderer = cam^.cameraRenderWorld
+      worker r = renderer cam squareSamples diskSamples numSets cfg r w
 
-      workerThread ch rows =
-          do
-            forM_ rows $ \r ->
-                do
-                  let cs = renderer cam squareSamples diskSamples numSets cfg r w
-                  writeChan ch (r, cs)
+  numCaps <- getNumCapabilities
+  putStrLn $ "  Using CPUs: " ++ show numCaps
+  putStr "  Rendering ... "
+  hFlush stdout
 
-      processResponses ch m =
-          do
-            (finishedRow, rowColors) <- readChan ch
-            let m' = M.insert finishedRow rowColors m
-                perc :: Int
-                perc = truncate $ ((100.0 * (toEnum $ M.size m')) / w^.viewPlane.vres)
-            putStr $ "\r  Completed " ++ (show perc) ++ "% ... "
-            hFlush stdout
-            if M.size m' == (fromEnum $ w^.viewPlane.vres) then
-                return m' else
-                processResponses ch m'
-
-  let rowBatches = batch (cfg^.to numThreads) [0..(fromEnum $ w^.viewPlane.vres-1)]
-
-  dataChan <- newChan
-
-  putStrLn $ "  Worker threads: " ++ (cfg^.to numThreads.to show)
-
-  forM_ rowBatches $ \rows ->
-      do
-        forkIO (workerThread dataChan rows)
-
-  -- Wait on data from the channel, build up the row map as the
-  -- responses come in (and print some output)
-  rowMap <- processResponses dataChan M.empty
-
-  -- Now sort the map contents and concatenate the results to generate
-  -- the image
-  let imgBytes = B.concat [ B.concat $ getColorBytes <$> (fromJust $ M.lookup r rowMap)
-                            | r <- [0..(fromEnum $ w^.viewPlane.vres-1)]
-                          ]
+  let rows = [0..(fromEnum $ w^.viewPlane.vres-1)]
+      vs = parMap (rpar `dot` rdeepseq) worker rows
+      imgBytes = B.concat $ B.concat <$> (getColorBytes <$>) <$> vs
       img = packRGBA32ToBMP (fromEnum $ w^.viewPlane^.hres)
                             (fromEnum $ w^.viewPlane^.vres) imgBytes
 

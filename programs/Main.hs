@@ -11,19 +11,16 @@ import Tracy.Scenes
 import Tracy.Types
 
 data Arg = Help
-         | NumThreads String
          | SampleRoot String
            deriving (Eq, Show)
 
 opts :: [OptDescr Arg]
 opts = [ Option "h" ["help"] (NoArg Help) "This help output"
-       , Option "t" ["threads"] (ReqArg NumThreads "NUM") "Number of worker threads"
        , Option "a" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
        ]
 
 updateConfig :: Config -> Arg -> Config
 updateConfig c Help = c
-updateConfig c (NumThreads s) = c { numThreads = read s }
 updateConfig c (SampleRoot s) = c { sampleRoot = read s }
 
 usage :: IO ()

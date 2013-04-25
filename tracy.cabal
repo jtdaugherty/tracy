@@ -12,9 +12,9 @@ cabal-version:       >=1.8
 
 library
   Hs-Source-Dirs:      src
-  GHC-Options:         -O2 -Wall
+  GHC-Options:         -Wall -fno-state-hack
   build-depends:
-    base == 4.5.*,
+    base == 4.*,
     AC-Colour,
     lens,
     containers,
@@ -25,9 +25,10 @@ library
     mtl,
     MonadRandom,
     random,
-    strict-concurrency,
+    -- strict-concurrency,
     deepseq,
-    vector
+    vector,
+    parallel
 
   exposed-modules:
     Tracy.Types
@@ -46,17 +47,18 @@ library
 executable tracy
   Hs-Source-Dirs:      programs
   Main-is:             Main.hs
-  GHC-Options:         -O2 -Wall -rtsopts -threaded
+  -- -eventlog -fno-state-hack
+  GHC-Options:         -Wall -rtsopts -threaded
   build-depends:
-    base == 4.5.*,
+    base == 4.*,
     tracy
 
 executable tracy-debug-samplers
   Hs-Source-Dirs:      programs
   Main-is:             SamplerDebug.hs
-  GHC-Options:         -O2 -Wall -threaded
+  GHC-Options:         -Wall -threaded -fno-state-hack
   build-depends:
-    base == 4.5.*,
+    base == 4.*,
     tracy,
     AC-Colour,
     lens,
