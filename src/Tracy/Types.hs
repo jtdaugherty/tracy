@@ -9,32 +9,32 @@ import Data.Colour
 type Color = Colour
 
 data Shade =
-    Shade { _localHitPoint :: V3 Double
-          , _normal :: V3 Double
+    Shade { _localHitPoint :: V3 Float
+          , _normal :: V3 Float
           , _material :: Material
-          , _hitPoint :: V3 Double
+          , _hitPoint :: V3 Float
           , _shadeRay :: Ray
-          , _depth :: Double
-          , _dir :: V3 Double
+          , _depth :: Float
+          , _dir :: V3 Float
           }
 
 data Ray =
-    Ray { _origin :: V3 Double
-        , _direction :: V3 Double
+    Ray { _origin :: V3 Float
+        , _direction :: V3 Float
         }
     deriving (Show)
 
 data Object =
     Object { _objectMaterial :: Material
-           , _hit :: Ray -> Maybe (Shade, Double)
+           , _hit :: Ray -> Maybe (Shade, Float)
            }
 
 data ViewPlane =
-    ViewPlane { _hres :: Double
-              , _vres :: Double
-              , _pixelSize :: Double
-              , _gamma :: Double
-              , _inverseGamma :: Double
+    ViewPlane { _hres :: Float
+              , _vres :: Float
+              , _pixelSize :: Float
+              , _gamma :: Float
+              , _inverseGamma :: Float
               }
     deriving (Show)
 
@@ -53,26 +53,26 @@ data TraceState =
                }
 
 data Config =
-    Config { vpSampler :: Sampler (Double, Double)
-           , sampleRoot :: Double
+    Config { vpSampler :: Sampler (Float, Float)
+           , sampleRoot :: Float
            }
 
 data BRDF =
-    BRDF { _brdfFunction :: BRDFData -> Shade -> V3 Double -> V3 Double -> Color
-         , _brdfSampleF :: BRDFData -> Shade -> V3 Double -> V3 Double -> V3 Double -> (Double, Color)
-         , _brdfRho :: BRDFData -> Shade -> V3 Double -> Color
-         , _brdfSampler :: Sampler (V3 Double)
+    BRDF { _brdfFunction :: BRDFData -> Shade -> V3 Float -> V3 Float -> Color
+         , _brdfSampleF :: BRDFData -> Shade -> V3 Float -> V3 Float -> V3 Float -> (Float, Color)
+         , _brdfRho :: BRDFData -> Shade -> V3 Float -> Color
+         , _brdfSampler :: Sampler (V3 Float)
          , _brdfData :: BRDFData
          }
 
 data BRDFData =
-    BRDFData { _brdfKD :: Double
+    BRDFData { _brdfKD :: Float
              , _brdfColor :: Color
              }
 
 data Light =
     Light { _lightShadows :: Bool
-          , _lightDirection :: Shade -> V3 Double
+          , _lightDirection :: Shade -> V3 Float
           , _lightColor :: Shade -> Color
           }
 
@@ -80,7 +80,7 @@ data Material =
     Material { _doShading :: World -> Shade -> Color
              }
 
-type Sampler a = Double -> IO [a]
+type Sampler a = Float -> IO [a]
 
 makeLenses ''Shade
 makeLenses ''Ray

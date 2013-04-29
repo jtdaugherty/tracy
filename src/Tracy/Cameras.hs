@@ -9,12 +9,13 @@ import Data.Ord (comparing)
 import Data.Colour
 import qualified Data.Vector as V
 import Linear
+import GHC.Float
 
 import Tracy.Types
 
 type CameraRenderer a = Camera a
-                      -> V.Vector [(Double, Double)]
-                      -> V.Vector [(Double, Double)]
+                      -> V.Vector [(Float, Float)]
+                      -> V.Vector [(Float, Float)]
                       -> Int
                       -> Config
                       -> Int
@@ -22,28 +23,28 @@ type CameraRenderer a = Camera a
                       -> [Color]
 
 data Camera a =
-    Camera { _cameraU :: V3 Double
-           , _cameraV :: V3 Double
-           , _cameraW :: V3 Double
+    Camera { _cameraU :: V3 Float
+           , _cameraV :: V3 Float
+           , _cameraW :: V3 Float
            , _cameraRenderWorld :: CameraRenderer a
            , _cameraData :: a
-           , _exposureTime :: Double
-           , _cameraZoomFactor :: Double
-           , _cameraEyePoint :: V3 Double
+           , _exposureTime :: Float
+           , _cameraZoomFactor :: Float
+           , _cameraEyePoint :: V3 Float
            }
 
 data ThinLens =
-    ThinLens { _lensRadius :: Double
-             , _lensVPDistance :: Double
-             , _lensFocalPlaneDistance :: Double
-             , _lensRayDir :: Camera ThinLens -> V2 Double -> V2 Double -> V3 Double
-             , _lensSampler :: Sampler (Double, Double)
+    ThinLens { _lensRadius :: Float
+             , _lensVPDistance :: Float
+             , _lensFocalPlaneDistance :: Float
+             , _lensRayDir :: Camera ThinLens -> V2 Float -> V2 Float -> V3 Float
+             , _lensSampler :: Sampler (Float, Float)
              }
 
 makeLenses ''Camera
 makeLenses ''ThinLens
 
-camera :: V3 Double -> V3 Double -> V3 Double -> Double -> Double
+camera :: V3 Float -> V3 Float -> V3 Float -> Float -> Float
        -> a
        -> (CameraRenderer a)
        -> Camera a
@@ -53,15 +54,15 @@ camera eye look up exposure z dat render =
         v = w `cross` u
     in Camera u v w render dat exposure z eye
 
-thinLensCamera :: V3 Double -> V3 Double -> V3 Double -> Double
-               -> Double -> Double -> Double -> Double
-               -> Sampler (Double, Double)
+thinLensCamera :: V3 Float -> V3 Float -> V3 Float -> Float
+               -> Float -> Float -> Float -> Float
+               -> Sampler (Float, Float)
                -> Camera ThinLens
 thinLensCamera eye look up exposure z vpDist fpDist rad s =
     let thinLens = ThinLens rad vpDist fpDist thinLensRayDir s
     in camera eye look up exposure z thinLens thinLensRender
 
-thinLensRayDir :: Camera ThinLens -> V2 Double -> V2 Double -> V3 Double
+thinLensRayDir :: Camera ThinLens -> V2 Float -> V2 Float -> V3 Float
 thinLensRayDir cam pixelPoint lensPoint =
     let f = cam^.cameraData^.lensFocalPlaneDistance
         d = cam^.cameraData^.lensVPDistance
@@ -93,8 +94,8 @@ thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
               diskSampleSet = diskSampleSets V.! sampleIndex
               sampleIndex = (fromEnum $ row * vp^.hres + col) `mod` numSets
 
-          in maxToOne ((sum (results row col squareSampleSet diskSampleSet) / grey (root * root)) *
-              grey (cam^.exposureTime))
+          in maxToOne ((sum (results row col squareSampleSet diskSampleSet) / grey (float2Double $ root * root)) *
+              grey (float2Double $ cam^.exposureTime))
 
       results row col pixelSamples diskSamples = result row col <$> (zip pixelSamples diskSamples)
       result row col ((sx, sy), (dx, dy)) =
@@ -119,7 +120,7 @@ thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
 
   in colors
 
-hitAnObject :: World -> Ray -> Maybe (Shade, Double)
+hitAnObject :: World -> Ray -> Maybe (Shade, Float)
 hitAnObject w r =
     listToMaybe $ sortBy (comparing snd) $ catMaybes results
     where

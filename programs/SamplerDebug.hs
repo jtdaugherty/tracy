@@ -21,7 +21,7 @@ usage = do
   putStrLn header
   exitFailure
 
-samplers :: [(String, FilePath, Sampler (Double, Double), Bool)]
+samplers :: [(String, FilePath, Sampler (Float, Float), Bool)]
 samplers = [ ("regular", "regular.bmp", regular, False)
            , ("jittered", "jittered.bmp", jittered, False)
            , ("pureRandom", "pure_random.bmp", pureRandom, False)
@@ -34,7 +34,7 @@ main :: IO ()
 main = do
   args <- getArgs
   aaRoot <- case args of
-              [aaRootStr] -> return (read aaRootStr :: Double)
+              [aaRootStr] -> return (read aaRootStr :: Float)
               _ -> usage
 
 

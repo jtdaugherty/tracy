@@ -7,14 +7,14 @@ import Tracy.Types
 import Tracy.Constants
 import Tracy.Util
 
-sphere :: V3 Double -> Double -> Material -> Object
+sphere :: V3 Float -> Float -> Material -> Object
 sphere p rad m =
     Object { _objectMaterial = m
            , _hit = hitSphere p rad m
            }
 
-hitSphere :: V3 Double -> Double -> Material -> Ray
-          -> Maybe (Shade, Double)
+hitSphere :: V3 Float -> Float -> Material -> Ray
+          -> Maybe (Shade, Float)
 hitSphere p rad mat ray =
     let temp = ray^.origin - p
         a = (ray^.direction) `dot` (ray^.direction)

@@ -1,7 +1,7 @@
 module Tracy.Constants where
 
-epsilon :: Double
+epsilon :: Float
 epsilon = 0.0001
 
-invPI :: Double
+invPI :: Float
 invPI = 1.0/pi

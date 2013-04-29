@@ -4,6 +4,7 @@ import Control.Applicative
 import Control.Lens
 import Linear
 import Data.Colour
+import GHC.Float
 
 import Tracy.Types
 
@@ -23,7 +24,7 @@ ambShading ambBrdf diffBrdf w sh =
         getL light = let wi = (light^.lightDirection) sh
                          ndotwi = (sh^.normal) `dot` wi
                      in if ndotwi > 0
-                        then (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi * (light^.lightColor) sh * (grey ndotwi)
+                        then (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi * (light^.lightColor) sh * (grey $ float2Double ndotwi)
                         else 0.0
     in baseL + sum otherLs
 
@@ -37,6 +38,6 @@ phongShading ambBrdf diffBrdf glossyBrdf w sh =
                      in if ndotwi > 0
                         then ((diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi +
                               (glossyBrdf^.brdfFunction) (glossyBrdf^.brdfData) sh wo wi) *
-                                 (light^.lightColor) sh * (grey ndotwi)
+                                 (light^.lightColor) sh * (grey $ float2Double ndotwi)
                         else 0.0
     in baseL + sum otherLs

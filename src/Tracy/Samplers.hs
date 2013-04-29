@@ -7,17 +7,17 @@ import Linear
 
 import Tracy.Types
 
-getRandomUnit :: IO Double
+getRandomUnit :: IO Float
 getRandomUnit = randomRIO (0, 1)
 
-pureRandom :: Sampler (Double, Double)
+pureRandom :: Sampler (Float, Float)
 pureRandom root =
     replicateM (fromEnum $ root * root) $ do
       a <- getRandomUnit
       b <- getRandomUnit
       return (a, b)
 
-regular :: Sampler (Double, Double)
+regular :: Sampler (Float, Float)
 regular root = do
   let slice = 1.0 / root
       ss = [ ((i+0.5)*slice, (j+0.5)*slice) |
@@ -26,7 +26,7 @@ regular root = do
            ]
   return ss
 
-jittered :: Sampler (Double, Double)
+jittered :: Sampler (Float, Float)
 jittered root =do
   sampleArrs <- forM [0..root-1] $ \k ->
                 forM [0..root-1] $ \j ->
@@ -37,7 +37,7 @@ jittered root =do
 
   return $ concat sampleArrs
 
-toDisk :: (Double, Double) -> (Double, Double)
+toDisk :: (Float, Float) -> (Float, Float)
 toDisk (x, y) =
     let spx = 2.0 * x - 1.0
         spy = 2.0 * y - 1.0
@@ -51,7 +51,7 @@ toDisk (x, y) =
         phi' = phi * (pi / 4.0)
     in (r * cos phi', r * sin phi')
 
-toHemi :: (Double, Double) -> V3 Double
+toHemi :: (Float, Float) -> V3 Float
 toHemi (x, y) =
     let pu = sin_theta * cos_phi
         pv = sin_theta * sin_phi
@@ -69,8 +69,8 @@ transSample f s root = do
   vs <- s root
   return $ f <$> vs
 
-toUnitDisk :: Sampler (Double, Double) -> Sampler (Double, Double)
+toUnitDisk :: Sampler (Float, Float) -> Sampler (Float, Float)
 toUnitDisk = transSample toDisk
 
-toUnitHemisphere :: Sampler (Double, Double) -> Sampler (V3 Double)
+toUnitHemisphere :: Sampler (Float, Float) -> Sampler (V3 Float)
 toUnitHemisphere = transSample toHemi

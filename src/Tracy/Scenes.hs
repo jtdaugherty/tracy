@@ -39,7 +39,7 @@ mat c = matte
         (lambertian (toUnitHemisphere jittered) c 0.25)
         (lambertian (toUnitHemisphere jittered) c 0.65)
 
-ph :: Color -> Double -> Material
+ph :: Color -> Float -> Material
 ph c e = phong
          (lambertian (toUnitHemisphere jittered) c 0.25)
          (lambertian (toUnitHemisphere jittered) c 0.65)
