@@ -17,13 +17,18 @@ phong ambBrdf diffBrdf glossyBrdf =
     Material (phongShading ambBrdf diffBrdf glossyBrdf)
 
 ambShading :: BRDF -> BRDF -> Bool -> World -> Shade -> Color
-ambShading ambBrdf diffBrdf _enableShadows w sh =
+ambShading ambBrdf diffBrdf enableShadows w sh =
     let wo = -1 *^ sh^.shadeRay.direction
         baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * (w^.ambient.lightColor) sh
         otherLs = getL <$> w^.lights
         getL light = let wi = (light^.lightDirection) sh
                          ndotwi = (sh^.normal) `dot` wi
-                     in if ndotwi > 0
+                         shad = enableShadows && light^.lightShadows
+                         in_shadow = (light^.inLightShadow) w shadowRay
+                         shadowRay = Ray { _origin = sh^.localHitPoint
+                                         , _direction = wi
+                                         }
+                     in if ndotwi > 0 && (not shad || (shad && not in_shadow))
                         then (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi * (light^.lightColor) sh * (grey $ float2Double ndotwi)
                         else 0.0
     in baseL + sum otherLs

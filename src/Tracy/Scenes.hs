@@ -116,9 +116,8 @@ world5 =
 world6 :: (Camera ThinLens, World)
 world6 =
     let s = sphere (V3 0 60 0) 30.0 (ph cBlue 100)
-        p = plane (V3 0 0 0) (V3 0 1 0) (ph cGreen 100)
-        l = pointLight True 2 cWhite (V3 0 200 0)
-    in ( defCamera & cameraData.lensRadius .~ 0, world [s, p] [l] )
+        p = plane (V3 0 0 0) (V3 0 1 0) (mat cGreen)
+    in ( defCamera & cameraData.lensRadius .~ 0, world [s, p] [] )
 
 scenes :: [(String, (Camera ThinLens, World))]
 scenes =
