@@ -27,6 +27,7 @@ data Ray =
 data Object =
     Object { _objectMaterial :: Material
            , _hit :: Ray -> Maybe (Shade, Float)
+           , _shadow_hit :: Ray -> Maybe Float
            }
 
 data ViewPlane =
@@ -55,6 +56,7 @@ data TraceState =
 data Config =
     Config { vpSampler :: Sampler (Float, Float)
            , sampleRoot :: Float
+           , shadows :: Bool
            }
 
 data BRDF =
@@ -74,10 +76,11 @@ data Light =
     Light { _lightShadows :: Bool
           , _lightDirection :: Shade -> V3 Float
           , _lightColor :: Shade -> Color
+          , _inLightShadow :: World -> Ray -> Bool
           }
 
 data Material =
-    Material { _doShading :: World -> Shade -> Color
+    Material { _doShading :: Bool -> World -> Shade -> Color
              }
 
 type Sampler a = Float -> IO [a]

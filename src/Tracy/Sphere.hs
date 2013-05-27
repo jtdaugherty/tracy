@@ -11,7 +11,26 @@ sphere :: V3 Float -> Float -> Material -> Object
 sphere p rad m =
     Object { _objectMaterial = m
            , _hit = hitSphere p rad m
+           , _shadow_hit = shadowHitSphere p rad
            }
+
+shadowHitSphere :: V3 Float -> Float -> Ray -> Maybe Float
+shadowHitSphere p rad ray =
+    let temp = ray^.origin - p
+        a = (ray^.direction) `dot` (ray^.direction)
+        b = (2 * temp) `dot` (ray^.direction)
+        c = (temp `dot` temp) - rad * rad
+        disc = b * b - 4 * a * c
+        e = sqrt disc
+        denom = 2 * a
+
+        t1 = (-b - e) / denom
+        t2 = (-b + e) / denom
+    in if t1 > epsilon
+       then Just t1
+       else if t2 > epsilon
+            then Just t2
+            else Nothing
 
 hitSphere :: V3 Float -> Float -> Material -> Ray
           -> Maybe (Shade, Float)

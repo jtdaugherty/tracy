@@ -22,6 +22,7 @@ defaultConfig :: Config
 defaultConfig =
     Config { vpSampler = regular
            , sampleRoot = 4
+           , shadows = True
            }
 
 instance NFData Colour where

@@ -13,16 +13,19 @@ import Tracy.Types
 
 data Arg = Help
          | SampleRoot String
+         | NoShadows
            deriving (Eq, Show)
 
 opts :: [OptDescr Arg]
 opts = [ Option "h" ["help"] (NoArg Help) "This help output"
        , Option "a" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
+       , Option "n" ["no-shadows"] (NoArg NoShadows) "Turn off shadows"
        ]
 
 updateConfig :: Config -> Arg -> Config
 updateConfig c Help = c
 updateConfig c (SampleRoot s) = c { sampleRoot = read s }
+updateConfig c NoShadows = c { shadows = False }
 
 usage :: IO ()
 usage = do

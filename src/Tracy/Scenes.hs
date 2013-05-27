@@ -24,7 +24,7 @@ defaultVp =
 
 defCamera :: Camera ThinLens
 defCamera =
-    thinLensCamera (V3 0 0 300)
+    thinLensCamera (V3 0 100 300)
                        (V3 0 0 0)
                        (V3 0 1 0)
                        1.0
@@ -49,7 +49,7 @@ world :: [Object] -> [Light] -> World
 world os ls = World { _viewPlane = defaultVp
                     , _objects = os
                     , _bgColor = cBlack
-                    , _lights = pointLight 2 cWhite (V3 (-500) 500 500) :
+                    , _lights = pointLight True 2 cWhite (V3 (-500) 500 500) :
                                 ls
                     , _ambient = ambientLight 1 cWhite
                     }
@@ -67,8 +67,8 @@ world2 =
 
 world3 :: (Camera ThinLens, World)
 world3 =
-    let s = sphere (V3 0 0 11) 30.0 (mat cBlue)
-        p = plane (V3 0 0 0) (V3 0 1 0.1) (mat cGreen)
+    let s = sphere (V3 0 60 80) 30.0 (mat cBlue)
+        p = plane (V3 0 0 0) (V3 0 1 0) (mat cGreen)
     in ( defCamera & cameraData.lensRadius .~ 0, world [s, p] [] )
 
 world4 :: (Camera ThinLens, World)
@@ -113,6 +113,13 @@ world5 =
                  ]
     in ( defCamera, world spheres [] )
 
+world6 :: (Camera ThinLens, World)
+world6 =
+    let s = sphere (V3 0 60 0) 30.0 (ph cBlue 100)
+        p = plane (V3 0 0 0) (V3 0 1 0) (ph cGreen 100)
+        l = pointLight True 2 cWhite (V3 0 200 0)
+    in ( defCamera & cameraData.lensRadius .~ 0, world [s, p] [l] )
+
 scenes :: [(String, (Camera ThinLens, World))]
 scenes =
     [ ("world1", world1)
@@ -120,4 +127,5 @@ scenes =
     , ("world3", world3)
     , ("world4", world4)
     , ("world5", world5)
+    , ("world6", world6)
     ]
