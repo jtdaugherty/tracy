@@ -6,6 +6,7 @@ import Linear
 
 import Tracy.Types
 import Tracy.Sphere
+import Tracy.Triangle
 import Tracy.Box
 import Tracy.Plane
 import Tracy.Cameras
@@ -82,7 +83,8 @@ world4 =
         b2 = box (V3 100 0 (-100)) (V3 150 50 (-50)) (mat cRed)
         b3 = box (V3 (-150) 0 25) (V3 (-100) 75 75) (mat cYellow)
         b4 = box (V3 (-150) 0 (-75)) (V3 (-100) 75 (-25)) (mat cWhite)
-    in ( defCamera & cameraData.lensRadius .~ 0, world [s, p, s2, s3, b1, b2, b3, b4] [] )
+        t1 = tri (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (mat cWhite)
+    in ( defCamera & cameraData.lensRadius .~ 0, world [t1, s, p, s2, s3, b1, b2, b3, b4] [] )
 
 world5 :: (Camera ThinLens, World)
 world5 =

@@ -44,6 +44,7 @@ library
     Tracy.Materials
     Tracy.BoundingBox
     Tracy.Box
+    Tracy.Triangle
 
 executable tracy
   Hs-Source-Dirs:      programs
