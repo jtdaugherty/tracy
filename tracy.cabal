@@ -42,6 +42,8 @@ library
     Tracy.BRDF
     Tracy.Lights
     Tracy.Materials
+    Tracy.BoundingBox
+    Tracy.Box
 
 executable tracy
   Hs-Source-Dirs:      programs
