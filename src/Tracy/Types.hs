@@ -83,6 +83,11 @@ data Material =
     Material { _doShading :: Bool -> World -> Shade -> Color
              }
 
+data BBox =
+    BBox { _bboxP0 :: V3 Float
+         , _bboxP1 :: V3 Float
+         }
+
 type Sampler a = Float -> IO [a]
 
 makeLenses ''Shade
@@ -95,3 +100,4 @@ makeLenses ''BRDF
 makeLenses ''BRDFData
 makeLenses ''Light
 makeLenses ''Material
+makeLenses ''BBox
