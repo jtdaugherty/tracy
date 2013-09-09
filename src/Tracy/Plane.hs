@@ -15,19 +15,21 @@ plane o n m =
            }
 
 shadowHitPlane :: V3 Float -> V3 Float -> Ray -> Maybe Float
-shadowHitPlane o n r =
+shadowHitPlane = _hitPlane
+
+_hitPlane :: V3 Float -> V3 Float -> Ray -> Maybe Float
+_hitPlane o n r =
     let t = ((o - (r^.origin)) `dot` n) / ((r^.direction) `dot` n)
     in if t > epsilon
        then Just t else Nothing
 
 hitPlane :: V3 Float -> V3 Float -> Material -> Ray -> Maybe (Shade, Float)
 hitPlane o n m ray =
-    let t = ((o - (ray^.origin)) `dot` n) / ((ray^.direction) `dot` n)
-        hp = ray^.origin + (t *^ ray^.direction)
-        s = defaultShade { _localHitPoint = hp
-                         , _normal = n
-                         , _material = m
-                         }
-    in if t <= epsilon
-       then Nothing
-       else Just (s, t)
+    let mkHitPoint t = ray^.origin + (t *^ ray^.direction)
+        s hp = defaultShade { _localHitPoint = hp
+                            , _normal = n
+                            , _material = m
+                            }
+    in case _hitPlane o n ray of
+        Nothing -> Nothing
+        Just t -> Just (s $ mkHitPoint t, t)
