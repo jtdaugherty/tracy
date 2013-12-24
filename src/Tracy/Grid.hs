@@ -56,24 +56,28 @@ getDimensions os = (truncate nx, truncate ny, truncate nz)
       nz = mult * wz / s + 1
 
 setupCells :: BBox -> [Object] -> M.Map (Int, Int, Int) Object
-setupCells b os = mkCompounds $ foldr addObject M.empty os
+setupCells b os = mkCompounds $ traceIt $ foldr addObject M.empty os
     where
       (nx, ny, nz) = getDimensions os
       p0 = b^.bboxP0
       p1 = b^.bboxP1
       addObject :: Object -> M.Map (Int, Int, Int) [Object] -> M.Map (Int, Int, Int) [Object]
-      addObject o m = let ixmin = clamp ((o^.bounding_box.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (toEnum (nx - 1))
-                          iymin = clamp ((o^.bounding_box.bboxP0._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (toEnum (ny - 1))
-                          izmin = clamp ((o^.bounding_box.bboxP0._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (toEnum (nz - 1))
-                          ixmax = clamp ((o^.bounding_box.bboxP1._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (toEnum (nx - 1))
-                          iymax = clamp ((o^.bounding_box.bboxP1._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (toEnum (ny - 1))
-                          izmax = clamp ((o^.bounding_box.bboxP1._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (toEnum (nz - 1))
+      addObject o m = let ob = o^.bounding_box
+
+                          ixmin = clamp ((ob^.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (toEnum (nx - 1))
+                          iymin = clamp ((ob^.bboxP0._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (toEnum (ny - 1))
+                          izmin = clamp ((ob^.bboxP0._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (toEnum (nz - 1))
+
+                          ixmax = clamp ((ob^.bboxP1._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (toEnum (nx - 1))
+                          iymax = clamp ((ob^.bboxP1._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (toEnum (ny - 1))
+                          izmax = clamp ((ob^.bboxP1._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (toEnum (nz - 1))
                           ins Nothing = Just [o]
                           ins (Just xs) = Just (o : xs)
                           addToCell idx mp = M.alter ins idx mp
-                          is = [ (fromEnum x, fromEnum y, fromEnum z) | z <- [izmin..izmax]
-                               | y <- [iymin..iymax]
-                               | x <- [ixmin..ixmax]
+                          is = [ (fromEnum x, fromEnum y, fromEnum z)
+                               | z <- [fromEnum izmin..fromEnum izmax]
+                               , y <- [fromEnum iymin..fromEnum iymax]
+                               , x <- [fromEnum ixmin..fromEnum ixmax]
                                ]
                       in (foldr (.) id $ addToCell <$> is) m
 
