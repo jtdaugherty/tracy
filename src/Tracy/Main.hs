@@ -23,6 +23,7 @@ defaultConfig =
     Config { vpSampler = regular
            , sampleRoot = 4
            , shadows = True
+           , accelScheme = AccelNone
            }
 
 instance NFData Colour where

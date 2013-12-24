@@ -2,3 +2,4 @@ dist
 cabal-dev
 *~
 *.bmp
+.*.swp

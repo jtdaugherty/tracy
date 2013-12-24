@@ -13,6 +13,7 @@ tri v0 v1 v2 mat =
     in Object { _objectMaterial = mat
               , _hit = hitTriangle v0 v1 v2 n mat
               , _shadow_hit = shadowHitTriangle v0 v1 v2
+              , _bounding_box = defaultBBox
               }
 
 _hitTriangle :: V3 Float -> V3 Float -> V3 Float -> Ray -> Maybe Float

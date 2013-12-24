@@ -6,6 +6,7 @@ import Linear
 import qualified Data.ByteString as B
 
 import Tracy.Types
+import Tracy.BoundingBox
 
 getColorBytes :: Colour -> B.ByteString
 getColorBytes (Colour r g b) =
@@ -17,7 +18,13 @@ defaultShade =
           , _normal = error "no normal set on Shade"
           , _hitPoint = error "no hit point set on Shade"
           , _material = error "no material set on Shade"
-          , _shadeRay  = Ray (V3 0 0 0) (V3 0 0 0)
+          , _shadeRay = Ray (V3 0 0 0) (V3 0 0 0)
           , _depth = 0
           , _dir = V3 0 0 0
           }
+
+defaultBBox :: BBox
+defaultBBox = boundingBox (V3 (-1) (-1) (-1)) (V3 1 1 1)
+
+clamp :: (Ord a, Num a) => a -> a -> a -> a
+clamp v mn mx = if v < mn then mn else if v > mx then mx else v

@@ -66,3 +66,13 @@ faceNormal 3 = V3 1 0 0
 faceNormal 4 = V3 0 1 0
 faceNormal 5 = V3 0 0 1
 faceNormal f = error $ "faceNormal: invalid face " ++ show f
+
+inside :: BBox -> V3 Float -> Bool
+inside b p =
+    and [ p^._x > b^.bboxP0._x
+        , p^._x < b^.bboxP1._x
+        , p^._y > b^.bboxP0._y
+        , p^._y < b^.bboxP1._y
+        , p^._z > b^.bboxP0._z
+        , p^._z < b^.bboxP1._z
+        ]

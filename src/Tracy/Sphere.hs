@@ -7,13 +7,22 @@ import Linear
 import Tracy.Types
 import Tracy.Constants
 import Tracy.Util
+import Tracy.BoundingBox
 
 sphere :: V3 Float -> Float -> Material -> Object
 sphere p rad m =
     Object { _objectMaterial = m
            , _hit = hitSphere p rad m
            , _shadow_hit = shadowHitSphere p rad
+           , _bounding_box = sphereBBox p rad
            }
+
+sphereBBox :: V3 Float -> Float -> BBox
+sphereBBox p rad = boundingBox p0 p1
+    where
+      delta = 0.0001
+      p0 = V3 (p^._x - rad - delta) (p^._y - rad - delta) (p^._z - rad - delta)
+      p1 = V3 (p^._x + rad + delta) (p^._y + rad + delta) (p^._z + rad + delta)
 
 shadowHitSphere :: V3 Float -> Float -> Ray -> Maybe Float
 shadowHitSphere = _hitSphere

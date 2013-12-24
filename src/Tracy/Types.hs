@@ -28,7 +28,11 @@ data Object =
     Object { _objectMaterial :: Material
            , _hit :: Ray -> Maybe (Shade, Float)
            , _shadow_hit :: Ray -> Maybe Float
+           , _bounding_box :: BBox
            }
+
+instance Show Object where
+    show _ = "Object {...}"
 
 data ViewPlane =
     ViewPlane { _hres :: Float
@@ -53,10 +57,14 @@ data TraceState =
                , _traceNumSampleSets :: Int
                }
 
+data AccelScheme = AccelGrid
+                 | AccelNone
+
 data Config =
     Config { vpSampler :: Sampler (Float, Float)
            , sampleRoot :: Float
            , shadows :: Bool
+           , accelScheme :: AccelScheme
            }
 
 data BRDF =

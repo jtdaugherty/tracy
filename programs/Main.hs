@@ -2,6 +2,7 @@ module Main where
 
 import Control.Applicative
 import Control.Monad
+import Data.List (intercalate)
 import System.Console.GetOpt
 import System.Environment
 import System.Exit
@@ -10,22 +11,36 @@ import GHC.Conc
 import Tracy.Main
 import Tracy.Scenes
 import Tracy.Types
+import Tracy.Grid
 
 data Arg = Help
          | SampleRoot String
          | NoShadows
+         | SchemeArg String
            deriving (Eq, Show)
+
+schemes :: [(String, AccelScheme)]
+schemes =
+    [ ("none", AccelNone)
+    , ("grid", AccelGrid)
+    ]
 
 opts :: [OptDescr Arg]
 opts = [ Option "h" ["help"] (NoArg Help) "This help output"
        , Option "a" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
        , Option "n" ["no-shadows"] (NoArg NoShadows) "Turn off shadows"
+       , Option "s" ["scheme"] (ReqArg SchemeArg "SCHEME")
+         ("Acceleration scheme (options: " ++ intercalate ", " (fst <$> schemes) ++ ")")
        ]
 
-updateConfig :: Config -> Arg -> Config
-updateConfig c Help = c
-updateConfig c (SampleRoot s) = c { sampleRoot = read s }
-updateConfig c NoShadows = c { shadows = False }
+updateConfig :: Config -> Arg -> IO Config
+updateConfig c Help = return c
+updateConfig c (SampleRoot s) = return $ c { sampleRoot = read s }
+updateConfig c NoShadows = return $ c { shadows = False }
+updateConfig c (SchemeArg s) = do
+    case lookup s schemes of
+        Nothing -> usage >> exitFailure
+        Just v -> return $ c { accelScheme = v }
 
 usage :: IO ()
 usage = do
@@ -40,7 +55,8 @@ main = do
 
   args <- getArgs
   let (os, rest, _) = getOpt Permute opts args
-      cfg = foldl updateConfig defaultConfig os
+
+  cfg <- foldM updateConfig defaultConfig os
 
   when (Help `elem` os) usage
 
@@ -51,5 +67,8 @@ main = do
   forM_ toRender $ \n -> do
          case lookup n scenes of
            Nothing -> putStrLn $ "No such scene: " ++ n
-           Just (c, w) ->
-                 render cfg c w $ n ++ ".bmp"
+           Just (c, w) -> do
+               let accelWorld = case accelScheme cfg of
+                                  AccelNone -> w
+                                  AccelGrid -> w { _objects = [grid $ _objects w] }
+               render cfg c accelWorld $ n ++ ".bmp"
