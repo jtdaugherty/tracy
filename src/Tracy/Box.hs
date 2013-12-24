@@ -11,7 +11,7 @@ box p0 p1 m =
     Object { _objectMaterial = m
            , _hit = hitBox p0 p1 m
            , _shadow_hit = shadowHitBox p0 p1
-           , _bounding_box = defaultBBox
+           , _bounding_box = Just $ boundingBox p0 p1
            }
 
 shadowHitBox :: V3 Float -> V3 Float -> Ray -> Maybe Float

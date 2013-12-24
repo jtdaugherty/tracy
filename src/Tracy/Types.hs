@@ -28,7 +28,7 @@ data Object =
     Object { _objectMaterial :: Material
            , _hit :: Ray -> Maybe (Shade, Float)
            , _shadow_hit :: Ray -> Maybe Float
-           , _bounding_box :: BBox
+           , _bounding_box :: Maybe BBox
            }
 
 instance Show Object where

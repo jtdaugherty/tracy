@@ -2,6 +2,8 @@ module Main where
 
 import Control.Applicative
 import Control.Monad
+import Control.Lens
+import Data.Maybe
 import Data.List (intercalate)
 import System.Console.GetOpt
 import System.Environment
@@ -70,5 +72,7 @@ main = do
            Just (c, w) -> do
                let accelWorld = case accelScheme cfg of
                                   AccelNone -> w
-                                  AccelGrid -> w { _objects = [grid $ _objects w] }
+                                  AccelGrid -> let gObjs = [o | o <- _objects w, isJust $ o^.bounding_box ]
+                                                   objs = [o | o <- _objects w, not $ isJust $ o^.bounding_box ]
+                                               in w { _objects = grid gObjs:objs }
                render cfg c accelWorld $ n ++ ".bmp"

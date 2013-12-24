@@ -12,7 +12,7 @@ plane o n m =
     Object { _objectMaterial = m
            , _hit = hitPlane o n m
            , _shadow_hit = shadowHitPlane o n
-           , _bounding_box = error "plane has no bounding box"
+           , _bounding_box = Nothing
            }
 
 shadowHitPlane :: V3 Float -> V3 Float -> Ray -> Maybe Float

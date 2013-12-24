@@ -54,7 +54,8 @@ executable tracy
   GHC-Options:         -O2 -Wall -threaded
   build-depends:
     base == 4.*,
-    tracy
+    tracy,
+    lens
 
 executable tracy-debug-samplers
   Hs-Source-Dirs:      programs

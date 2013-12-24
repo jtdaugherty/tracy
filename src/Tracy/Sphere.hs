@@ -14,7 +14,7 @@ sphere p rad m =
     Object { _objectMaterial = m
            , _hit = hitSphere p rad m
            , _shadow_hit = shadowHitSphere p rad
-           , _bounding_box = sphereBBox p rad
+           , _bounding_box = Just $ sphereBBox p rad
            }
 
 sphereBBox :: V3 Float -> Float -> BBox

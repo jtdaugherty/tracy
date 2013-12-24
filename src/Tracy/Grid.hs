@@ -6,6 +6,7 @@ import Tracy.Constants
 import Tracy.BoundingBox
 import Tracy.Util
 import Tracy.Compound
+import Data.Maybe
 import Control.Lens hiding (ix, inside)
 import Control.Applicative
 import Control.Monad.State
@@ -19,24 +20,27 @@ grid os =
     in Object { _objectMaterial = undefined -- XXX unused
               , _hit = hitF
               , _shadow_hit = (snd <$>) . hitF
-              , _bounding_box = bbox
+              , _bounding_box = Just bbox
               }
 
 minCoords :: [Object] -> V3 Float
 minCoords os =
     V3 (mx - epsilon) (my - epsilon) (mz - epsilon)
     where
-      mx = minimum $ (\o -> o^.bounding_box.bboxP0._x) <$> os
-      my = minimum $ (\o -> o^.bounding_box.bboxP0._y) <$> os
-      mz = minimum $ (\o -> o^.bounding_box.bboxP0._z) <$> os
+      b o = fromJust $ o^.bounding_box
+
+      mx = minimum $ (\o -> (b o)^.bboxP0._x) <$> os
+      my = minimum $ (\o -> (b o)^.bboxP0._y) <$> os
+      mz = minimum $ (\o -> (b o)^.bboxP0._z) <$> os
 
 maxCoords :: [Object] -> V3 Float
 maxCoords os =
     V3 (mx + epsilon) (my + epsilon) (mz + epsilon)
     where
-      mx = maximum $ (\o -> o^.bounding_box.bboxP1._x) <$> os
-      my = maximum $ (\o -> o^.bounding_box.bboxP1._y) <$> os
-      mz = maximum $ (\o -> o^.bounding_box.bboxP1._z) <$> os
+      b o = fromJust $ o^.bounding_box
+      mx = maximum $ (\o -> (b o)^.bboxP1._x) <$> os
+      my = maximum $ (\o -> (b o)^.bboxP1._y) <$> os
+      mz = maximum $ (\o -> (b o)^.bboxP1._z) <$> os
 
 getDimensions :: [Object] -> (Int, Int, Int)
 getDimensions os = (truncate nx, truncate ny, truncate nz)
@@ -56,13 +60,13 @@ getDimensions os = (truncate nx, truncate ny, truncate nz)
       nz = mult * wz / s + 1
 
 setupCells :: BBox -> [Object] -> M.Map (Int, Int, Int) Object
-setupCells b os = mkCompounds $ traceIt $ foldr addObject M.empty os
+setupCells b os = mkCompounds $ foldr addObject M.empty os
     where
       (nx, ny, nz) = getDimensions os
       p0 = b^.bboxP0
       p1 = b^.bboxP1
       addObject :: Object -> M.Map (Int, Int, Int) [Object] -> M.Map (Int, Int, Int) [Object]
-      addObject o m = let ob = o^.bounding_box
+      addObject o m = let Just ob = o^.bounding_box
 
                           ixmin = clamp ((ob^.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (toEnum (nx - 1))
                           iymin = clamp ((ob^.bboxP0._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (toEnum (ny - 1))
@@ -96,6 +100,7 @@ hitGrid (nx, ny, nz) bbox m ray =
     if t0 > t1
        then Nothing
        else evalState findHit (St tx_next ty_next tz_next (truncate iix) (truncate iiy) (truncate iiz))
+
     where
         ox = ray^.origin._x
         oy = ray^.origin._y
