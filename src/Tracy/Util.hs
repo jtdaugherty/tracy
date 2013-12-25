@@ -26,5 +26,5 @@ defaultShade =
 defaultBBox :: BBox
 defaultBBox = boundingBox (V3 (-1) (-1) (-1)) (V3 1 1 1)
 
-clamp :: (Ord a, Num a) => a -> a -> a -> a
+clamp :: (Ord a) => a -> a -> a -> a
 clamp v mn mx = if v < mn then mn else if v > mx then mx else v

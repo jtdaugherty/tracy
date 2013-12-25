@@ -95,6 +95,7 @@ data BBox =
     BBox { _bboxP0 :: V3 Float
          , _bboxP1 :: V3 Float
          }
+         deriving (Show)
 
 type Sampler a = Float -> IO [a]
 
