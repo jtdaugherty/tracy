@@ -102,10 +102,7 @@ hitGrid (nx, ny, nz) bbox m ray =
     if t0 > t1
        then Nothing
        else let st = St tx_next ty_next tz_next iix iiy iiz
-            in case evalState findHit st of
-                 Just (loc, a, b) -> Just (a, b)
-                 Nothing -> Nothing
-
+            in evalState findHit st
     where
         ox = ray^.origin._x
         oy = ray^.origin._y
@@ -212,7 +209,7 @@ hitGrid (nx, ny, nz) bbox m ray =
                                      Nothing -> rest
                                      Just obj -> case (obj^.hit) ray of
                                                    Nothing -> rest
-                                                   Just (sh, t) -> if t < txn then return (Just ((ixv, iyv, izv), sh, t)) else rest
+                                                   Just (sh, t) -> if t < txn then return (Just (sh, t)) else rest
                          hitY = do let rest = do
                                          modify $ \s -> s { tyNext = tyNext s + dty, iy = iy s + iy_step }
                                          iy' <- gets iy
@@ -222,7 +219,7 @@ hitGrid (nx, ny, nz) bbox m ray =
                                      Nothing -> rest
                                      Just obj -> case (obj^.hit) ray of
                                                    Nothing -> rest
-                                                   Just (sh, t) -> if t < tyn then return (Just ((ixv, iyv, izv), sh, t)) else rest
+                                                   Just (sh, t) -> if t < tyn then return (Just (sh, t)) else rest
                          hitZ = do let rest = do
                                          modify $ \s -> s { tzNext = tzNext s + dtz, iz = iz s + iz_step }
                                          iz' <- gets iz
@@ -232,6 +229,6 @@ hitGrid (nx, ny, nz) bbox m ray =
                                      Nothing -> rest
                                      Just obj -> case (obj^.hit) ray of
                                                    Nothing -> rest
-                                                   Just (sh, t) -> if t < tzn then return (Just ((ixv, iyv, izv), sh, t)) else rest
+                                                   Just (sh, t) -> if t < tzn then return (Just (sh, t)) else rest
 
                      if txn < tyn && txn < tzn then hitX else if tyn < tzn then hitY else hitZ
