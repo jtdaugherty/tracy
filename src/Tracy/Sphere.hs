@@ -20,7 +20,7 @@ sphere p rad m =
 sphereBBox :: V3 Float -> Float -> BBox
 sphereBBox p rad = boundingBox p0 p1
     where
-      delta = 0.0001
+      delta = 0.00001
       p0 = V3 (p^._x - rad - delta) (p^._y - rad - delta) (p^._z - rad - delta)
       p1 = V3 (p^._x + rad + delta) (p^._y + rad + delta) (p^._z + rad + delta)
 

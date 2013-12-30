@@ -58,12 +58,12 @@ world os ls = World { _viewPlane = defaultVp
 
 world1 :: (Camera ThinLens, World)
 world1 =
-    let s = sphere (V3 0 0 0) 85.0 (ph cRed 100)
+    let s = sphere (V3 (-40) 0 0) 85.0 (ph cRed 100)
     in ( defCamera & cameraData.lensRadius .~ 0, world [s] [] )
 
 world2 :: (Camera ThinLens, World)
 world2 =
-    let s = sphere (V3 0 0 11) 30.0 (mat cBlue)
+    let s = sphere (V3 0 0 41) 10.0 (mat cBlue)
         s2 = sphere (V3 0 0 0) 40.0 (mat cGreen)
     in ( defCamera & cameraData.lensRadius .~ 0, world [s, s2] [] )
 

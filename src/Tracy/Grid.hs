@@ -75,10 +75,11 @@ setupCells b os = mkCompounds $ foldr addObject M.empty os
                           ixmax = clamp ((ob^.bboxP1._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (toEnum (nx - 1))
                           iymax = clamp ((ob^.bboxP1._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (toEnum (ny - 1))
                           izmax = clamp ((ob^.bboxP1._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (toEnum (nz - 1))
+
                           ins Nothing = Just [o]
                           ins (Just xs) = Just (o : xs)
-                          addToCell idx mp = M.alter ins idx mp
-                          is = [ (fromEnum x, fromEnum y, fromEnum z)
+                          addToCell = M.alter ins
+                          is = [ (x, y, z)
                                | z <- [fromEnum izmin..fromEnum izmax]
                                , y <- [fromEnum iymin..fromEnum iymax]
                                , x <- [fromEnum ixmin..fromEnum ixmax]
@@ -94,12 +95,16 @@ data St = St { txNext :: Float
              , iy :: Int
              , iz :: Int
              }
+             deriving Show
 
 hitGrid :: (Int, Int, Int) -> BBox -> M.Map (Int, Int, Int) Object -> Ray -> Maybe (Shade, Float)
 hitGrid (nx, ny, nz) bbox m ray =
     if t0 > t1
        then Nothing
-       else evalState findHit (St tx_next ty_next tz_next (truncate iix) (truncate iiy) (truncate iiz))
+       else let st = St tx_next ty_next tz_next iix iiy iiz
+            in case evalState findHit st of
+                 Just (loc, a, b) -> Just (a, b)
+                 Nothing -> Nothing
 
     where
         ox = ray^.origin._x
@@ -131,16 +136,18 @@ hitGrid (nx, ny, nz) bbox m ray =
         t0 = maximum [tx_min, ty_min, tz_min]
         t1 = minimum [tx_max, ty_max, tz_max]
 
+        iix, iiy, iiz :: Int
         (iix, iiy, iiz) = if inside bbox (ray^.origin)
-                          then ( clamp ((ox - x0) * (toEnum nx) / (x1 - x0)) 0 (toEnum (nx - 1))
-                               , clamp ((oy - y0) * (toEnum ny) / (y1 - y0)) 0 (toEnum (ny - 1))
-                               , clamp ((oz - z0) * (toEnum nz) / (z1 - z0)) 0 (toEnum (nz - 1))
+                          then ( truncate $ clamp ((ox - x0) * (toEnum nx) / (x1 - x0)) 0 (toEnum (nx - 1))
+                               , truncate $ clamp ((oy - y0) * (toEnum ny) / (y1 - y0)) 0 (toEnum (ny - 1))
+                               , truncate $ clamp ((oz - z0) * (toEnum nz) / (z1 - z0)) 0 (toEnum (nz - 1))
                                )
                           else let p = ray^.origin + t0 *^ ray^.direction
-                               in ( clamp ((p^._x - x0) * (toEnum nx) / (x1 - x0)) 0 (toEnum (nx - 1))
-                                  , clamp ((p^._y - y0) * (toEnum ny) / (y1 - y0)) 0 (toEnum (ny - 1))
-                                  , clamp ((p^._z - z0) * (toEnum nz) / (z1 - z0)) 0 (toEnum (nz - 1))
+                               in ( truncate $ clamp ((p^._x - x0) * (toEnum nx) / (x1 - x0)) 0 (toEnum (nx - 1))
+                                  , truncate $ clamp ((p^._y - y0) * (toEnum ny) / (y1 - y0)) 0 (toEnum (ny - 1))
+                                  , truncate $ clamp ((p^._z - z0) * (toEnum nz) / (z1 - z0)) 0 (toEnum (nz - 1))
                                   )
+
         dtx = (tx_max - tx_min) / toEnum nx
         dty = (ty_max - ty_min) / toEnum ny
         dtz = (tz_max - tz_min) / toEnum nz
@@ -151,11 +158,11 @@ hitGrid (nx, ny, nz) bbox m ray =
                                            , -1
                                            )
                                       else if dx > 0
-                                           then ( tx_min + (iix + 1) * dtx
+                                           then ( tx_min + (toEnum iix + 1) * dtx
                                                 , 1
                                                 , nx
                                                 )
-                                           else ( tx_min + (toEnum nx - iix) * dtx
+                                           else ( tx_min + (toEnum $ nx - iix) * dtx
                                                 , -1
                                                 , -1
                                                 )
@@ -165,11 +172,11 @@ hitGrid (nx, ny, nz) bbox m ray =
                                            , -1
                                            )
                                       else if dy > 0
-                                           then ( ty_min + (iiy + 1) * dty
+                                           then ( ty_min + (toEnum iiy + 1) * dty
                                                 , 1
                                                 , ny
                                                 )
-                                           else ( ty_min + (toEnum ny - iiy) * dty
+                                           else ( ty_min + (toEnum $ ny - iiy) * dty
                                                 , -1
                                                 , -1
                                                 )
@@ -179,11 +186,11 @@ hitGrid (nx, ny, nz) bbox m ray =
                                            , -1
                                            )
                                       else if dz > 0
-                                           then ( tz_min + (iiz + 1) * dtz
+                                           then ( tz_min + (toEnum iiz + 1) * dtz
                                                 , 1
                                                 , nz
                                                 )
-                                           else ( tz_min + (toEnum nz - iiz) * dtz
+                                           else ( tz_min + (toEnum $ nz - iiz) * dtz
                                                 , -1
                                                 , -1
                                                 )
@@ -205,7 +212,7 @@ hitGrid (nx, ny, nz) bbox m ray =
                                      Nothing -> rest
                                      Just obj -> case (obj^.hit) ray of
                                                    Nothing -> rest
-                                                   Just (sh, t) -> if t < txn then return (Just (sh, t)) else rest
+                                                   Just (sh, t) -> if t < txn then return (Just ((ixv, iyv, izv), sh, t)) else rest
                          hitY = do let rest = do
                                          modify $ \s -> s { tyNext = tyNext s + dty, iy = iy s + iy_step }
                                          iy' <- gets iy
@@ -215,7 +222,7 @@ hitGrid (nx, ny, nz) bbox m ray =
                                      Nothing -> rest
                                      Just obj -> case (obj^.hit) ray of
                                                    Nothing -> rest
-                                                   Just (sh, t) -> if t < tyn then return (Just (sh, t)) else rest
+                                                   Just (sh, t) -> if t < tyn then return (Just ((ixv, iyv, izv), sh, t)) else rest
                          hitZ = do let rest = do
                                          modify $ \s -> s { tzNext = tzNext s + dtz, iz = iz s + iz_step }
                                          iz' <- gets iz
@@ -225,6 +232,6 @@ hitGrid (nx, ny, nz) bbox m ray =
                                      Nothing -> rest
                                      Just obj -> case (obj^.hit) ray of
                                                    Nothing -> rest
-                                                   Just (sh, t) -> if t < tzn then return (Just (sh, t)) else rest
+                                                   Just (sh, t) -> if t < tzn then return (Just ((ixv, iyv, izv), sh, t)) else rest
 
                      if txn < tyn && txn < tzn then hitX else if tyn < tzn then hitY else hitZ
