@@ -27,8 +27,9 @@ schemes =
     , ("grid", AccelGrid)
     ]
 
-mkOpts :: Int -> IO [OptDescr Arg]
-mkOpts maxc =
+mkOpts :: IO [OptDescr Arg]
+mkOpts = do
+    maxc <- getNumProcessors
     return [ Option "h" ["help"] (NoArg Help) "This help output"
            , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
@@ -64,7 +65,7 @@ updateConfig c (SchemeArg s) = do
 usage :: IO ()
 usage = do
   pn <- getProgName
-  opts <- mkOpts =<< getNumProcessors
+  opts <- mkOpts
   let header = "Usage: " ++ pn ++ " [options] [scene name]"
   putStrLn $ usageInfo header opts
   exitFailure
@@ -72,7 +73,7 @@ usage = do
 main :: IO ()
 main = do
   args <- getArgs
-  opts <- mkOpts =<< getNumProcessors
+  opts <- mkOpts
   let (os, rest, _) = getOpt Permute opts args
 
   defCfg <- defaultConfig
