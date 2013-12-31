@@ -58,8 +58,10 @@ data TraceState =
                , _traceNumSampleSets :: Int
                }
 
-data AccelScheme = AccelGrid
-                 | AccelNone
+data AccelScheme =
+    AccelScheme { _schemeName :: String
+                , _schemeApply :: World -> World
+                }
 
 data Config =
     Config { vpSampler :: Sampler (Float, Float)
@@ -111,3 +113,4 @@ makeLenses ''BRDFData
 makeLenses ''Light
 makeLenses ''Material
 makeLenses ''BBox
+makeLenses ''AccelScheme

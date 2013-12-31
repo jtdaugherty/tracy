@@ -21,12 +21,6 @@ data Arg = Help
          | CPUs String
            deriving (Eq, Show)
 
-schemes :: [(String, AccelScheme)]
-schemes =
-    [ ("none", AccelNone)
-    , ("grid", AccelGrid)
-    ]
-
 mkOpts :: IO [OptDescr Arg]
 mkOpts = do
     maxc <- getNumProcessors
@@ -35,7 +29,7 @@ mkOpts = do
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
            , Option "a" ["accel"] (ReqArg SchemeArg "SCHEME")
-             ("Acceleration scheme\nValid options:\n " ++ intercalate "\n " (fst <$> schemes))
+             ("Acceleration scheme\nValid options:\n " ++ intercalate "\n " (accelSchemes^..folded.schemeName))
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
              ("Number of CPUs to use (max: " ++ show maxc ++ ")")
            ]
@@ -58,9 +52,10 @@ updateConfig c (CPUs s) = do
             return $ c { cpuCount = cnt }
         _ -> usage >> exitFailure
 updateConfig c (SchemeArg s) = do
-    case lookup s schemes of
-        Nothing -> usage >> exitFailure
-        Just v -> return $ c { accelScheme = v }
+    case [sch | sch <- accelSchemes, sch^.schemeName == s] of
+        [] -> usage >> exitFailure
+        [v] -> return $ c { accelScheme = v }
+        _ -> error "BUG: too many acceleration schemes matched!"
 
 usage :: IO ()
 usage = do
@@ -96,7 +91,7 @@ main = do
          case lookup n scenes of
            Nothing -> putStrLn $ "No such scene: " ++ n
            Just (c, w) -> do
-               let w1 = applyAccelScheme (accelScheme cfg) w
+               let w1 = (cfg^.to accelScheme.schemeApply) w
                    w2 = case forceShadows of
                           Nothing -> w1
                           Just v -> w1 & worldShadows .~ v

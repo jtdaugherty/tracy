@@ -8,7 +8,6 @@ import Control.DeepSeq
 import Codec.BMP
 import Data.Time.Clock
 import Data.Colour
-import Data.Maybe
 import System.IO
 import qualified Data.ByteString as B
 import qualified Data.Vector as V
@@ -25,30 +24,28 @@ defaultConfig = do
     n <- getNumProcessors
     return $ Config { vpSampler = regular
                     , sampleRoot = 4
-                    , accelScheme = AccelGrid
+                    , accelScheme = gridScheme
                     , cpuCount = n
                     }
 
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
 
-showAccel :: AccelScheme -> String
-showAccel AccelNone = "none"
-showAccel AccelGrid = "grid"
+noScheme :: AccelScheme
+noScheme = AccelScheme "none" id
 
-applyAccelScheme :: AccelScheme -> World -> World
-applyAccelScheme AccelNone w = w
-applyAccelScheme AccelGrid w =
-    let gObjs = [o | o <- _objects w, isJust $ o^.bounding_box ]
-        objs = [o | o <- _objects w, not $ isJust $ o^.bounding_box ]
-    in w { _objects = grid gObjs:objs }
+accelSchemes :: [AccelScheme]
+accelSchemes =
+    [ noScheme
+    , gridScheme
+    ]
 
 render :: Config -> Camera ThinLens -> World -> FilePath -> IO ()
 render cfg cam w filename = do
   let root = cfg^.to sampleRoot
   putStrLn $ "Rendering " ++ filename ++ " ..."
   putStrLn $ "  Sampler root: " ++ (root^.to show) ++ " (" ++ (root^.to (**2).to show) ++ " samples per pixel)"
-  putStrLn $ "  Acceleration: " ++ (showAccel $ cfg^.to accelScheme)
+  putStrLn $ "  Acceleration: " ++ (cfg^.to accelScheme.schemeName)
   putStrLn $ "  Objects: " ++ (w^.objects.to length.to show)
   putStrLn $ "  Shadows: " ++ (if w^.worldShadows then "yes" else "no")
 
