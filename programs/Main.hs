@@ -34,9 +34,9 @@ mkOpts maxc =
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
            , Option "a" ["accel"] (ReqArg SchemeArg "SCHEME")
-           ("Acceleration scheme\nValid options:\n " ++ intercalate "\n " (fst <$> schemes))
+             ("Acceleration scheme\nValid options:\n " ++ intercalate "\n " (fst <$> schemes))
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
-           ("Number of CPUs to use (max: " ++ show maxc ++ ")")
+             ("Number of CPUs to use (max: " ++ show maxc ++ ")")
            ]
 
 updateConfig :: Config -> Arg -> IO Config
