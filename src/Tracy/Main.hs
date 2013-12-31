@@ -23,7 +23,7 @@ defaultConfig = do
     n <- getNumProcessors
     return $ Config { vpSampler = regular
                     , sampleRoot = 4
-                    , accelScheme = AccelNone
+                    , accelScheme = AccelGrid
                     , cpuCount = n
                     }
 
