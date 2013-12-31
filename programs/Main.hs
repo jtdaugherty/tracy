@@ -3,7 +3,6 @@ module Main where
 import Control.Applicative
 import Control.Monad
 import Control.Lens
-import Data.Maybe
 import Data.List (intercalate)
 import System.Console.GetOpt
 import System.Environment
@@ -13,7 +12,6 @@ import GHC.Conc
 import Tracy.Main
 import Tracy.Scenes
 import Tracy.Types
-import Tracy.Grid
 
 data Arg = Help
          | SampleRoot String
@@ -97,11 +95,7 @@ main = do
          case lookup n scenes of
            Nothing -> putStrLn $ "No such scene: " ++ n
            Just (c, w) -> do
-               let w1 = case accelScheme cfg of
-                                  AccelNone -> w
-                                  AccelGrid -> let gObjs = [o | o <- _objects w, isJust $ o^.bounding_box ]
-                                                   objs = [o | o <- _objects w, not $ isJust $ o^.bounding_box ]
-                                               in w { _objects = grid gObjs:objs }
+               let w1 = applyAccelScheme (accelScheme cfg) w
                    w2 = case forceShadows of
                           Nothing -> w1
                           Just v -> w1 & worldShadows .~ v

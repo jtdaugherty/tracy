@@ -8,6 +8,7 @@ import Control.DeepSeq
 import Codec.BMP
 import Data.Time.Clock
 import Data.Colour
+import Data.Maybe
 import System.IO
 import qualified Data.ByteString as B
 import qualified Data.Vector as V
@@ -17,6 +18,7 @@ import Tracy.Types
 import Tracy.Samplers
 import Tracy.Cameras
 import Tracy.Util
+import Tracy.Grid
 
 defaultConfig :: IO Config
 defaultConfig = do
@@ -33,6 +35,13 @@ instance NFData Colour where
 showAccel :: AccelScheme -> String
 showAccel AccelNone = "none"
 showAccel AccelGrid = "grid"
+
+applyAccelScheme :: AccelScheme -> World -> World
+applyAccelScheme AccelNone w = w
+applyAccelScheme AccelGrid w =
+    let gObjs = [o | o <- _objects w, isJust $ o^.bounding_box ]
+        objs = [o | o <- _objects w, not $ isJust $ o^.bounding_box ]
+    in w { _objects = grid gObjs:objs }
 
 render :: Config -> Camera ThinLens -> World -> FilePath -> IO ()
 render cfg cam w filename = do
