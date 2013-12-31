@@ -119,7 +119,7 @@ world5 =
         ss y e = [ sphere (V3 xz y xz) 30.0 (mkMat e)
                    | (xz, mkMat) <- pairs
                  ]
-    in ( defCamera & cameraData.lensRadius .~ 25.0, world spheres [] )
+    in ( defCamera & cameraData.lensRadius .~ 25.0, world spheres [] & worldShadows .~ False )
 
 world6 :: (Camera ThinLens, World)
 world6 =
