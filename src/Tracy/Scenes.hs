@@ -33,7 +33,7 @@ defCamera =
                        1.0
                        300
                        300
-                       25.0
+                       0
                        (toUnitDisk jittered)
 
 mat :: Color -> Material
@@ -60,19 +60,19 @@ world os ls = World { _viewPlane = defaultVp
 world1 :: (Camera ThinLens, World)
 world1 =
     let s = sphere (V3 (-40) 0 0) 85.0 (ph cRed 100)
-    in ( defCamera & cameraData.lensRadius .~ 0, world [s] [] )
+    in ( defCamera, world [s] [] )
 
 world2 :: (Camera ThinLens, World)
 world2 =
     let s = sphere (V3 0 0 41) 10.0 (mat cBlue)
         s2 = sphere (V3 0 0 0) 40.0 (mat cGreen)
-    in ( defCamera & cameraData.lensRadius .~ 0, world [s, s2] [] )
+    in ( defCamera, world [s, s2] [] )
 
 world3 :: (Camera ThinLens, World)
 world3 =
     let s = sphere (V3 0 60 80) 30.0 (mat cBlue)
         p = plane (V3 0 0 0) (V3 0 1 0) (mat cGreen)
-    in ( defCamera & cameraData.lensRadius .~ 0, world [s, p] [] )
+    in ( defCamera, world [s, p] [] )
 
 world4 :: (Camera ThinLens, World)
 world4 =
@@ -85,7 +85,7 @@ world4 =
         b3 = box (V3 (-150) 0 25) (V3 (-100) 75 75) (mat cYellow)
         b4 = box (V3 (-150) 0 (-75)) (V3 (-100) 75 (-25)) (mat cWhite)
         t1 = tri (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (mat cWhite)
-    in ( defCamera & cameraData.lensRadius .~ 0, world [t1, s, p, s2, s3, b1, b2, b3, b4] [] & worldShadows .~ False)
+    in ( defCamera, world [t1, s, p, s2, s3, b1, b2, b3, b4] [] & worldShadows .~ False)
 
 world5 :: (Camera ThinLens, World)
 world5 =
@@ -119,13 +119,13 @@ world5 =
         ss y e = [ sphere (V3 xz y xz) 30.0 (mkMat e)
                    | (xz, mkMat) <- pairs
                  ]
-    in ( defCamera, world spheres [] )
+    in ( defCamera & cameraData.lensRadius .~ 25.0, world spheres [] )
 
 world6 :: (Camera ThinLens, World)
 world6 =
     let s = sphere (V3 0 60 0) 30.0 (ph cBlue 100)
         p = plane (V3 0 0 0) (V3 0 1 0) (mat cGreen)
-    in ( defCamera & cameraData.lensRadius .~ 0, world [s, p] [] )
+    in ( defCamera, world [s, p] [] )
 
 scenes :: [(String, (Camera ThinLens, World))]
 scenes =
