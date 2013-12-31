@@ -29,15 +29,17 @@ schemes =
     , ("grid", AccelGrid)
     ]
 
-opts :: [OptDescr Arg]
-opts = [ Option "h" ["help"] (NoArg Help) "This help output"
-       , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
-       , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
-       , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
-       , Option "a" ["accel"] (ReqArg SchemeArg "SCHEME")
-         ("Acceleration scheme (options: " ++ intercalate ", " (fst <$> schemes) ++ ")")
-       , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT") "Number of CPUs to use"
-       ]
+mkOpts :: Int -> IO [OptDescr Arg]
+mkOpts maxc =
+    return [ Option "h" ["help"] (NoArg Help) "This help output"
+           , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
+           , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
+           , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
+           , Option "a" ["accel"] (ReqArg SchemeArg "SCHEME")
+           ("Acceleration scheme\nValid options:\n " ++ intercalate "\n " (fst <$> schemes))
+           , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
+           ("Number of CPUs to use (max: " ++ show maxc ++ ")")
+           ]
 
 updateConfig :: Config -> Arg -> IO Config
 updateConfig c Help = return c
@@ -64,6 +66,7 @@ updateConfig c (SchemeArg s) = do
 usage :: IO ()
 usage = do
   pn <- getProgName
+  opts <- mkOpts =<< getNumProcessors
   let header = "Usage: " ++ pn ++ " [options] [scene name]"
   putStrLn $ usageInfo header opts
   exitFailure
@@ -71,6 +74,7 @@ usage = do
 main :: IO ()
 main = do
   args <- getArgs
+  opts <- mkOpts =<< getNumProcessors
   let (os, rest, _) = getOpt Permute opts args
 
   defCfg <- defaultConfig
