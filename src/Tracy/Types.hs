@@ -49,6 +49,7 @@ data World =
           , _objects :: [Object]
           , _lights :: [Light]
           , _ambient :: Light
+          , _worldShadows :: Bool
           }
 
 data TraceState =
@@ -63,8 +64,8 @@ data AccelScheme = AccelGrid
 data Config =
     Config { vpSampler :: Sampler (Float, Float)
            , sampleRoot :: Float
-           , shadows :: Bool
            , accelScheme :: AccelScheme
+           , cpuCount :: Int
            }
 
 data BRDF =

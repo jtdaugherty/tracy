@@ -2,7 +2,6 @@
 module Tracy.Main where
 
 import Control.Applicative
-import Control.Concurrent (getNumCapabilities)
 import Control.Parallel.Strategies
 import Control.Lens
 import Control.DeepSeq
@@ -12,29 +11,37 @@ import Data.Colour
 import System.IO
 import qualified Data.ByteString as B
 import qualified Data.Vector as V
+import GHC.Conc
 
 import Tracy.Types
 import Tracy.Samplers
 import Tracy.Cameras
 import Tracy.Util
 
-defaultConfig :: Config
-defaultConfig =
-    Config { vpSampler = regular
-           , sampleRoot = 4
-           , shadows = True
-           , accelScheme = AccelNone
-           }
+defaultConfig :: IO Config
+defaultConfig = do
+    n <- getNumProcessors
+    return $ Config { vpSampler = regular
+                    , sampleRoot = 4
+                    , accelScheme = AccelNone
+                    , cpuCount = n
+                    }
 
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
+
+showAccel :: AccelScheme -> String
+showAccel AccelNone = "none"
+showAccel AccelGrid = "grid"
 
 render :: Config -> Camera ThinLens -> World -> FilePath -> IO ()
 render cfg cam w filename = do
   let root = cfg^.to sampleRoot
   putStrLn $ "Rendering " ++ filename ++ " ..."
   putStrLn $ "  Sampler root: " ++ (root^.to show) ++ " (" ++ (root^.to (**2).to show) ++ " samples per pixel)"
+  putStrLn $ "  Acceleration: " ++ (showAccel $ cfg^.to accelScheme)
   putStrLn $ "  Objects: " ++ (w^.objects.to length.to show)
+  putStrLn $ "  Shadows: " ++ (if w^.worldShadows then "yes" else "no")
 
   t1 <- getCurrentTime
 
@@ -52,8 +59,7 @@ render cfg cam w filename = do
   let renderer = cam^.cameraRenderWorld
       worker r = renderer cam squareSamples diskSamples numSets cfg r w
 
-  numCaps <- getNumCapabilities
-  putStrLn $ "  Using CPUs: " ++ show numCaps
+  putStrLn $ "  Using CPUs: " ++ show (cfg^.to cpuCount)
   putStr "  Rendering ... "
   hFlush stdout
 

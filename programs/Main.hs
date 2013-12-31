@@ -18,7 +18,9 @@ import Tracy.Grid
 data Arg = Help
          | SampleRoot String
          | NoShadows
+         | Shadows
          | SchemeArg String
+         | CPUs String
            deriving (Eq, Show)
 
 schemes :: [(String, AccelScheme)]
@@ -29,16 +31,31 @@ schemes =
 
 opts :: [OptDescr Arg]
 opts = [ Option "h" ["help"] (NoArg Help) "This help output"
-       , Option "a" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
-       , Option "n" ["no-shadows"] (NoArg NoShadows) "Turn off shadows"
-       , Option "s" ["scheme"] (ReqArg SchemeArg "SCHEME")
+       , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
+       , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
+       , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
+       , Option "a" ["accel"] (ReqArg SchemeArg "SCHEME")
          ("Acceleration scheme (options: " ++ intercalate ", " (fst <$> schemes) ++ ")")
+       , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT") "Number of CPUs to use"
        ]
 
 updateConfig :: Config -> Arg -> IO Config
 updateConfig c Help = return c
 updateConfig c (SampleRoot s) = return $ c { sampleRoot = read s }
-updateConfig c NoShadows = return $ c { shadows = False }
+updateConfig c NoShadows = return c
+updateConfig c Shadows = return c
+updateConfig c (CPUs s) = do
+    case reads s of
+        [(cnt, _)] -> do
+            avail <- getNumProcessors
+            when (cnt < 1 || cnt > avail) $ do
+                putStrLn $ concat [ "Error:\n"
+                                  , "Requested CPUs: " ++ show cnt
+                                  , "\nAvailable: " ++ show avail
+                                  ]
+                exitFailure
+            return $ c { cpuCount = cnt }
+        _ -> usage >> exitFailure
 updateConfig c (SchemeArg s) = do
     case lookup s schemes of
         Nothing -> usage >> exitFailure
@@ -53,26 +70,35 @@ usage = do
 
 main :: IO ()
 main = do
-  setNumCapabilities =<< getNumProcessors
-
   args <- getArgs
   let (os, rest, _) = getOpt Permute opts args
 
-  cfg <- foldM updateConfig defaultConfig os
+  defCfg <- defaultConfig
+  cfg <- foldM updateConfig defCfg os
 
   when (Help `elem` os) usage
 
-  let toRender = if null rest
+  let forceShadows = if Shadows `elem` os
+                     then Just True
+                     else if NoShadows `elem` os
+                          then Just False
+                          else Nothing
+      toRender = if null rest
                  then fst <$> scenes
                  else rest
+
+  setNumCapabilities $ cpuCount cfg
 
   forM_ toRender $ \n -> do
          case lookup n scenes of
            Nothing -> putStrLn $ "No such scene: " ++ n
            Just (c, w) -> do
-               let accelWorld = case accelScheme cfg of
+               let w1 = case accelScheme cfg of
                                   AccelNone -> w
                                   AccelGrid -> let gObjs = [o | o <- _objects w, isJust $ o^.bounding_box ]
                                                    objs = [o | o <- _objects w, not $ isJust $ o^.bounding_box ]
                                                in w { _objects = grid gObjs:objs }
-               render cfg c accelWorld $ n ++ ".bmp"
+                   w2 = case forceShadows of
+                          Nothing -> w1
+                          Just v -> w1 & worldShadows .~ v
+               render cfg c w2 $ n ++ ".bmp"

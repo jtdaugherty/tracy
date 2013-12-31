@@ -116,7 +116,7 @@ thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
                         }
           in case hitAnObject w ray of
                Nothing -> w^.bgColor
-               Just (sh, _t) -> (sh^.material.doShading) (config^.to shadows) w (sh & shadeRay .~ ray)
+               Just (sh, _t) -> (sh^.material.doShading) (w^.worldShadows) w (sh & shadeRay .~ ray)
 
   in colors
 
