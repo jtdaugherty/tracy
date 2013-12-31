@@ -85,7 +85,7 @@ world4 =
         b3 = box (V3 (-150) 0 25) (V3 (-100) 75 75) (mat cYellow)
         b4 = box (V3 (-150) 0 (-75)) (V3 (-100) 75 (-25)) (mat cWhite)
         t1 = tri (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (mat cWhite)
-    in ( defCamera, world [t1, s, p, s2, s3, b1, b2, b3, b4] [] & worldShadows .~ False)
+    in ( defCamera, world [t1, s, p, s2, s3, b1, b2, b3, b4] [] )
 
 world5 :: (Camera ThinLens, World)
 world5 =
