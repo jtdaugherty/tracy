@@ -53,11 +53,11 @@ updateConfig c (CPUs s) = do
         _ -> usage >> exitFailure
 updateConfig c (SchemeArg s) = do
     case [sch | sch <- accelSchemes, sch^.schemeName == s] of
-        [] -> usage >> exitFailure
+        [] -> usage
         [v] -> return $ c & accelScheme .~ v
         _ -> error "BUG: too many acceleration schemes matched!"
 
-usage :: IO ()
+usage :: IO a
 usage = do
   pn <- getProgName
   opts <- mkOpts
