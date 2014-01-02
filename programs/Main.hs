@@ -36,7 +36,7 @@ mkOpts = do
 
 updateConfig :: Config -> Arg -> IO Config
 updateConfig c Help = return c
-updateConfig c (SampleRoot s) = return $ c { sampleRoot = read s }
+updateConfig c (SampleRoot s) = return $ c & sampleRoot .~ read s
 updateConfig c NoShadows = return c
 updateConfig c Shadows = return c
 updateConfig c (CPUs s) = do
@@ -49,12 +49,12 @@ updateConfig c (CPUs s) = do
                                   , "\nAvailable: " ++ show avail
                                   ]
                 exitFailure
-            return $ c { cpuCount = cnt }
+            return $ c & cpuCount .~ cnt
         _ -> usage >> exitFailure
 updateConfig c (SchemeArg s) = do
     case [sch | sch <- accelSchemes, sch^.schemeName == s] of
         [] -> usage >> exitFailure
-        [v] -> return $ c { accelScheme = v }
+        [v] -> return $ c & accelScheme .~ v
         _ -> error "BUG: too many acceleration schemes matched!"
 
 usage :: IO ()
@@ -85,13 +85,13 @@ main = do
                  then fst <$> scenes
                  else rest
 
-  setNumCapabilities $ cpuCount cfg
+  setNumCapabilities $ cfg^.cpuCount
 
   forM_ toRender $ \n -> do
          case lookup n scenes of
            Nothing -> putStrLn $ "No such scene: " ++ n
            Just (c, w) -> do
-               let w1 = (cfg^.to accelScheme.schemeApply) w
+               let w1 = (cfg^.accelScheme.schemeApply) w
                    w2 = case forceShadows of
                           Nothing -> w1
                           Just v -> w1 & worldShadows .~ v

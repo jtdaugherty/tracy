@@ -85,7 +85,7 @@ maxToOne (Colour r g b) = Colour r' g' b'
 
 thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
-  let root  = config^.to sampleRoot
+  let root  = config^.sampleRoot
       newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
       vp = w^.viewPlane
       colors = getCol (toEnum theRow) <$> [0..vp^.hres-1]

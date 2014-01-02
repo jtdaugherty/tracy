@@ -22,10 +22,10 @@ import Tracy.Grid
 defaultConfig :: IO Config
 defaultConfig = do
     n <- getNumProcessors
-    return $ Config { vpSampler = regular
-                    , sampleRoot = 4
-                    , accelScheme = gridScheme
-                    , cpuCount = n
+    return $ Config { _vpSampler = regular
+                    , _sampleRoot = 4
+                    , _accelScheme = gridScheme
+                    , _cpuCount = n
                     }
 
 instance NFData Colour where
@@ -42,22 +42,22 @@ accelSchemes =
 
 render :: Config -> Camera ThinLens -> World -> FilePath -> IO ()
 render cfg cam w filename = do
-  let root = cfg^.to sampleRoot
+  let root = cfg^.sampleRoot
   putStrLn $ "Rendering " ++ filename ++ " ..."
   putStrLn $ "  Sampler root: " ++ (root^.to show) ++ " (" ++ (root^.to (**2).to show) ++ " samples per pixel)"
-  putStrLn $ "  Acceleration: " ++ (cfg^.to accelScheme.schemeName)
+  putStrLn $ "  Acceleration: " ++ (cfg^.accelScheme.schemeName)
   putStrLn $ "  Objects: " ++ (w^.objects.to length.to show)
   putStrLn $ "  Shadows: " ++ (if w^.worldShadows then "yes" else "no")
 
   t1 <- getCurrentTime
 
   let numSets = fromEnum (w^.viewPlane.hres * 2.3)
-      squareSampler = cfg^.to vpSampler
+      squareSampler = cfg^.vpSampler
       diskSampler = cam^.cameraData.lensSampler
 
   -- Generate sample data for square and disk samplers
-  squareSamples <- V.replicateM numSets $ squareSampler (cfg^.to sampleRoot)
-  diskSamples <- V.replicateM numSets $ diskSampler (cfg^.to sampleRoot)
+  squareSamples <- V.replicateM numSets $ squareSampler (cfg^.sampleRoot)
+  diskSamples <- V.replicateM numSets $ diskSampler (cfg^.sampleRoot)
 
   putStrLn $ "  Square sample sets: " ++ (show $ V.length squareSamples)
   putStrLn $ "  Disk sample sets: " ++ (show $ V.length diskSamples)
@@ -65,7 +65,7 @@ render cfg cam w filename = do
   let renderer = cam^.cameraRenderWorld
       worker r = renderer cam squareSamples diskSamples numSets cfg r w
 
-  putStrLn $ "  Using CPUs: " ++ show (cfg^.to cpuCount)
+  putStrLn $ "  Using CPUs: " ++ show (cfg^.cpuCount)
   putStr "  Rendering ... "
   hFlush stdout
 

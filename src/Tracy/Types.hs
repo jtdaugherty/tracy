@@ -64,10 +64,10 @@ data AccelScheme =
                 }
 
 data Config =
-    Config { vpSampler :: Sampler (Float, Float)
-           , sampleRoot :: Float
-           , accelScheme :: AccelScheme
-           , cpuCount :: Int
+    Config { _vpSampler :: Sampler (Float, Float)
+           , _sampleRoot :: Float
+           , _accelScheme :: AccelScheme
+           , _cpuCount :: Int
            }
 
 data BRDF =
@@ -114,3 +114,4 @@ makeLenses ''Light
 makeLenses ''Material
 makeLenses ''BBox
 makeLenses ''AccelScheme
+makeLenses ''Config
