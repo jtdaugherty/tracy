@@ -15,7 +15,7 @@ library
   GHC-Options:         -O2 -Wall
   build-depends:
     base == 4.*,
-    AC-Colour,
+    AC-Colour >= 1.1.6,
     lens,
     containers,
     linear,
