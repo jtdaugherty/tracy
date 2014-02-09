@@ -1,4 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Main where
 
@@ -85,7 +84,7 @@ render cfg cam w filename = do
 
   result <- forM (zip ([1..]::[Int]) chunks) $
     \(chunkId, chunkRows) -> do
-        let !r = parMap (rpar `dot` rdeepseq) worker chunkRows
+        let r = parMap (rpar `dot` rdeepseq) worker chunkRows
         r `deepseq` return ()
         putStr $ "\r  Rendering: " ++ (show chunkId) ++ "/" ++ show (length chunks)
         hFlush stdout
