@@ -104,5 +104,5 @@ main = do
                           Just v -> w1 & worldShadows .~ v
                    filename = n ++ ".bmp"
 
-               putStrLn $ "Rendering " ++ show n ++ ".bmp ..."
+               putStrLn $ "Rendering " ++ filename ++ " ..."
                render cfg c w2 consoleHandler (fileHandler filename)
