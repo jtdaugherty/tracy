@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Main where
 
@@ -5,6 +6,7 @@ import Control.Applicative
 import Control.Parallel.Strategies
 import Control.Lens
 import Control.DeepSeq
+import Control.Monad
 import Codec.BMP
 import Data.Time.Clock
 import Data.Colour
@@ -26,6 +28,7 @@ defaultConfig = do
                     , _sampleRoot = 4
                     , _accelScheme = gridScheme
                     , _cpuCount = n
+                    , _workChunks = 10
                     }
 
 instance NFData Colour where
@@ -66,17 +69,33 @@ render cfg cam w filename = do
       worker r = renderer cam squareSamples diskSamples numSets cfg r w
 
   putStrLn $ "  Using CPUs: " ++ show (cfg^.cpuCount)
-  putStr "  Rendering ... "
   hFlush stdout
 
-  let rows = [0..(fromEnum $ w^.viewPlane.vres-1)]
-      vs = parMap (rpar `dot` rdeepseq) worker rows
-      imgBytes = B.concat $ B.concat <$> (getColorBytes <$>) <$> vs
+  let numChunks = cfg^.workChunks
+      rowsPerChunk = w^.viewPlane.vres / (toEnum numChunks)
+      chunk f xs = result : chunk f rest where (result, rest) = f xs
+      chunks = filter (not . null) $ take (numChunks + 1) $ chunk (splitAt (fromEnum rowsPerChunk)) rows
+      rows = [0..(fromEnum $ w^.viewPlane.vres-1)]
+
+  putStrLn $ "  Chunks: " ++ (show $ length chunks)
+  putStrLn $ "  Pixel rows per chunk: " ++ (show rowsPerChunk)
+
+  putStr $ "  Rendering: 0/" ++ show (length chunks)
+  hFlush stdout
+
+  result <- forM (zip ([1..]::[Int]) chunks) $
+    \(chunkId, chunkRows) -> do
+        let !r = parMap (rpar `dot` rdeepseq) worker chunkRows
+        r `deepseq` return ()
+        putStr $ "\r  Rendering: " ++ (show chunkId) ++ "/" ++ show (length chunks)
+        hFlush stdout
+        return r
+
+  let imgBytes = B.concat $ B.concat <$> (getColorBytes <$>) <$> (concat result)
       img = packRGBA32ToBMP (fromEnum $ w^.viewPlane^.hres)
                             (fromEnum $ w^.viewPlane^.vres) imgBytes
-
   writeBMP filename img
 
   t2 <- getCurrentTime
 
-  putStrLn $ "done.\n  Total time: " ++ (show $ diffUTCTime t2 t1)
+  putStrLn $ "\n  Total time: " ++ (show $ diffUTCTime t2 t1)

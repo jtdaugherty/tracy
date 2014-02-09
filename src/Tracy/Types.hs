@@ -68,6 +68,7 @@ data Config =
            , _sampleRoot :: Float
            , _accelScheme :: AccelScheme
            , _cpuCount :: Int
+           , _workChunks :: Int
            }
 
 data BRDF =

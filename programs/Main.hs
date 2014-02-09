@@ -19,6 +19,7 @@ data Arg = Help
          | Shadows
          | SchemeArg String
          | CPUs String
+         | Chunks String
            deriving (Eq, Show)
 
 mkOpts :: IO [OptDescr Arg]
@@ -32,6 +33,8 @@ mkOpts = do
              ("Acceleration scheme\nValid options:\n " ++ intercalate "\n " (accelSchemes^..folded.schemeName))
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
              ("Number of CPUs to use (max: " ++ show maxc ++ ")")
+           , Option "k" ["chunks"] (ReqArg Chunks "COUNT")
+             ("Number of work chunks to use")
            ]
 
 updateConfig :: Config -> Arg -> IO Config
@@ -39,6 +42,10 @@ updateConfig c Help = return c
 updateConfig c (SampleRoot s) = return $ c & sampleRoot .~ read s
 updateConfig c NoShadows = return c
 updateConfig c Shadows = return c
+updateConfig c (Chunks s) =
+    case reads s of
+        [(cnt, _)] -> return $ c & workChunks .~ cnt
+        _ -> usage >> exitFailure
 updateConfig c (CPUs s) = do
     case reads s of
         [(cnt, _)] -> do
