@@ -7,6 +7,7 @@ import Control.Lens
 import Control.DeepSeq
 import Control.Monad
 import Control.Concurrent.Chan
+import Control.Concurrent.MVar
 import Codec.BMP
 import Data.List
 import Data.Time.Clock
@@ -91,8 +92,15 @@ consoleHandler chan = do
            return False else
            return True
 
-render :: Config -> Camera ThinLens -> World -> Chan InfoEvent -> Chan DataEvent -> IO ()
-render cfg cam w iChan dChan = do
+render :: Config -> Camera ThinLens -> World -> (Chan InfoEvent -> IO ()) -> (Chan DataEvent -> IO ()) -> IO ()
+render cfg cam w iHandler dHandler = do
+  iChan <- newChan
+  dChan <- newChan
+  iVar <- newEmptyMVar
+  dVar <- newEmptyMVar
+  _ <- forkIO $ iHandler iChan >> putMVar iVar ()
+  _ <- forkIO $ dHandler dChan >> putMVar dVar ()
+
   let numSets = fromEnum (w^.viewPlane.hres * 2.3)
       squareSampler = cfg^.vpSampler
       diskSampler = cam^.cameraData.lensSampler
@@ -146,3 +154,6 @@ render cfg cam w iChan dChan = do
 
   writeChan dChan DShutdown
   writeChan iChan IShutdown
+
+  takeMVar iVar
+  takeMVar dVar
