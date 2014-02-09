@@ -6,7 +6,9 @@ import Control.Parallel.Strategies
 import Control.Lens
 import Control.DeepSeq
 import Control.Monad
+import Control.Concurrent.Chan
 import Codec.BMP
+import Data.List
 import Data.Time.Clock
 import Data.Colour
 import System.IO
@@ -42,59 +44,105 @@ accelSchemes =
     , gridScheme
     ]
 
-render :: Config -> Camera ThinLens -> World -> FilePath -> IO ()
-render cfg cam w filename = do
-  let root = cfg^.sampleRoot
-  putStrLn $ "Rendering " ++ filename ++ " ..."
-  putStrLn $ "  Sampler root: " ++ (root^.to show) ++ " (" ++ (root^.to (**2).to show) ++ " samples per pixel)"
-  putStrLn $ "  Acceleration: " ++ (cfg^.accelScheme.schemeName)
-  putStrLn $ "  Objects: " ++ (w^.objects.to length.to show)
-  putStrLn $ "  Shadows: " ++ (if w^.worldShadows then "yes" else "no")
+fileHandler :: FilePath -> Chan DataEvent -> IO ()
+fileHandler filename chan = do
+  DNumChunks chunks <- readChan chan
+  DImageSize cols rows <- readChan chan
 
-  t1 <- getCurrentTime
+  DStarted <- readChan chan
 
+  result <- forM [1..chunks] $ \_ -> do
+      DChunkFinished ch rs <- readChan chan
+      return (ch, rs)
+
+  DFinished <- readChan chan
+
+  let imgBytes = B.concat $ B.concat <$> (getColorBytes <$>) <$> (concat $ snd <$> sort result)
+      img = packRGBA32ToBMP (fromEnum rows) (fromEnum cols) imgBytes
+
+  writeBMP filename img
+
+consoleHandler :: Chan InfoEvent -> IO ()
+consoleHandler chan = do
+  cont <- handleEvent
+  when cont $ consoleHandler chan
+
+  where
+    handleEvent = do
+        ev <- readChan chan
+        case ev of
+            ISampleRoot root -> putStrLn $ "  Sampler root: " ++ (show root) ++ " (" ++ (show $ root ** 2) ++ " samples per pixel)"
+            IAccelSchemeName name -> putStrLn $ "  Acceleration: " ++ name
+            INumObjects n -> putStrLn $ "  Objects: " ++ show n
+            IShadows val -> putStrLn $ "  Shadows: " ++ (if val then "yes" else "no")
+            INumSquareSampleSets n -> putStrLn $ "  Square sample sets: " ++ show n
+            INumDiskSampleSets n -> putStrLn $ "  Disk sample sets: " ++ show n
+            INumCPUs n -> putStrLn $ "  Using CPUs: " ++ show n
+            INumRowsPerChunk n -> putStrLn $ "  Pixel rows per chunk: " ++ show n
+            INumChunks n -> putStrLn $ "  Chunks: " ++ show n
+            IStartTime t -> putStrLn $ "  Start time: " ++ show t
+            IStarted -> (putStr $ "\r  Rendering:") >> hFlush stdout
+            IChunkFinished cId total -> (putStr $ "\r  Rendering: " ++ show cId ++ "/" ++ show total) >> hFlush stdout
+            IFinishTime t -> putStrLn $ "  Finish time: " ++ show t
+            ITotalTime t -> putStrLn $ "  Total time: " ++ show t
+            IFinished -> putStrLn ""
+            IShutdown -> putStrLn "  Done."
+        if ev == IShutdown then
+           return False else
+           return True
+
+render :: Config -> Camera ThinLens -> World -> Chan InfoEvent -> Chan DataEvent -> IO ()
+render cfg cam w iChan dChan = do
   let numSets = fromEnum (w^.viewPlane.hres * 2.3)
       squareSampler = cfg^.vpSampler
       diskSampler = cam^.cameraData.lensSampler
-
-  -- Generate sample data for square and disk samplers
-  squareSamples <- V.replicateM numSets $ squareSampler (cfg^.sampleRoot)
-  diskSamples <- V.replicateM numSets $ diskSampler (cfg^.sampleRoot)
-
-  putStrLn $ "  Square sample sets: " ++ (show $ V.length squareSamples)
-  putStrLn $ "  Disk sample sets: " ++ (show $ V.length diskSamples)
-
-  let renderer = cam^.cameraRenderWorld
-      worker r = renderer cam squareSamples diskSamples numSets cfg r w
-
-  putStrLn $ "  Using CPUs: " ++ show (cfg^.cpuCount)
-  hFlush stdout
-
-  let numChunks = cfg^.workChunks
+      renderer = cam^.cameraRenderWorld
+      numChunks = cfg^.workChunks
       rowsPerChunk = w^.viewPlane.vres / (toEnum numChunks)
       chunk f xs = result : chunk f rest where (result, rest) = f xs
       chunks = filter (not . null) $ take (numChunks + 1) $ chunk (splitAt (fromEnum rowsPerChunk)) rows
       rows = [0..(fromEnum $ w^.viewPlane.vres-1)]
 
-  putStrLn $ "  Chunks: " ++ (show $ length chunks)
-  putStrLn $ "  Pixel rows per chunk: " ++ (show rowsPerChunk)
+  -- Generate sample data for square and disk samplers
+  squareSamples <- V.replicateM numSets $ squareSampler (cfg^.sampleRoot)
+  diskSamples <- V.replicateM numSets $ diskSampler (cfg^.sampleRoot)
 
-  putStr $ "  Rendering: 0/" ++ show (length chunks)
-  hFlush stdout
+  let worker r = renderer cam squareSamples diskSamples numSets cfg r w
 
-  result <- forM (zip ([1..]::[Int]) chunks) $
+  writeChan iChan $ ISampleRoot $ cfg^.sampleRoot
+  writeChan iChan $ IAccelSchemeName $ cfg^.accelScheme.schemeName
+  writeChan iChan $ INumObjects $ w^.objects.to length
+  writeChan iChan $ IShadows $ w^.worldShadows
+  writeChan iChan $ INumSquareSampleSets $ V.length squareSamples
+  writeChan iChan $ INumDiskSampleSets $ V.length diskSamples
+  writeChan iChan $ INumCPUs $ cfg^.cpuCount
+  writeChan iChan $ INumRowsPerChunk $ fromEnum rowsPerChunk
+  writeChan iChan $ INumChunks $ length chunks
+
+  writeChan dChan $ DNumChunks $ length chunks
+  writeChan dChan $ DImageSize (fromEnum $ w^.viewPlane.hres)
+                               (fromEnum $ w^.viewPlane.vres)
+
+  t1 <- getCurrentTime
+  writeChan iChan $ IStartTime t1
+
+  writeChan dChan DStarted
+  writeChan iChan IStarted
+
+  forM_ (zip ([1..]::[Int]) chunks) $
     \(chunkId, chunkRows) -> do
         let r = parMap (rpar `dot` rdeepseq) worker chunkRows
         r `deepseq` return ()
-        putStr $ "\r  Rendering: " ++ (show chunkId) ++ "/" ++ show (length chunks)
-        hFlush stdout
-        return r
-
-  let imgBytes = B.concat $ B.concat <$> (getColorBytes <$>) <$> (concat result)
-      img = packRGBA32ToBMP (fromEnum $ w^.viewPlane^.hres)
-                            (fromEnum $ w^.viewPlane^.vres) imgBytes
-  writeBMP filename img
+        writeChan iChan $ IChunkFinished chunkId (length chunks)
+        writeChan dChan $ DChunkFinished chunkId r
 
   t2 <- getCurrentTime
 
-  putStrLn $ "\n  Total time: " ++ (show $ diffUTCTime t2 t1)
+  writeChan dChan DFinished
+
+  writeChan iChan IFinished
+  writeChan iChan $ IFinishTime t2
+  writeChan iChan $ ITotalTime (diffUTCTime t2 t1)
+
+  writeChan dChan DShutdown
+  writeChan iChan IShutdown

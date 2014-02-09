@@ -3,6 +3,8 @@ module Main where
 import Control.Applicative
 import Control.Monad
 import Control.Lens
+import Control.Concurrent.Chan
+import Control.Concurrent.MVar
 import Data.List (intercalate)
 import System.Console.GetOpt
 import System.Environment
@@ -102,4 +104,18 @@ main = do
                    w2 = case forceShadows of
                           Nothing -> w1
                           Just v -> w1 & worldShadows .~ v
-               render cfg c w2 $ n ++ ".bmp"
+
+               putStrLn $ "Rendering " ++ show n ++ ".bmp ..."
+
+               iChan <- newChan
+               dChan <- newChan
+               iVar <- newEmptyMVar
+               dVar <- newEmptyMVar
+
+               _ <- forkIO $ consoleHandler iChan >> putMVar iVar ()
+               _ <- forkIO $ fileHandler (n ++ ".bmp") dChan >> putMVar dVar ()
+
+               render cfg c w2 iChan dChan
+
+               takeMVar iVar
+               takeMVar dVar

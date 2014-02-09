@@ -3,10 +3,39 @@ module Tracy.Types where
 
 import Control.Lens
 import Control.Monad.Random
+import Data.Time.Clock
 import Linear
 import Data.Colour
 
 type Color = Colour
+
+data InfoEvent =
+      ISampleRoot Float
+    | IAccelSchemeName String
+    | INumObjects Int
+    | IShadows Bool
+    | INumSquareSampleSets Int
+    | INumDiskSampleSets Int
+    | INumCPUs Int
+    | INumChunks Int
+    | INumRowsPerChunk Int
+    | IChunkFinished Int Int
+    | IStartTime UTCTime
+    | IFinishTime UTCTime
+    | ITotalTime NominalDiffTime
+    | IStarted
+    | IFinished
+    | IShutdown
+    deriving (Eq, Show)
+
+data DataEvent =
+      DNumChunks Int
+    | DChunkFinished Int [[Colour]]
+    | DImageSize Int Int
+    | DStarted
+    | DFinished
+    | DShutdown
+    deriving (Eq, Show)
 
 data Shade =
     Shade { _localHitPoint :: V3 Float
