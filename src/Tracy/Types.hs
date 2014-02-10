@@ -23,6 +23,7 @@ data InfoEvent =
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
+    | IImageSize Int Int
     | IStarted
     | IFinished
     | IShutdown

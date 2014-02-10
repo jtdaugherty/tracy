@@ -76,6 +76,7 @@ consoleHandler chan = do
             IAccelSchemeName name -> putStrLn $ "  Acceleration: " ++ name
             INumObjects n -> putStrLn $ "  Objects: " ++ show n
             IShadows val -> putStrLn $ "  Shadows: " ++ (if val then "yes" else "no")
+            IImageSize w h -> putStrLn $ "  Image size: " ++ show w ++ "px (W) x " ++ show h ++ "px (H)"
             INumSquareSampleSets n -> putStrLn $ "  Square sample sets: " ++ show n
             INumDiskSampleSets n -> putStrLn $ "  Disk sample sets: " ++ show n
             INumCPUs n -> putStrLn $ "  Using CPUs: " ++ show n
@@ -126,6 +127,8 @@ render cfg cam w iHandler dHandler = do
   writeChan iChan $ INumCPUs $ cfg^.cpuCount
   writeChan iChan $ INumRowsPerChunk $ fromEnum rowsPerChunk
   writeChan iChan $ INumChunks $ length chunks
+  writeChan iChan $ IImageSize (fromEnum $ w^.viewPlane.hres)
+                               (fromEnum $ w^.viewPlane.vres)
 
   writeChan dChan $ DNumChunks $ length chunks
   writeChan dChan $ DImageSize (fromEnum $ w^.viewPlane.hres)
