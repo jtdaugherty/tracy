@@ -20,6 +20,7 @@ library
     containers,
     linear,
     bmp >= 1.2.4.1,
+    GLFW-b,
     bytestring,
     time,
     mtl,
@@ -44,6 +45,7 @@ library
     Tracy.BRDF
     Tracy.Lights
     Tracy.Materials
+    Tracy.GUIHandler
     Tracy.BoundingBox
     Tracy.Box
     Tracy.Triangle

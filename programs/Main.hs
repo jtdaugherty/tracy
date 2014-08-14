@@ -13,6 +13,7 @@ import Tracy.Main
 import Tracy.Scenes
 import Tracy.Types
 import Tracy.FileHandler
+import Tracy.GUIHandler
 import Tracy.ConsoleHandler
 
 data Arg = Help
@@ -22,6 +23,7 @@ data Arg = Help
          | SchemeArg String
          | CPUs String
          | Chunks String
+         | UseGUI
            deriving (Eq, Show)
 
 mkOpts :: IO [OptDescr Arg]
@@ -37,10 +39,13 @@ mkOpts = do
              ("Number of CPUs to use (max: " ++ show maxc ++ ")")
            , Option "k" ["chunks"] (ReqArg Chunks "COUNT")
              ("Number of work chunks to use")
+           , Option "g" ["gui"] (NoArg UseGUI)
+             ("Present a graphical interface during rendering")
            ]
 
 updateConfig :: Config -> Arg -> IO Config
 updateConfig c Help = return c
+updateConfig c UseGUI = return c
 updateConfig c (SampleRoot s) = return $ c & sampleRoot .~ read s
 updateConfig c NoShadows = return c
 updateConfig c Shadows = return c
@@ -106,5 +111,9 @@ main = do
                           Just v -> w1 & worldShadows .~ v
                    filename = n ++ ".bmp"
 
+                   dataHandler = if UseGUI `elem` os
+                                 then guiFileHandler filename
+                                 else fileHandler filename
+
                putStrLn $ "Rendering " ++ filename ++ " ..."
-               render cfg c w2 consoleHandler (fileHandler filename)
+               render cfg c w2 consoleHandler dataHandler
