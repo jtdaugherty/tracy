@@ -35,6 +35,8 @@ library
     Tracy.Sphere
     Tracy.Util
     Tracy.Constants
+    Tracy.ConsoleHandler
+    Tracy.FileHandler
     Tracy.Main
     Tracy.Samplers
     Tracy.Cameras

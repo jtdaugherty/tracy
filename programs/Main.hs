@@ -12,6 +12,8 @@ import GHC.Conc
 import Tracy.Main
 import Tracy.Scenes
 import Tracy.Types
+import Tracy.FileHandler
+import Tracy.ConsoleHandler
 
 data Arg = Help
          | SampleRoot String
