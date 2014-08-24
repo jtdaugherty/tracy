@@ -26,7 +26,7 @@ grid :: [Object] -> Object
 grid os =
     let bbox = boundingBox (minCoords os) (maxCoords os)
         hitF = hitGrid (getDimensions os) bbox $ setupCells bbox os
-    in Object { _objectMaterial = undefined -- XXX unused
+    in Object { _objectMaterial = error "should not use objectMaterial of grid"
               , _hit = hitF
               , _shadow_hit = (snd <$>) . hitF
               , _bounding_box = Just bbox
