@@ -143,7 +143,9 @@ main = do
 
         iChan <- newChan
         dChan <- newChan
+        dChan2 <- dupChan dChan
 
         _ <- forkIO $ consoleHandler iChan
+        _ <- forkIO $ fileHandler filename dChan2
         _ <- forkIO $ render cfg (s^.sceneCamera) worldAccelShadows iChan dChan
         dataHandler dChan
