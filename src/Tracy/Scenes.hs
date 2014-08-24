@@ -27,9 +27,9 @@ makeLenses ''Scene
 
 defaultVp :: ViewPlane
 defaultVp =
-    ViewPlane { _hres = 400
-              , _vres = 400
-              , _pixelSize = 1.0
+    ViewPlane { _hres = 800
+              , _vres = 800
+              , _pixelSize = 0.5
               , _gamma = 1.0
               , _inverseGamma = 1.0
               }
