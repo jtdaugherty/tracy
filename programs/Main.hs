@@ -123,19 +123,20 @@ main = do
     Nothing -> putStrLn $ "No such scene: " ++ toRender
     Just s -> do
         let Just aScheme = (argAccelScheme preCfg) <|> (Just $ s^.sceneAccelScheme)
-            w1 = (aScheme^.schemeApply) (s^.sceneWorld)
-            w2 = case forceShadows of
-                   Nothing -> w1
-                   Just v -> w1 & worldShadows .~ v
-            filename = toRender ++ ".bmp"
-
-            dataHandler = if UseGUI `elem` os
-                          then guiFileHandler filename
-                          else fileHandler filename
             cfg = defCfg & sampleRoot .~ (argSampleRoot preCfg)
                          & accelScheme .~ aScheme
                          & cpuCount .~ (argCpuCount preCfg)
                          & workChunks .~ (argWorkChunks preCfg)
 
+            worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
+            worldAccelShadows = case forceShadows of
+                                  Nothing -> worldAccel
+                                  Just v -> worldAccel & worldShadows .~ v
+            filename = toRender ++ ".bmp"
+
+            dataHandler = if UseGUI `elem` os
+                          then guiFileHandler filename
+                          else fileHandler filename
+
         putStrLn $ "Rendering " ++ filename ++ " ..."
-        render cfg (s^.sceneCamera) w2 consoleHandler dataHandler
+        render cfg (s^.sceneCamera) worldAccelShadows consoleHandler dataHandler
