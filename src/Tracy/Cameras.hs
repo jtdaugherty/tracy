@@ -12,6 +12,7 @@ import Linear
 import GHC.Float
 
 import Tracy.Types
+import Tracy.Samplers (toHemi)
 
 type CameraRenderer a = Camera a
                       -> V.Vector [(Float, Float)]
@@ -116,7 +117,7 @@ thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
                         }
           in case hitAnObject w ray of
                Nothing -> w^.bgColor
-               Just (sh, _t) -> (sh^.material.doShading) (w^.worldShadows) w (sh & shadeRay .~ ray)
+               Just (sh, _t) -> (sh^.material.doShading) (toHemi (dx, dy)) (w^.worldShadows) w (sh & shadeRay .~ ray)
 
   in colors
 
