@@ -12,24 +12,27 @@ consoleHandler chan = do
   when cont $ consoleHandler chan
 
   where
+    leftWidth = 30
+    output a b = putStrLn $ "  " ++ a ++ ":" ++ (replicate (leftWidth - length a) ' ') ++ b
+    outputS a b = putStrLn $ "  " ++ a ++ ":" ++ (replicate (leftWidth - length a) ' ') ++ show b
     handleEvent = do
         ev <- readChan chan
         case ev of
-            ISampleRoot root -> putStrLn $ "  Sampler root: " ++ (show root) ++ " (" ++ (show $ root ** 2) ++ " samples per pixel)"
-            IAccelSchemeName name -> putStrLn $ "  Acceleration: " ++ name
-            INumObjects n -> putStrLn $ "  Objects: " ++ show n
-            IShadows val -> putStrLn $ "  Shadows: " ++ (if val then "yes" else "no")
-            IImageSize w h -> putStrLn $ "  Image size: " ++ show w ++ "px (W) x " ++ show h ++ "px (H)"
-            INumSquareSampleSets n -> putStrLn $ "  Square sample sets: " ++ show n
-            INumDiskSampleSets n -> putStrLn $ "  Disk sample sets: " ++ show n
-            INumCPUs n -> putStrLn $ "  Using CPUs: " ++ show n
-            INumRowsPerChunk n -> putStrLn $ "  Pixel rows per chunk: " ++ show n
-            INumChunks n -> putStrLn $ "  Chunks: " ++ show n
-            IStartTime t -> putStrLn $ "  Start time: " ++ show t
+            ISampleRoot root -> output "Sampler root" ((show root) ++ " (" ++ (show $ root ** 2) ++ " samples per pixel)")
+            IAccelSchemeName name -> output "Acceleration method" name
+            INumObjects n -> outputS "Objects" n
+            IShadows val -> output "Shadows" (if val then "yes" else "no")
+            IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
+            INumSquareSampleSets n -> outputS "Square sample sets" n
+            INumDiskSampleSets n -> outputS "Disk sample sets" n
+            INumCPUs n -> outputS "Using CPUs" n
+            INumRowsPerChunk n -> outputS "Pixel rows per chunk" n
+            INumChunks n -> outputS "Chunks" n
+            IStartTime t -> outputS "Start time" t
             IStarted -> (putStr $ "\r  Rendering:") >> hFlush stdout
             IChunkFinished cId total -> (putStr $ "\r  Rendering: " ++ show cId ++ "/" ++ show total) >> hFlush stdout
-            IFinishTime t -> putStrLn $ "  Finish time: " ++ show t
-            ITotalTime t -> putStrLn $ "  Total time: " ++ show t
+            IFinishTime t -> outputS "Finish time" t
+            ITotalTime t -> outputS "Total time" t
             IFinished -> putStrLn ""
             IShutdown -> putStrLn "  Done."
         if ev == IShutdown then
