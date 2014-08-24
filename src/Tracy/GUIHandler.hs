@@ -66,8 +66,6 @@ guiHandler chan = do
 
   GLUT.mainLoop
 
-  putStrLn "Done with gui handler"
-
   return ()
 
 checkForChanges :: TChan () -> GLUT.IdleCallback
