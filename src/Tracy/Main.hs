@@ -6,7 +6,6 @@ import Control.Lens
 import Control.DeepSeq
 import Control.Monad
 import Control.Concurrent.Chan
-import Control.Concurrent.MVar
 import Data.Time.Clock
 import Data.Colour
 import qualified Data.Vector as V
@@ -30,15 +29,8 @@ defaultConfig = do
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
 
-render :: Config -> Camera ThinLens -> World -> (Chan InfoEvent -> IO ()) -> (Chan DataEvent -> IO ()) -> IO ()
-render cfg cam w iHandler dHandler = do
-  iChan <- newChan
-  dChan <- newChan
-  iVar <- newEmptyMVar
-  dVar <- newEmptyMVar
-  _ <- forkIO (iHandler iChan >> putMVar iVar ())
-  _ <- forkIO (dHandler dChan >> putMVar dVar ())
-
+render :: Config -> Camera ThinLens -> World -> Chan InfoEvent -> Chan DataEvent -> IO ()
+render cfg cam w iChan dChan = do
   let numSets = fromEnum (w^.viewPlane.hres * 2.3)
       squareSampler = cfg^.vpSampler
       diskSampler = cam^.cameraData.lensSampler
@@ -94,6 +86,3 @@ render cfg cam w iHandler dHandler = do
 
   writeChan dChan DShutdown
   writeChan iChan IShutdown
-
-  takeMVar iVar
-  takeMVar dVar

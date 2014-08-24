@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Applicative
+import Control.Concurrent
 import Control.Monad
 import Control.Lens
 import Data.List (intercalate)
@@ -135,8 +136,14 @@ main = do
             filename = toRender ++ ".bmp"
 
             dataHandler = if UseGUI `elem` os
-                          then guiFileHandler filename
+                          then guiHandler
                           else fileHandler filename
 
         putStrLn $ "Rendering " ++ filename ++ " ..."
-        render cfg (s^.sceneCamera) worldAccelShadows consoleHandler dataHandler
+
+        iChan <- newChan
+        dChan <- newChan
+
+        _ <- forkIO $ consoleHandler iChan
+        _ <- forkIO $ render cfg (s^.sceneCamera) worldAccelShadows iChan dChan
+        dataHandler dChan
