@@ -36,8 +36,8 @@ render cfg cam w iHandler dHandler = do
   dChan <- newChan
   iVar <- newEmptyMVar
   dVar <- newEmptyMVar
-  _ <- forkIO $ iHandler iChan >> putMVar iVar ()
-  _ <- forkIO $ dHandler dChan >> putMVar dVar ()
+  _ <- forkIO (iHandler iChan >> putMVar iVar ())
+  _ <- forkIO (dHandler dChan >> putMVar dVar ())
 
   let numSets = fromEnum (w^.viewPlane.hres * 2.3)
       squareSampler = cfg^.vpSampler
