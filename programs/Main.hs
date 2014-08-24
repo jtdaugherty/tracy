@@ -1,6 +1,5 @@
 module Main where
 
-import Control.Applicative
 import Control.Monad
 import Control.Lens
 import Data.List (intercalate)
@@ -75,7 +74,7 @@ usage :: IO a
 usage = do
   pn <- getProgName
   opts <- mkOpts
-  let header = "Usage: " ++ pn ++ " [options] [scene name]"
+  let header = "Usage: " ++ pn ++ " [options] <scene name>"
   putStrLn $ usageInfo header opts
   exitFailure
 
@@ -90,30 +89,29 @@ main = do
 
   when (Help `elem` os) usage
 
+  when (length rest /= 1) usage
+
   let forceShadows = if Shadows `elem` os
                      then Just True
                      else if NoShadows `elem` os
                           then Just False
                           else Nothing
-      toRender = if null rest
-                 then fst <$> scenes
-                 else rest
+      [toRender] = rest
 
   setNumCapabilities $ cfg^.cpuCount
 
-  forM_ toRender $ \n -> do
-         case lookup n scenes of
-           Nothing -> putStrLn $ "No such scene: " ++ n
-           Just (c, w) -> do
-               let w1 = (cfg^.accelScheme.schemeApply) w
-                   w2 = case forceShadows of
-                          Nothing -> w1
-                          Just v -> w1 & worldShadows .~ v
-                   filename = n ++ ".bmp"
+  case lookup toRender scenes of
+    Nothing -> putStrLn $ "No such scene: " ++ toRender
+    Just (c, w) -> do
+        let w1 = (cfg^.accelScheme.schemeApply) w
+            w2 = case forceShadows of
+                   Nothing -> w1
+                   Just v -> w1 & worldShadows .~ v
+            filename = toRender ++ ".bmp"
 
-                   dataHandler = if UseGUI `elem` os
-                                 then guiFileHandler filename
-                                 else fileHandler filename
+            dataHandler = if UseGUI `elem` os
+                          then guiFileHandler filename
+                          else fileHandler filename
 
-               putStrLn $ "Rendering " ++ filename ++ " ..."
-               render cfg c w2 consoleHandler dataHandler
+        putStrLn $ "Rendering " ++ filename ++ " ..."
+        render cfg c w2 consoleHandler dataHandler
