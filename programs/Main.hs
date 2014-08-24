@@ -1,5 +1,6 @@
 module Main where
 
+import Control.Applicative
 import Control.Monad
 import Control.Lens
 import Data.List (intercalate)
@@ -14,6 +15,7 @@ import Tracy.Types
 import Tracy.FileHandler
 import Tracy.GUIHandler
 import Tracy.ConsoleHandler
+import Tracy.AccelSchemes
 
 data Arg = Help
          | SampleRoot String
@@ -25,6 +27,22 @@ data Arg = Help
          | UseGUI
            deriving (Eq, Show)
 
+data PreConfig =
+    PreConfig { argSampleRoot :: Float
+              , argAccelScheme :: Maybe AccelScheme
+              , argCpuCount :: Int
+              , argWorkChunks :: Int
+              }
+
+defaultPreConfig :: IO PreConfig
+defaultPreConfig = do
+    n <- getNumProcessors
+    return $ PreConfig { argSampleRoot = 4
+                       , argAccelScheme = Nothing
+                       , argCpuCount = n
+                       , argWorkChunks = 10
+                       }
+
 mkOpts :: IO [OptDescr Arg]
 mkOpts = do
     maxc <- getNumProcessors
@@ -33,7 +51,7 @@ mkOpts = do
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
            , Option "a" ["accel"] (ReqArg SchemeArg "SCHEME")
-             ("Acceleration scheme\nValid options:\n " ++ intercalate "\n " (accelSchemes^..folded.schemeName))
+             ("Override scene-specific acceleration scheme\nValid options:\n " ++ intercalate "\n " (accelSchemes^..folded.schemeName))
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
              ("Number of CPUs to use (max: " ++ show maxc ++ ")")
            , Option "k" ["chunks"] (ReqArg Chunks "COUNT")
@@ -42,15 +60,15 @@ mkOpts = do
              ("Present a graphical interface during rendering")
            ]
 
-updateConfig :: Config -> Arg -> IO Config
+updateConfig :: PreConfig -> Arg -> IO PreConfig
 updateConfig c Help = return c
 updateConfig c UseGUI = return c
-updateConfig c (SampleRoot s) = return $ c & sampleRoot .~ read s
+updateConfig c (SampleRoot s) = return $ c { argSampleRoot = read s }
 updateConfig c NoShadows = return c
 updateConfig c Shadows = return c
 updateConfig c (Chunks s) =
     case reads s of
-        [(cnt, _)] -> return $ c & workChunks .~ cnt
+        [(cnt, _)] -> return $ c { argWorkChunks = cnt }
         _ -> usage >> exitFailure
 updateConfig c (CPUs s) = do
     case reads s of
@@ -62,12 +80,12 @@ updateConfig c (CPUs s) = do
                                   , "\nAvailable: " ++ show avail
                                   ]
                 exitFailure
-            return $ c & cpuCount .~ cnt
+            return $ c { argCpuCount = cnt }
         _ -> usage >> exitFailure
 updateConfig c (SchemeArg s) = do
     case [sch | sch <- accelSchemes, sch^.schemeName == s] of
         [] -> usage
-        [v] -> return $ c & accelScheme .~ v
+        [v] -> return $ c { argAccelScheme = Just v }
         _ -> error "BUG: too many acceleration schemes matched!"
 
 usage :: IO a
@@ -84,8 +102,9 @@ main = do
   opts <- mkOpts
   let (os, rest, _) = getOpt Permute opts args
 
+  defPreCfg <- defaultPreConfig
   defCfg <- defaultConfig
-  cfg <- foldM updateConfig defCfg os
+  preCfg <- foldM updateConfig defPreCfg os
 
   when (Help `elem` os) usage
 
@@ -98,12 +117,13 @@ main = do
                           else Nothing
       [toRender] = rest
 
-  setNumCapabilities $ cfg^.cpuCount
+  setNumCapabilities $ argCpuCount preCfg
 
   case lookup toRender scenes of
     Nothing -> putStrLn $ "No such scene: " ++ toRender
-    Just (c, w) -> do
-        let w1 = (cfg^.accelScheme.schemeApply) w
+    Just s -> do
+        let Just aScheme = (argAccelScheme preCfg) <|> (Just $ s^.sceneAccelScheme)
+            w1 = (aScheme^.schemeApply) (s^.sceneWorld)
             w2 = case forceShadows of
                    Nothing -> w1
                    Just v -> w1 & worldShadows .~ v
@@ -112,6 +132,10 @@ main = do
             dataHandler = if UseGUI `elem` os
                           then guiFileHandler filename
                           else fileHandler filename
+            cfg = defCfg & sampleRoot .~ (argSampleRoot preCfg)
+                         & accelScheme .~ aScheme
+                         & cpuCount .~ (argCpuCount preCfg)
+                         & workChunks .~ (argWorkChunks preCfg)
 
         putStrLn $ "Rendering " ++ filename ++ " ..."
-        render cfg c w2 consoleHandler dataHandler
+        render cfg (s^.sceneCamera) w2 consoleHandler dataHandler

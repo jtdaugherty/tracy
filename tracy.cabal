@@ -33,6 +33,7 @@ library
   exposed-modules:
     Tracy.Types
     Tracy.Plane
+    Tracy.AccelSchemes
     Tracy.Sphere
     Tracy.Util
     Tracy.Constants

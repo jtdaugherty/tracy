@@ -15,29 +15,20 @@ import GHC.Conc
 import Tracy.Types
 import Tracy.Samplers
 import Tracy.Cameras
-import Tracy.Grid
+import Tracy.AccelSchemes
 
 defaultConfig :: IO Config
 defaultConfig = do
     n <- getNumProcessors
     return $ Config { _vpSampler = regular
                     , _sampleRoot = 4
-                    , _accelScheme = gridScheme
+                    , _accelScheme = noScheme
                     , _cpuCount = n
                     , _workChunks = 10
                     }
 
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
-
-noScheme :: AccelScheme
-noScheme = AccelScheme "none" id
-
-accelSchemes :: [AccelScheme]
-accelSchemes =
-    [ noScheme
-    , gridScheme
-    ]
 
 render :: Config -> Camera ThinLens -> World -> (Chan InfoEvent -> IO ()) -> (Chan DataEvent -> IO ()) -> IO ()
 render cfg cam w iHandler dHandler = do
@@ -65,7 +56,7 @@ render cfg cam w iHandler dHandler = do
   let worker r = renderer cam squareSamples diskSamples numSets cfg r w
 
   writeChan iChan $ ISampleRoot $ cfg^.sampleRoot
-  writeChan iChan $ IAccelSchemeName $ cfg^.accelScheme.schemeName
+  writeChan iChan $ IAccelSchemeName (cfg^.accelScheme.schemeName)
   writeChan iChan $ INumObjects $ w^.objects.to length
   writeChan iChan $ IShadows $ w^.worldShadows
   writeChan iChan $ INumSquareSampleSets $ V.length squareSamples
