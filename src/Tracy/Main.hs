@@ -73,7 +73,12 @@ render cfg cam w iChan dChan = do
     \(chunkId, chunkRows) -> do
         let r = parMap (rpar `dot` rdeepseq) worker chunkRows
         r `deepseq` return ()
-        writeChan iChan $ IChunkFinished chunkId (length chunks)
+        t <- getCurrentTime
+        let remaining = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) * (length chunks - chunkId)
+            estimate = if chunkId == 1
+                       then Nothing
+                       else Just remaining
+        writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
         writeChan dChan $ DChunkFinished chunkId r
 
   t2 <- getCurrentTime
