@@ -1,66 +1,114 @@
 module Tracy.GUIHandler where
 
+import Control.Applicative
 import Control.Concurrent.Chan
-import Control.Concurrent.MVar
+import Control.Concurrent.STM
 import Control.Concurrent (forkIO)
 import Control.Monad
+import Control.Monad.State
+import Data.IORef
+import Foreign (newArray)
+import Data.Colour
+import System.Exit
 
-import qualified Graphics.UI.GLFW as GLFW
+import qualified Graphics.Rendering.OpenGL as GL
+import qualified Graphics.UI.GLUT as GLUT
+import Graphics.UI.GLUT (($=))
 
 import Tracy.Types
-import Tracy.FileHandler
 
-withFanout :: [Chan a -> IO ()] -> ([Chan a] -> IO ()) -> IO ()
-withFanout actions body = do
-  chans <- replicateM (length actions) newChan
-  mvars <- replicateM (length actions) newEmptyMVar
-  forM_ (zip3 actions chans mvars) $ \(a, c, m) ->
-      forkIO (a c) >> putMVar m ()
-  body chans
-  mapM_ takeMVar mvars
+type App = StateT MyState IO
 
-guiFileHandler :: FilePath -> Chan DataEvent -> IO ()
-guiFileHandler path chan = do
-  let processEvents chans = do
-        ev <- readChan chan
-        mapM_ (flip writeChan ev) chans
-        if ev == DShutdown then
-          return () else
-          processEvents chans
+type Image = GL.PixelData (GL.Color3 GL.GLubyte)
 
-  withFanout [fileHandler path, guiHandler] processEvents
+data MyState =
+    MyState { completed :: [(Int, [[Colour]])]
+            , windowWidth :: Int
+            , windowHeight :: Int
+            }
 
 guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
   DNumChunks chunks <- readChan chan
   DImageSize cols rows <- readChan chan
 
-  withWindow cols rows "untitled" $ \win -> do
+  putStrLn $ "Image size: " ++ show cols ++ " wide, " ++ show rows ++ " high"
+
+  ref <- newIORef $ MyState [] cols rows
+
+  updateChan <- atomically newTChan
+
+  _ <- GLUT.getArgsAndInitialize
+  GLUT.initialDisplayMode $= [ GLUT.SingleBuffered, GLUT.RGBMode ]
+  GLUT.initialWindowSize $= GL.Size (toEnum $ fromEnum cols) (toEnum $ fromEnum rows)
+  GLUT.initialWindowPosition $= GL.Position 100 100
+  _ <- GLUT.createWindow "untitled"
+
+  GLUT.displayCallback $= display ref
+  GLUT.idleCallback $= (Just $ checkForChanges updateChan)
+  GLUT.reshapeCallback $= Just reshape
+  GLUT.keyboardMouseCallback $= Just handleKM
+
+  GL.clearColor $= GL.Color4 100 100 200 0
+  GL.shadeModel $= GL.Flat
+  GL.rowAlignment GL.Unpack $= 1
+
+  _ <- forkIO $ do
     DStarted <- readChan chan
 
     forM_ [1..chunks] $ \_ -> do
         DChunkFinished ch rs <- readChan chan
-        return ()
+        modifyIORef' ref $ \s -> s { completed = completed s ++ [(ch, rs)] }
+        atomically $ writeTChan updateChan ()
 
     DFinished <- readChan chan
-
-    -- XXX: wait for user input before we shut down and close the window
     return ()
 
-withWindow :: Int -> Int -> String -> (GLFW.Window -> IO ()) -> IO ()
-withWindow width height title f = do
-    GLFW.setErrorCallback $ Just simpleErrorCallback
-    r <- GLFW.init
-    when r $ do
-        m <- GLFW.createWindow width height title Nothing Nothing
-        case m of
-          (Just win) -> do
-              GLFW.makeContextCurrent m
-              f win
-              GLFW.setErrorCallback $ Just simpleErrorCallback
-              GLFW.destroyWindow win
-          Nothing -> return ()
-        GLFW.terminate
-  where
-    simpleErrorCallback e s =
-        putStrLn $ unwords [show e, show s]
+  GLUT.mainLoop
+
+  return ()
+
+checkForChanges :: TChan () -> GLUT.IdleCallback
+checkForChanges ch = do
+    v <- atomically $ tryReadTChan ch
+    case v of
+        Nothing -> return ()
+        Just _ -> GLUT.postRedisplay Nothing
+
+handleKM :: GLUT.KeyboardMouseCallback
+handleKM key _updown _mods _pos =
+    case key of
+        GLUT.Char 'q' -> exitSuccess
+        _ -> return ()
+
+reshape :: GLUT.ReshapeCallback
+reshape size@(GL.Size w h) = do
+    GL.viewport $= (GL.Position 0 0, size)
+    GL.matrixMode $= GL.Projection
+    GL.loadIdentity
+    GL.ortho2D 0 (fromIntegral w) 0 (fromIntegral h)
+    GL.matrixMode $= GL.Modelview 0
+    GL.loadIdentity
+
+display :: IORef MyState -> GLUT.DisplayCallback
+display ref = do
+    st <- readIORef ref
+
+    let rasterPos2i = GLUT.rasterPos :: GL.Vertex2 GL.GLint -> IO ()
+        sz = GL.Size w h
+        w = toEnum $ fromEnum $ windowWidth st
+        h = toEnum $ sum $ length <$> snd <$> completed st
+
+    GL.clear [GL.ColorBuffer]
+    rasterPos2i (GL.Vertex2 0 0)
+    GL.drawPixels sz =<< mkRenderImage (completed st)
+    GL.flush
+
+mkRenderImage :: [(Int, [[Colour]])] -> IO Image
+mkRenderImage raw = do
+    let vals = toColor3 <$> (concat $ concat (snd <$> raw))
+        toColor3 :: Colour -> GL.Color3 GL.GLubyte
+        toColor3 (Colour r g b) = GL.Color3 (toEnum $ fromEnum (r * 255.0))
+                                            (toEnum $ fromEnum (g * 255.0))
+                                            (toEnum $ fromEnum (b * 255.0))
+    (GL.PixelData GL.RGB GL.UnsignedByte) <$> (newArray vals)

@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Applicative
+import Control.Concurrent
 import Control.Monad
 import Control.Lens
 import Data.List (intercalate)
@@ -15,6 +16,7 @@ import Tracy.Types
 import Tracy.FileHandler
 import Tracy.GUIHandler
 import Tracy.ConsoleHandler
+import Tracy.AccelSchemes
 
 data Arg = Help
          | SampleRoot String
@@ -26,6 +28,22 @@ data Arg = Help
          | UseGUI
            deriving (Eq, Show)
 
+data PreConfig =
+    PreConfig { argSampleRoot :: Float
+              , argAccelScheme :: Maybe AccelScheme
+              , argCpuCount :: Int
+              , argWorkChunks :: Int
+              }
+
+defaultPreConfig :: IO PreConfig
+defaultPreConfig = do
+    n <- getNumProcessors
+    return $ PreConfig { argSampleRoot = 4
+                       , argAccelScheme = Nothing
+                       , argCpuCount = n
+                       , argWorkChunks = 10
+                       }
+
 mkOpts :: IO [OptDescr Arg]
 mkOpts = do
     maxc <- getNumProcessors
@@ -34,7 +52,7 @@ mkOpts = do
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
            , Option "a" ["accel"] (ReqArg SchemeArg "SCHEME")
-             ("Acceleration scheme\nValid options:\n " ++ intercalate "\n " (accelSchemes^..folded.schemeName))
+             ("Override scene-specific acceleration scheme\nValid options:\n " ++ intercalate "\n " (accelSchemes^..folded.schemeName))
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
              ("Number of CPUs to use (max: " ++ show maxc ++ ")")
            , Option "k" ["chunks"] (ReqArg Chunks "COUNT")
@@ -43,15 +61,15 @@ mkOpts = do
              ("Present a graphical interface during rendering")
            ]
 
-updateConfig :: Config -> Arg -> IO Config
+updateConfig :: PreConfig -> Arg -> IO PreConfig
 updateConfig c Help = return c
 updateConfig c UseGUI = return c
-updateConfig c (SampleRoot s) = return $ c & sampleRoot .~ read s
+updateConfig c (SampleRoot s) = return $ c { argSampleRoot = read s }
 updateConfig c NoShadows = return c
 updateConfig c Shadows = return c
 updateConfig c (Chunks s) =
     case reads s of
-        [(cnt, _)] -> return $ c & workChunks .~ cnt
+        [(cnt, _)] -> return $ c { argWorkChunks = cnt }
         _ -> usage >> exitFailure
 updateConfig c (CPUs s) = do
     case reads s of
@@ -63,19 +81,19 @@ updateConfig c (CPUs s) = do
                                   , "\nAvailable: " ++ show avail
                                   ]
                 exitFailure
-            return $ c & cpuCount .~ cnt
+            return $ c { argCpuCount = cnt }
         _ -> usage >> exitFailure
 updateConfig c (SchemeArg s) = do
     case [sch | sch <- accelSchemes, sch^.schemeName == s] of
         [] -> usage
-        [v] -> return $ c & accelScheme .~ v
+        [v] -> return $ c { argAccelScheme = Just v }
         _ -> error "BUG: too many acceleration schemes matched!"
 
 usage :: IO a
 usage = do
   pn <- getProgName
   opts <- mkOpts
-  let header = "Usage: " ++ pn ++ " [options] [scene name]"
+  let header = "Usage: " ++ pn ++ " [options] <scene name>"
   putStrLn $ usageInfo header opts
   exitFailure
 
@@ -85,35 +103,49 @@ main = do
   opts <- mkOpts
   let (os, rest, _) = getOpt Permute opts args
 
+  defPreCfg <- defaultPreConfig
   defCfg <- defaultConfig
-  cfg <- foldM updateConfig defCfg os
+  preCfg <- foldM updateConfig defPreCfg os
 
   when (Help `elem` os) usage
+
+  when (length rest /= 1) usage
 
   let forceShadows = if Shadows `elem` os
                      then Just True
                      else if NoShadows `elem` os
                           then Just False
                           else Nothing
-      toRender = if null rest
-                 then fst <$> scenes
-                 else rest
+      [toRender] = rest
 
-  setNumCapabilities $ cfg^.cpuCount
+  setNumCapabilities $ argCpuCount preCfg
 
-  forM_ toRender $ \n -> do
-         case lookup n scenes of
-           Nothing -> putStrLn $ "No such scene: " ++ n
-           Just (c, w) -> do
-               let w1 = (cfg^.accelScheme.schemeApply) w
-                   w2 = case forceShadows of
-                          Nothing -> w1
-                          Just v -> w1 & worldShadows .~ v
-                   filename = n ++ ".bmp"
+  case lookup toRender scenes of
+    Nothing -> putStrLn $ "No such scene: " ++ toRender
+    Just s -> do
+        let Just aScheme = (argAccelScheme preCfg) <|> (Just $ s^.sceneAccelScheme)
+            cfg = defCfg & sampleRoot .~ (argSampleRoot preCfg)
+                         & accelScheme .~ aScheme
+                         & cpuCount .~ (argCpuCount preCfg)
+                         & workChunks .~ (argWorkChunks preCfg)
 
-                   dataHandler = if UseGUI `elem` os
-                                 then guiFileHandler filename
-                                 else fileHandler filename
+            worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
+            worldAccelShadows = case forceShadows of
+                                  Nothing -> worldAccel
+                                  Just v -> worldAccel & worldShadows .~ v
+            filename = toRender ++ ".bmp"
 
-               putStrLn $ "Rendering " ++ filename ++ " ..."
-               render cfg c w2 consoleHandler dataHandler
+            dataHandler = if UseGUI `elem` os
+                          then guiHandler
+                          else fileHandler filename
+
+        putStrLn $ "Rendering " ++ filename ++ " ..."
+
+        iChan <- newChan
+        dChan <- newChan
+        dChan2 <- dupChan dChan
+
+        _ <- forkIO $ consoleHandler iChan
+        _ <- forkIO $ fileHandler filename dChan2
+        _ <- forkIO $ render cfg (s^.sceneCamera) worldAccelShadows iChan dChan
+        dataHandler dChan

@@ -26,7 +26,7 @@ grid :: [Object] -> Object
 grid os =
     let bbox = boundingBox (minCoords os) (maxCoords os)
         hitF = hitGrid (getDimensions os) bbox $ setupCells bbox os
-    in Object { _objectMaterial = undefined -- XXX unused
+    in Object { _objectMaterial = error "should not use objectMaterial of grid"
               , _hit = hitF
               , _shadow_hit = (snd <$>) . hitF
               , _bounding_box = Just bbox
@@ -61,12 +61,12 @@ getDimensions os = (truncate nx, truncate ny, truncate nz)
       wy = p1^._y - p0^._y
       wz = p1^._z - p0^._z
 
-      mult = 2.0
+      multiplier = 2.0
       s = ((wx * wy * wz) / toEnum (length os)) ** 0.3333333
 
-      nx = mult * wx / s + 1
-      ny = mult * wy / s + 1
-      nz = mult * wz / s + 1
+      nx = multiplier * wx / s + 1
+      ny = multiplier * wy / s + 1
+      nz = multiplier * wz / s + 1
 
 setupCells :: BBox -> [Object] -> M.Map (Int, Int, Int) Object
 setupCells b os = mkCompounds $ foldr addObject M.empty os

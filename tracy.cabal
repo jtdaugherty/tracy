@@ -5,7 +5,7 @@ license:             BSD3
 license-file:        LICENSE
 author:              Jonathan Daugherty <cygnus@foobox.com>
 maintainer:          Jonathan Daugherty <cygnus@foobox.com>
-copyright:           Jonathan Daugherty (c) 2013
+copyright:           Jonathan Daugherty (c) 2013-2014
 category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.8
@@ -20,7 +20,7 @@ library
     containers,
     linear,
     bmp >= 1.2.4.1,
-    GLFW-b,
+    GLUT,
     bytestring,
     time,
     mtl,
@@ -28,11 +28,14 @@ library
     random,
     deepseq,
     vector,
-    parallel
+    parallel,
+    OpenGL,
+    stm
 
   exposed-modules:
     Tracy.Types
     Tracy.Plane
+    Tracy.AccelSchemes
     Tracy.Sphere
     Tracy.Util
     Tracy.Constants

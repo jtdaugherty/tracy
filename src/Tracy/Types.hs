@@ -19,7 +19,7 @@ data InfoEvent =
     | INumCPUs Int
     | INumChunks Int
     | INumRowsPerChunk Int
-    | IChunkFinished Int Int
+    | IChunkFinished Int Int (Maybe NominalDiffTime)
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
@@ -116,13 +116,13 @@ data BRDFData =
 
 data Light =
     Light { _lightShadows :: Bool
-          , _lightDirection :: Shade -> V3 Float
-          , _lightColor :: Shade -> Color
+          , _lightDirection :: V3 Float -> Shade -> V3 Float
+          , _lightColor :: World -> V3 Float -> Shade -> Color
           , _inLightShadow :: World -> Ray -> Bool
           }
 
 data Material =
-    Material { _doShading :: Bool -> World -> Shade -> Color
+    Material { _doShading :: V3 Float -> Bool -> World -> Shade -> Color
              }
 
 data BBox =
