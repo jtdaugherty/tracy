@@ -2,9 +2,14 @@
 - Shading / light sources? Emission material?
 - Intersection for
   - triangle meshes
+- Procedural texture support
+- Image textures
+- Area lights
+- Reflection
+- Refraction
+- Ambient occlusion
 - JuicyPixels for image I/O
-
-Much later:
-- scene description file and loader
-- OpenGL scene file viewer
-- Optimizations
+- Live updates in a GUI
+- Load scenes from disk
+- Reload scenes from disk and re-render
+- Ultimately: want to read blender scenes or a format that blender can export
