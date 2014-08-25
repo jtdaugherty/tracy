@@ -31,5 +31,8 @@ Features:
    - Sampler debugging program to test sample distribution for various
      sampling methods
 
+Basic shapes with ambient occlusion:
 ![demo](/demo.png)
+
+Thin-lens view with specular highlights:
 ![demo2](/demo2.png)
