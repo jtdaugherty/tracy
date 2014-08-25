@@ -16,6 +16,8 @@ Features:
  * Shadows and effects:
    - Basic shadows
    - Ambient occlusion
+ * Cameras:
+   - Thin-lens camera
  * Light sources:
    - Point sources
    - Ambient light
@@ -30,3 +32,4 @@ Features:
      sampling methods
 
 ![demo](/demo.png)
+![demo2](/demo2.png)
