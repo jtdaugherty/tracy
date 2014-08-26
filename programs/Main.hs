@@ -135,17 +135,17 @@ main = do
                                   Just v -> worldAccel & worldShadows .~ v
             filename = toRender ++ ".bmp"
 
-            dataHandler = if UseGUI `elem` os
-                          then guiHandler
-                          else fileHandler filename
-
         putStrLn $ "Rendering " ++ filename ++ " ..."
 
         iChan <- newChan
         dChan <- newChan
-        dChan2 <- dupChan dChan
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ fileHandler filename dChan2
         _ <- forkIO $ render cfg (s^.sceneCamera) worldAccelShadows iChan dChan
-        dataHandler dChan
+
+        case UseGUI `elem` os of
+            False -> fileHandler filename dChan
+            True -> do
+                dChan2 <- dupChan dChan
+                _ <- forkIO $ fileHandler filename dChan2
+                guiHandler dChan
