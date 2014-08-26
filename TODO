@@ -1,3 +1,4 @@
+- Randomize sample selection during rendering rather than repeating them
 - Sampling implementations (n-rooks, hammersley, etc.)
 - Shading / light sources? Emission material?
 - Intersection for
