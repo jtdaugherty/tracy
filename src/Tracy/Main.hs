@@ -8,8 +8,10 @@ import Control.Monad
 import Control.Concurrent.Chan
 import Data.Time.Clock
 import Data.Colour
+import Data.Array.IO
 import qualified Data.Vector as V
 import GHC.Conc
+import System.Random
 
 import Tracy.Types
 import Tracy.Samplers
@@ -29,6 +31,20 @@ defaultConfig = do
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
 
+shuffle :: [a] -> IO [a]
+shuffle xs = do
+        ar <- newArray n xs
+        forM [1..n] $ \i -> do
+            j <- randomRIO (i,n)
+            vi <- readArray ar i
+            vj <- readArray ar j
+            writeArray ar j vi
+            return vj
+  where
+    n = length xs
+    newArray :: Int -> [a] -> IO (IOArray Int a)
+    newArray n xs =  newListArray (1,n) xs
+
 render :: Config -> Camera ThinLens -> World -> Chan InfoEvent -> Chan DataEvent -> IO ()
 render cfg cam w iChan dChan = do
   let numSets = fromEnum (w^.viewPlane.hres * 2.3)
@@ -45,7 +61,7 @@ render cfg cam w iChan dChan = do
   squareSamples <- V.replicateM numSets $ squareSampler (cfg^.sampleRoot)
   diskSamples <- V.replicateM numSets $ diskSampler (cfg^.sampleRoot)
 
-  let worker r = renderer cam squareSamples diskSamples numSets cfg r w
+  let worker = renderer cam numSets cfg w squareSamples diskSamples
 
   writeChan iChan $ ISampleRoot $ cfg^.sampleRoot
   writeChan iChan $ IAccelSchemeName (cfg^.accelScheme.schemeName)
@@ -71,7 +87,10 @@ render cfg cam w iChan dChan = do
 
   forM_ (zip ([1..]::[Int]) chunks) $
     \(chunkId, chunkRows) -> do
-        let r = parMap (rpar `dot` rdeepseq) worker chunkRows
+        -- Zip up chunkRows values with sets of randomly-generated sample set indices
+        indices <- forM chunkRows $ \_ -> shuffle [0..numSets-1]
+
+        let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows indices)
         r `deepseq` return ()
         t <- getCurrentTime
         let remaining = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) * (length chunks - chunkId)

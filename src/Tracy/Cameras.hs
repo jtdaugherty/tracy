@@ -15,12 +15,12 @@ import Tracy.Types
 import Tracy.Samplers (toHemi)
 
 type CameraRenderer a = Camera a
-                      -> V.Vector [(Float, Float)]
-                      -> V.Vector [(Float, Float)]
                       -> Int
                       -> Config
-                      -> Int
                       -> World
+                      -> V.Vector [(Float, Float)]
+                      -> V.Vector [(Float, Float)]
+                      -> (Int, [Int])
                       -> [Color]
 
 data Camera a =
@@ -85,7 +85,7 @@ maxToOne (Colour r g b) = Colour r' g' b'
                      else (r, g, b)
 
 thinLensRender :: CameraRenderer ThinLens
-thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
+thinLensRender cam numSets config w squareSampleSets diskSampleSets (theRow, sampleIndices) =
   let root  = config^.sampleRoot
       newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
       vp = w^.viewPlane
@@ -93,7 +93,7 @@ thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
       getCol row col =
           let squareSampleSet = squareSampleSets V.! sampleIndex
               diskSampleSet = diskSampleSets V.! sampleIndex
-              sampleIndex = (fromEnum $ row * vp^.hres + col) `mod` numSets
+              sampleIndex = sampleIndices !! ((fromEnum col) `mod` numSets)
 
           in maxToOne ((sum (results row col squareSampleSet diskSampleSet) / grey (float2Double $ root * root)) *
               grey (float2Double $ cam^.exposureTime))

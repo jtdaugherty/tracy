@@ -30,7 +30,8 @@ library
     vector,
     parallel,
     OpenGL,
-    stm
+    stm,
+    array
 
   exposed-modules:
     Tracy.Types
