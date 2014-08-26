@@ -103,14 +103,14 @@ thinLensRender cam squareSampleSets diskSampleSets numSets config theRow w =
           let x = newPixSize * (col - (0.5 * vp^.hres) + sx)
               y = newPixSize * (row - (0.5 * vp^.vres) + sy)
 
-              lx = dx * cam^.cameraData^.lensRadius
-              ly = dy * cam^.cameraData^.lensRadius
+              lx = dx * cam^.cameraData.lensRadius
+              ly = dy * cam^.cameraData.lensRadius
 
               o = cam^.cameraEyePoint +
                   (lx *^ cam^.cameraU) +
                   (ly *^ cam^.cameraV)
 
-              d = (cam^.cameraData^.lensRayDir) cam (V2 x y) (V2 lx ly)
+              d = (cam^.cameraData.lensRayDir) cam (V2 x y) (V2 lx ly)
 
               ray = Ray { _origin = o
                         , _direction = d
