@@ -31,7 +31,8 @@ library
     parallel,
     OpenGL,
     stm,
-    array
+    array,
+    cereal
 
   exposed-modules:
     Tracy.Types

@@ -1,9 +1,13 @@
-{-# LANGUAGE TemplateHaskell, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE TemplateHaskell, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Types where
 
+import Control.Applicative
 import Control.Lens
 import Control.Monad.Random
+import Data.Serialize
 import Data.Time.Clock
+import GHC.Generics
 import Linear
 import Data.Colour
 
@@ -71,7 +75,7 @@ data ViewPlane =
               , _gamma :: Float
               , _inverseGamma :: Float
               }
-    deriving (Show)
+    deriving (Show, Eq, Generic)
 
 data World =
     World { _viewPlane :: ViewPlane
@@ -132,6 +136,74 @@ data BBox =
          deriving (Show)
 
 type Sampler a = Float -> IO [a]
+
+---------------------------------------------------------------------------
+-- World description types for transmission between rendering nodes
+---------------------------------------------------------------------------
+data SceneDesc =
+    SceneDesc { _sceneDescWorld :: WorldDesc
+              , _sceneDescAccelSchemeName :: String
+              , _sceneDescCamera :: CameraDesc
+              }
+    deriving (Eq, Show, Generic)
+
+data WorldDesc =
+    WorldDesc { _wdViewPlane :: ViewPlane
+              , _wdBgColor :: Color
+              , _wdObjects :: [ObjectDesc]
+              , _wdLights :: [LightDesc]
+              , _wdAmbient :: LightDesc
+              , _wdWorldShadows :: Bool
+              , _wdCamera :: CameraDesc
+              }
+    deriving (Eq, Show, Generic)
+
+data ObjectDesc =
+      Sphere (V3 Float) Float Color
+    | Triangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
+    | Box (V3 Float) (V3 Float) MaterialDesc
+    | Plane (V3 Float) (V3 Float) MaterialDesc
+    deriving (Eq, Show, Generic)
+
+data LightDesc =
+      Ambient Float Color
+    | AmbientOccluder Color Color Float
+    | Point Bool Float Color (V3 Float)
+    deriving (Eq, Show, Generic)
+
+data MaterialDesc =
+      Matte Color
+    | Phong Color Float
+    deriving (Eq, Show, Generic)
+
+data CameraDesc =
+    ThinLensCamera { _thinLensEye :: V3 Float
+                   , _thinLensLookAt :: V3 Float
+                   , _thinLensUp :: V3 Float
+                   , _thinLensExposure :: Float
+                   , _thinLensZ :: Float
+                   , _thinLensVpDist :: Float
+                   , _thinLensFpDist :: Float
+                   , _thinLensRadius :: Float
+                   , _thinLensSamplerName :: String
+                   }
+    deriving (Eq, Show, Generic)
+
+instance Serialize a => Serialize (V3 a) where
+    get = V3 <$> get <*> get <*> get
+    put (V3 x y z) = put x >> put y >> put z
+
+instance Serialize Colour where
+    get = Colour <$> get <*> get <*> get
+    put (Colour r g b) = put r >> put g >> put b
+
+instance Serialize SceneDesc where
+instance Serialize WorldDesc where
+instance Serialize CameraDesc where
+instance Serialize ObjectDesc where
+instance Serialize LightDesc where
+instance Serialize MaterialDesc where
+instance Serialize ViewPlane where
 
 makeLenses ''Shade
 makeLenses ''Ray
