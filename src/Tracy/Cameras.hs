@@ -14,16 +14,6 @@ import GHC.Float
 import Tracy.Types
 import Tracy.Samplers (toHemi)
 
-data ThinLens =
-    ThinLens { _lensRadius :: Float
-             , _lensVPDistance :: Float
-             , _lensFocalPlaneDistance :: Float
-             , _lensRayDir :: Camera ThinLens -> V2 Float -> V2 Float -> V3 Float
-             , _lensSampler :: Sampler (Float, Float)
-             }
-
-makeLenses ''ThinLens
-
 camera :: V3 Float -> V3 Float -> V3 Float -> Float -> Float
        -> a
        -> (CameraRenderer a)

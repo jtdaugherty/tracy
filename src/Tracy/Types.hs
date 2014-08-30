@@ -20,8 +20,6 @@ data InfoEvent =
     | IAccelSchemeName String
     | INumObjects Int
     | IShadows Bool
-    | INumSquareSampleSets Int
-    | INumDiskSampleSets Int
     | INumCPUs Int
     | INumChunks Int
     | INumRowsPerChunk Int
@@ -44,6 +42,16 @@ data DataEvent =
     | DFinished
     | DShutdown
     deriving (Eq, Show)
+
+data JobRequest =
+      SetScene Config (Scene ThinLens)
+    | RenderRequest Int (Int, Int)
+    | RenderFinished
+    | Shutdown
+
+data JobResponse =
+      JobError String
+    | ChunkFinished Int [[Color]]
 
 data Shade =
     Shade { _localHitPoint :: V3 Float
@@ -166,6 +174,14 @@ data Camera a =
            , _cameraEyePoint :: V3 Float
            }
 
+data ThinLens =
+    ThinLens { _lensRadius :: Float
+             , _lensVPDistance :: Float
+             , _lensFocalPlaneDistance :: Float
+             , _lensRayDir :: Camera ThinLens -> V2 Float -> V2 Float -> V3 Float
+             , _lensSampler :: Sampler (Float, Float)
+             }
+
 ---------------------------------------------------------------------------
 -- World description types for transmission between rendering nodes
 ---------------------------------------------------------------------------
@@ -253,6 +269,7 @@ makeLenses ''AccelScheme
 makeLenses ''Config
 makeLenses ''Scene
 makeLenses ''Camera
+makeLenses ''ThinLens
 
 makeLenses ''SceneDesc
 makeLenses ''WorldDesc

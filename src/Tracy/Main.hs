@@ -12,6 +12,7 @@ import Data.Array.IO
 import qualified Data.Vector as V
 import GHC.Conc
 import System.Random
+import System.Exit
 
 import Tracy.Types
 import Tracy.Samplers
@@ -45,23 +46,17 @@ shuffle xs = do
     newArray :: Int -> [a] -> IO (IOArray Int a)
     newArray n xs =  newListArray (1,n) xs
 
-render :: String -> Config -> Camera ThinLens -> World -> Chan InfoEvent -> Chan DataEvent -> IO ()
-render sceneName cfg cam w iChan dChan = do
-  let numSets = fromEnum (w^.viewPlane.hres * 2.3)
-      squareSampler = cfg^.vpSampler
-      diskSampler = cam^.cameraData.lensSampler
-      renderer = cam^.cameraRenderWorld
+localRender :: String -> Config -> Scene ThinLens -> Chan InfoEvent -> Chan DataEvent -> IO ()
+localRender sceneName cfg s iChan dChan = do
+  let w = s^.sceneWorld
       numChunks = cfg^.workChunks
       rowsPerChunk = w^.viewPlane.vres / (toEnum numChunks)
       chunk f xs = result : chunk f rest where (result, rest) = f xs
       chunks = filter (not . null) $ take (numChunks + 1) $ chunk (splitAt (fromEnum rowsPerChunk)) rows
       rows = [0..(fromEnum $ w^.viewPlane.vres-1)]
-
-  -- Generate sample data for square and disk samplers
-  squareSamples <- V.replicateM numSets $ squareSampler (cfg^.sampleRoot)
-  diskSamples <- V.replicateM numSets $ diskSampler (cfg^.sampleRoot)
-
-  let worker = renderer cam numSets cfg w squareSamples diskSamples
+      requests = [ RenderRequest i (ch !! 0, ch !! (length ch - 1))
+                 | (i, ch) <- zip [1..] chunks
+                 ]
 
   writeChan iChan $ ISceneName sceneName
   writeChan dChan $ DSceneName sceneName
@@ -70,8 +65,6 @@ render sceneName cfg cam w iChan dChan = do
   writeChan iChan $ IAccelSchemeName (cfg^.accelScheme.schemeName)
   writeChan iChan $ INumObjects $ w^.objects.to length
   writeChan iChan $ IShadows $ w^.worldShadows
-  writeChan iChan $ INumSquareSampleSets $ V.length squareSamples
-  writeChan iChan $ INumDiskSampleSets $ V.length diskSamples
   writeChan iChan $ INumCPUs $ cfg^.cpuCount
   writeChan iChan $ INumRowsPerChunk $ fromEnum rowsPerChunk
   writeChan iChan $ INumChunks $ length chunks
@@ -88,20 +81,39 @@ render sceneName cfg cam w iChan dChan = do
   writeChan dChan DStarted
   writeChan iChan IStarted
 
-  forM_ (zip ([1..]::[Int]) chunks) $
-    \(chunkId, chunkRows) -> do
-        -- Zip up chunkRows values with sets of randomly-generated sample set indices
-        indices <- forM chunkRows $ \_ -> shuffle [0..numSets-1]
+  -- Start renderThread
+  -- Send it a scene set request
+  -- Send it a bunch of chunk requests
+  -- As responses come in, send them out to the dChan and iChan
+  -- Once we have them all, send finished message, then shutdown message
 
-        let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows indices)
-        r `deepseq` return ()
-        t <- getCurrentTime
-        let remaining = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) * (length chunks - chunkId)
-            estimate = if chunkId == 1
-                       then Nothing
-                       else Just remaining
-        writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
-        writeChan dChan $ DChunkFinished chunkId r
+  reqChan <- newChan
+  respChan <- newChan
+
+  -- Start the renderer thread
+  _ <- forkIO (renderThread reqChan respChan)
+
+  -- Set the scene
+  writeChan reqChan $ SetScene cfg s
+
+  -- Send the rendering requests
+  mapM_ (writeChan reqChan) requests
+
+  -- Wait for the responses
+  results <- forM_ requests $ \_ -> do
+               resp <- readChan respChan
+               case resp of
+                   JobError s -> do
+                       putStrLn $ "Yikes! Error in render thread: " ++ s
+                       exitSuccess
+                   ChunkFinished chunkId rs -> do
+                       t <- getCurrentTime
+                       let remaining = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) * (length chunks - chunkId)
+                           estimate = if chunkId == 1
+                                      then Nothing
+                                      else Just remaining
+                       writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
+                       writeChan dChan $ DChunkFinished chunkId rs
 
   t2 <- getCurrentTime
 
@@ -113,3 +125,50 @@ render sceneName cfg cam w iChan dChan = do
 
   writeChan dChan DShutdown
   writeChan iChan IShutdown
+
+renderThread :: Chan JobRequest -> Chan JobResponse -> IO ()
+renderThread jobReq jobResp = do
+    let waitForJob = do
+          ev <- readChan jobReq
+          case ev of
+              SetScene cfg s -> do
+                  processRequests cfg s
+                  waitForJob
+              Shutdown -> return ()
+              _ -> writeChan jobResp $ JobError "Expected SetScene or Shutdown, got unexpected event"
+
+        processRequests cfg s = do
+          ev <- readChan jobReq
+          case ev of
+              RenderRequest chunkId (start, stop) -> do
+                  ch <- renderChunk cfg s (start, stop)
+                  writeChan jobResp $ ChunkFinished chunkId ch
+                  processRequests cfg s
+              RenderFinished -> return ()
+              _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
+
+    waitForJob
+
+renderChunk :: Config -> Scene ThinLens -> (Int, Int) -> IO [[Color]]
+renderChunk cfg s (start, stop) = do
+  let cam = s^.sceneCamera
+      w = s^.sceneWorld
+      numSets = fromEnum (w^.viewPlane.hres * 2.3)
+      squareSampler = cfg^.vpSampler
+      diskSampler = cam^.cameraData.lensSampler
+      renderer = cam^.cameraRenderWorld
+      chunkRows = [start..stop]
+
+  -- Generate sample data for square and disk samplers
+  squareSamples <- V.replicateM numSets $ squareSampler (cfg^.sampleRoot)
+  diskSamples <- V.replicateM numSets $ diskSampler (cfg^.sampleRoot)
+
+  let worker = renderer cam numSets cfg w squareSamples diskSamples
+
+  -- Zip up chunkRows values with sets of randomly-generated sample set indices
+  indices <- forM chunkRows $ \_ -> shuffle [0..numSets-1]
+
+  let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows indices)
+  r `deepseq` return ()
+
+  return r

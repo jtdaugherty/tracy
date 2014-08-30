@@ -24,8 +24,6 @@ consoleHandler chan = do
             INumObjects n -> outputS "Objects" n
             IShadows val -> output "Shadows" (if val then "yes" else "no")
             IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
-            INumSquareSampleSets n -> outputS "Square sample sets" n
-            INumDiskSampleSets n -> outputS "Disk sample sets" n
             INumCPUs n -> outputS "Using CPUs" n
             INumRowsPerChunk n -> outputS "Pixel rows per chunk" n
             INumChunks n -> outputS "Chunks" n
