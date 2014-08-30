@@ -143,7 +143,7 @@ main = do
         dChan <- newChan
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ localRender toRender cfg (s & sceneWorld .~ worldAccelShadows) iChan dChan
+        _ <- forkIO $ render toRender cfg (s & sceneWorld .~ worldAccelShadows) localRenderThread iChan dChan
 
         case UseGUI `elem` os of
             False -> fileHandler filename dChan

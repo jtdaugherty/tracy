@@ -46,8 +46,14 @@ shuffle xs = do
     newArray :: Int -> [a] -> IO (IOArray Int a)
     newArray n xs =  newListArray (1,n) xs
 
-localRender :: String -> Config -> Scene ThinLens -> Chan InfoEvent -> Chan DataEvent -> IO ()
-localRender sceneName cfg s iChan dChan = do
+render :: String
+       -> Config
+       -> Scene ThinLens
+       -> (Chan JobRequest -> Chan JobResponse -> IO ())
+       -> Chan InfoEvent
+       -> Chan DataEvent
+       -> IO ()
+render sceneName cfg s renderManager iChan dChan = do
   let w = s^.sceneWorld
       numChunks = cfg^.workChunks
       rowsPerChunk = w^.viewPlane.vres / (toEnum numChunks)
@@ -91,7 +97,7 @@ localRender sceneName cfg s iChan dChan = do
   respChan <- newChan
 
   -- Start the renderer thread
-  _ <- forkIO (renderThread reqChan respChan)
+  _ <- forkIO (renderManager reqChan respChan)
 
   -- Set the scene
   writeChan reqChan $ SetScene cfg s
@@ -126,8 +132,8 @@ localRender sceneName cfg s iChan dChan = do
   writeChan dChan DShutdown
   writeChan iChan IShutdown
 
-renderThread :: Chan JobRequest -> Chan JobResponse -> IO ()
-renderThread jobReq jobResp = do
+localRenderThread :: Chan JobRequest -> Chan JobResponse -> IO ()
+localRenderThread jobReq jobResp = do
     let waitForJob = do
           ev <- readChan jobReq
           case ev of
