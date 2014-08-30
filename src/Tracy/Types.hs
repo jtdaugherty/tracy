@@ -7,6 +7,7 @@ import Control.Lens
 import Control.Monad.Random
 import Data.Serialize
 import Data.Time.Clock
+import qualified Data.Vector as V
 import GHC.Generics
 import Linear
 import Data.Colour
@@ -92,6 +93,12 @@ data TraceState =
                , _traceNumSampleSets :: Int
                }
 
+data Scene a =
+    Scene { _sceneWorld :: World
+          , _sceneAccelScheme :: AccelScheme
+          , _sceneCamera :: Camera a
+          }
+
 data AccelScheme =
     AccelScheme { _schemeName :: String
                 , _schemeApply :: World -> World
@@ -137,14 +144,39 @@ data BBox =
 
 type Sampler a = Float -> IO [a]
 
+type CameraRenderer a = Camera a
+                      -> Int
+                      -> Config
+                      -> World
+                      -> V.Vector [(Float, Float)]
+                      -> V.Vector [(Float, Float)]
+                      -> (Int, [Int])
+                      -> [Color]
+
+data Camera a =
+    Camera { _cameraU :: V3 Float
+           , _cameraV :: V3 Float
+           , _cameraW :: V3 Float
+           , _cameraRenderWorld :: CameraRenderer a
+           , _cameraData :: a
+           , _exposureTime :: Float
+           , _cameraZoomFactor :: Float
+           , _cameraEyePoint :: V3 Float
+           }
+
 ---------------------------------------------------------------------------
 -- World description types for transmission between rendering nodes
 ---------------------------------------------------------------------------
 data SceneDesc =
     SceneDesc { _sceneDescWorld :: WorldDesc
-              , _sceneDescAccelSchemeName :: String
+              , _sceneDescAccelScheme :: AccelSchemeDesc
               , _sceneDescCamera :: CameraDesc
               }
+    deriving (Eq, Show, Generic)
+
+data AccelSchemeDesc =
+      NoScheme
+    | GridScheme
     deriving (Eq, Show, Generic)
 
 data WorldDesc =
@@ -154,12 +186,11 @@ data WorldDesc =
               , _wdLights :: [LightDesc]
               , _wdAmbient :: LightDesc
               , _wdWorldShadows :: Bool
-              , _wdCamera :: CameraDesc
               }
     deriving (Eq, Show, Generic)
 
 data ObjectDesc =
-      Sphere (V3 Float) Float Color
+      Sphere (V3 Float) Float MaterialDesc
     | Triangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
     | Box (V3 Float) (V3 Float) MaterialDesc
     | Plane (V3 Float) (V3 Float) MaterialDesc
@@ -185,7 +216,6 @@ data CameraDesc =
                    , _thinLensVpDist :: Float
                    , _thinLensFpDist :: Float
                    , _thinLensRadius :: Float
-                   , _thinLensSamplerName :: String
                    }
     deriving (Eq, Show, Generic)
 
@@ -203,6 +233,7 @@ instance Serialize CameraDesc where
 instance Serialize ObjectDesc where
 instance Serialize LightDesc where
 instance Serialize MaterialDesc where
+instance Serialize AccelSchemeDesc where
 instance Serialize ViewPlane where
 
 makeLenses ''Shade
@@ -218,3 +249,9 @@ makeLenses ''Material
 makeLenses ''BBox
 makeLenses ''AccelScheme
 makeLenses ''Config
+makeLenses ''Scene
+makeLenses ''Camera
+
+makeLenses ''SceneDesc
+makeLenses ''WorldDesc
+makeLenses ''CameraDesc

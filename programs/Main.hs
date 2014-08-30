@@ -17,6 +17,7 @@ import Tracy.FileHandler
 import Tracy.GUIHandler
 import Tracy.ConsoleHandler
 import Tracy.AccelSchemes
+import Tracy.SceneBuilder
 
 data Arg = Help
          | SampleRoot String
@@ -122,8 +123,9 @@ main = do
 
   case lookup toRender scenes of
     Nothing -> putStrLn $ "No such scene: " ++ toRender
-    Just s -> do
-        let Just aScheme = (argAccelScheme preCfg) <|> (Just $ s^.sceneAccelScheme)
+    Just sceneDesc -> do
+        let Right s = sceneFromDesc sceneDesc
+            Just aScheme = (argAccelScheme preCfg) <|> (Just $ s^.sceneAccelScheme)
             cfg = defCfg & sampleRoot .~ (argSampleRoot preCfg)
                          & accelScheme .~ aScheme
                          & cpuCount .~ (argCpuCount preCfg)

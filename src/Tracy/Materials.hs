@@ -7,6 +7,8 @@ import Data.Colour
 import GHC.Float
 
 import Tracy.Types
+import Tracy.BRDF
+import Tracy.Samplers
 
 matte :: BRDF -> BRDF -> Material
 matte ambBrdf diffBrdf =
@@ -15,6 +17,17 @@ matte ambBrdf diffBrdf =
 phong :: BRDF -> BRDF -> BRDF -> Material
 phong ambBrdf diffBrdf glossyBrdf =
     Material (phongShading ambBrdf diffBrdf glossyBrdf)
+
+matteFromColor :: Color -> Material
+matteFromColor c = matte
+        (lambertian (toUnitHemisphere jittered) c 0.25)
+        (lambertian (toUnitHemisphere jittered) c 0.65)
+
+phongFromColor :: Color -> Float -> Material
+phongFromColor c e = phong
+         (lambertian (toUnitHemisphere jittered) c 0.25)
+         (lambertian (toUnitHemisphere jittered) c 0.65)
+         (glossySpecular c e)
 
 ambShading :: BRDF -> BRDF -> V3 Float -> Bool -> World -> Shade -> Color
 ambShading ambBrdf diffBrdf sample enableShadows w sh =
