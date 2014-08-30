@@ -1,10 +1,8 @@
 module Main where
 
-import Control.Applicative
 import Control.Concurrent
 import Control.Monad
 import Control.Lens
-import Data.List (intercalate)
 import System.Console.GetOpt
 import System.Environment
 import System.Exit
@@ -16,8 +14,6 @@ import Tracy.Types
 import Tracy.FileHandler
 import Tracy.GUIHandler
 import Tracy.ConsoleHandler
-import Tracy.AccelSchemes
-import Tracy.SceneBuilder
 
 data Arg = Help
          | SampleRoot String
@@ -112,8 +108,7 @@ main = do
   case lookup toRender scenes of
     Nothing -> putStrLn $ "No such scene: " ++ toRender
     Just sceneDesc -> do
-        let Right s = sceneFromDesc sceneDesc
-            cfg = defCfg & sampleRoot .~ (argSampleRoot preCfg)
+        let cfg = defCfg & sampleRoot .~ (argSampleRoot preCfg)
                          & cpuCount .~ (argCpuCount preCfg)
                          & workChunks .~ (argWorkChunks preCfg)
                          & forceShadows .~ (argForceShadows preCfg)
@@ -124,9 +119,6 @@ main = do
 
         iChan <- newChan
         dChan <- newChan
-
-        -- XXX
-        -- (s & sceneWorld .~ worldAccelShadows)
 
         _ <- forkIO $ consoleHandler iChan
         _ <- forkIO $ render toRender cfg sceneDesc localRenderThread iChan dChan

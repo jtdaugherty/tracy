@@ -18,8 +18,6 @@ import System.ZMQ4
 
 import Tracy.Types
 import Tracy.Samplers
-import Tracy.Cameras
-import Tracy.AccelSchemes
 import Tracy.SceneBuilder
 
 defaultConfig :: IO Config
@@ -29,6 +27,7 @@ defaultConfig = do
                     , _accelScheme = NoScheme
                     , _cpuCount = n
                     , _workChunks = 10
+                    , _forceShadows = Nothing
                     }
 
 instance NFData Colour where
@@ -36,7 +35,7 @@ instance NFData Colour where
 
 shuffle :: [a] -> IO [a]
 shuffle xs = do
-        ar <- newArray n xs
+        ar <- mkNewArray n xs
         forM [1..n] $ \i -> do
             j <- randomRIO (i,n)
             vi <- readArray ar i
@@ -45,8 +44,8 @@ shuffle xs = do
             return vj
   where
     n = length xs
-    newArray :: Int -> [a] -> IO (IOArray Int a)
-    newArray n xs =  newListArray (1,n) xs
+    mkNewArray :: Int -> [a] -> IO (IOArray Int a)
+    mkNewArray n_ xs_ = newListArray (1,n_) xs_
 
 render :: String
        -> Config
@@ -102,20 +101,21 @@ render sceneName cfg s renderManager iChan dChan = do
   mapM_ (writeChan reqChan) requests
 
   -- Wait for the responses
-  results <- forM_ requests $ \_ -> do
-               resp <- readChan respChan
-               case resp of
-                   JobError s -> do
-                       putStrLn $ "Yikes! Error in render thread: " ++ s
-                       exitSuccess
-                   ChunkFinished chunkId rs -> do
-                       t <- getCurrentTime
-                       let remaining = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) * (length chunks - chunkId)
-                           estimate = if chunkId == 1
-                                      then Nothing
-                                      else Just remaining
-                       writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
-                       writeChan dChan $ DChunkFinished chunkId rs
+  forM_ requests $ \_ -> do
+    resp <- readChan respChan
+    case resp of
+        JobError msg -> do
+            putStrLn $ "Yikes! Error in render thread: " ++ msg
+            exitSuccess
+        ChunkFinished chunkId rs -> do
+            t <- getCurrentTime
+            let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) *
+                                         (length chunks - chunkId)
+                estimate = if chunkId == 1
+                           then Nothing
+                           else Just remainingTime
+            writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
+            writeChan dChan $ DChunkFinished chunkId rs
 
   t2 <- getCurrentTime
 
@@ -229,9 +229,9 @@ renderChunk cfg s (start, stop) = do
   let worker = renderer cam numSets cfg w squareSamples diskSamples
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
-  indices <- forM chunkRows $ \_ -> shuffle [0..numSets-1]
+  sampleIndices <- forM chunkRows $ \_ -> shuffle [0..numSets-1]
 
-  let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows indices)
+  let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleIndices)
   r `deepseq` return ()
 
   return r
