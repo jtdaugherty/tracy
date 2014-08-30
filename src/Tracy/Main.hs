@@ -87,12 +87,6 @@ render sceneName cfg s renderManager iChan dChan = do
   writeChan dChan DStarted
   writeChan iChan IStarted
 
-  -- Start renderThread
-  -- Send it a scene set request
-  -- Send it a bunch of chunk requests
-  -- As responses come in, send them out to the dChan and iChan
-  -- Once we have them all, send finished message, then shutdown message
-
   reqChan <- newChan
   respChan <- newChan
 
