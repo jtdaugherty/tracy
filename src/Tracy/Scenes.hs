@@ -100,10 +100,17 @@ world4occ =
         t1 = Triangle (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (Matte cWhite)
     in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] []) NoScheme defCamera
 
-world5 :: SceneDesc
-world5 =
+world5Objects :: [ObjectDesc]
+world5Objects =
     let spheres = concat [ ss y e | (y, e) <- params ]
-        params = [ (-500, 1)
+        params = [ (-1200, 1)
+                 , (-1100, 1)
+                 , (-1000, 1)
+                 , (-900, 1)
+                 , (-800, 1)
+                 , (-700, 1)
+                 , (-600, 2)
+                 , (-500, 1)
                  , (-400, 10)
                  , (-300, 10)
                  , (-200, 20)
@@ -115,7 +122,18 @@ world5 =
                  , (400, 10)
                  , (500, 1)
                  ]
-        pairs = [ (-500, (Phong cRed))
+        pairs = [ (-1050, (Phong cBlue))
+                , (-1000, (Phong cYellow))
+                , (-950, (Phong cGreen))
+                , (-900, (Phong cWhite))
+                , (-850, (Phong cBlue))
+                , (-800, (Phong cMagenta))
+                , (-750, (Phong cCyan))
+                , (-700, (Phong cYellow))
+                , (-650, (Phong cBlue))
+                , (-600, (Phong cGreen))
+                , (-550, (Phong cWhite))
+                , (-500, (Phong cRed))
                 , (-450, (Phong cMagenta))
                 , (-400, (Phong cBlue))
                 , (-350, (Phong cGreen))
@@ -128,13 +146,26 @@ world5 =
                 , (0, (Phong cGreen))
                 , (50, (Phong cWhite))
                 , (100, (Phong cYellow))
+                , (150, (Phong cMagenta))
                 ]
         ss y e = [ Sphere (V3 xz y xz) 30.0 (mkMat e)
                    | (xz, mkMat) <- pairs
                  ]
-    in SceneDesc (world spheres [] & wdWorldShadows .~ False)
-                 GridScheme
-                 (defCamera & thinLensRadius .~ 10.0)
+    in spheres
+
+world5 :: SceneDesc
+world5 =
+    SceneDesc (world world5Objects [] & wdWorldShadows .~ False)
+              GridScheme
+              (defCamera & thinLensRadius .~ 10.0
+                         & thinLensLookAt .~ (V3 0 30 0))
+
+world5occ :: SceneDesc
+world5occ =
+    SceneDesc (worldOcc world5Objects [] & wdWorldShadows .~ False)
+              GridScheme
+              (defCamera & thinLensRadius .~ 10.0
+                         & thinLensLookAt .~ (V3 0 30 0))
 
 world6 :: SceneDesc
 world6 =
@@ -158,6 +189,7 @@ scenes =
     , ("world4", world4)
     , ("world4occ", world4occ)
     , ("world5", world5)
+    , ("world5occ", world5occ)
     , ("world6", world6)
     , ("world6occ", world6occ)
     ]

@@ -34,5 +34,5 @@ Features:
 Basic shapes with ambient occlusion:
 ![demo](/demo.png)
 
-Thin-lens view with specular highlights:
+Thin-lens view with specular highlights and ambient occlusion:
 ![demo2](/demo2.png)
