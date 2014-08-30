@@ -16,6 +16,7 @@ type Color = Colour
 
 data InfoEvent =
       ISampleRoot Float
+    | ISceneName String
     | IAccelSchemeName String
     | INumObjects Int
     | IShadows Bool
@@ -35,7 +36,8 @@ data InfoEvent =
     deriving (Eq, Show)
 
 data DataEvent =
-      DNumChunks Int
+      DSceneName String
+    | DNumChunks Int
     | DChunkFinished Int [[Colour]]
     | DImageSize Int Int
     | DStarted

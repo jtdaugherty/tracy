@@ -29,10 +29,9 @@ data MyState =
 
 guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
+  DSceneName sceneName <- readChan chan
   DNumChunks chunks <- readChan chan
   DImageSize cols rows <- readChan chan
-
-  putStrLn $ "Image size: " ++ show cols ++ " wide, " ++ show rows ++ " high"
 
   ref <- newIORef $ MyState [] cols rows
 
@@ -42,7 +41,7 @@ guiHandler chan = do
   GLUT.initialDisplayMode $= [ GLUT.SingleBuffered, GLUT.RGBMode ]
   GLUT.initialWindowSize $= GL.Size (toEnum $ fromEnum cols) (toEnum $ fromEnum rows)
   GLUT.initialWindowPosition $= GL.Position 100 100
-  _ <- GLUT.createWindow "untitled"
+  _ <- GLUT.createWindow sceneName
 
   GLUT.displayCallback $= display ref
   GLUT.idleCallback $= (Just $ checkForChanges updateChan)

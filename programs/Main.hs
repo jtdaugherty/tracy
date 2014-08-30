@@ -143,7 +143,7 @@ main = do
         dChan <- newChan
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render cfg (s^.sceneCamera) worldAccelShadows iChan dChan
+        _ <- forkIO $ render toRender cfg (s^.sceneCamera) worldAccelShadows iChan dChan
 
         case UseGUI `elem` os of
             False -> fileHandler filename dChan

@@ -12,6 +12,7 @@ import Tracy.Util
 
 fileHandler :: FilePath -> Chan DataEvent -> IO ()
 fileHandler filename chan = do
+  DSceneName _ <- readChan chan
   DNumChunks chunks <- readChan chan
   DImageSize cols rows <- readChan chan
 

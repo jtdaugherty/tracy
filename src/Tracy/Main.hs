@@ -45,8 +45,8 @@ shuffle xs = do
     newArray :: Int -> [a] -> IO (IOArray Int a)
     newArray n xs =  newListArray (1,n) xs
 
-render :: Config -> Camera ThinLens -> World -> Chan InfoEvent -> Chan DataEvent -> IO ()
-render cfg cam w iChan dChan = do
+render :: String -> Config -> Camera ThinLens -> World -> Chan InfoEvent -> Chan DataEvent -> IO ()
+render sceneName cfg cam w iChan dChan = do
   let numSets = fromEnum (w^.viewPlane.hres * 2.3)
       squareSampler = cfg^.vpSampler
       diskSampler = cam^.cameraData.lensSampler
@@ -62,6 +62,9 @@ render cfg cam w iChan dChan = do
   diskSamples <- V.replicateM numSets $ diskSampler (cfg^.sampleRoot)
 
   let worker = renderer cam numSets cfg w squareSamples diskSamples
+
+  writeChan iChan $ ISceneName sceneName
+  writeChan dChan $ DSceneName sceneName
 
   writeChan iChan $ ISampleRoot $ cfg^.sampleRoot
   writeChan iChan $ IAccelSchemeName (cfg^.accelScheme.schemeName)
