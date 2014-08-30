@@ -20,7 +20,7 @@ consoleHandler chan = do
         case ev of
             ISceneName n -> output "Scene name" n
             ISampleRoot root -> output "Sampler root" ((show root) ++ " (" ++ (show $ root ** 2) ++ " samples per pixel)")
-            IAccelSchemeName name -> output "Acceleration method" name
+            IAccelScheme name -> output "Acceleration method" (show name)
             INumObjects n -> outputS "Objects" n
             IShadows val -> output "Shadows" (if val then "yes" else "no")
             IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")

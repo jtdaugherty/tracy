@@ -17,7 +17,7 @@ type Color = Colour
 data InfoEvent =
       ISampleRoot Float
     | ISceneName String
-    | IAccelSchemeName String
+    | IAccelScheme AccelSchemeDesc
     | INumObjects Int
     | IShadows Bool
     | INumCPUs Int
@@ -44,14 +44,16 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene Config (Scene ThinLens)
+      SetScene Config SceneDesc
     | RenderRequest Int (Int, Int)
     | RenderFinished
     | Shutdown
+    deriving (Generic)
 
 data JobResponse =
       JobError String
     | ChunkFinished Int [[Color]]
+    deriving (Generic)
 
 data Shade =
     Shade { _localHitPoint :: V3 Float
@@ -115,12 +117,13 @@ data AccelScheme =
                 }
 
 data Config =
-    Config { _vpSampler :: Sampler (Float, Float)
-           , _sampleRoot :: Float
-           , _accelScheme :: AccelScheme
+    Config { _sampleRoot :: Float
+           , _accelScheme :: AccelSchemeDesc
            , _cpuCount :: Int
            , _workChunks :: Int
+           , _forceShadows :: Maybe Bool
            }
+           deriving (Generic)
 
 data BRDF =
     BRDF { _brdfFunction :: BRDFData -> Shade -> V3 Float -> V3 Float -> Color
@@ -253,6 +256,9 @@ instance Serialize LightDesc where
 instance Serialize MaterialDesc where
 instance Serialize AccelSchemeDesc where
 instance Serialize ViewPlane where
+instance Serialize JobRequest where
+instance Serialize JobResponse where
+instance Serialize Config where
 
 makeLenses ''Shade
 makeLenses ''Ray

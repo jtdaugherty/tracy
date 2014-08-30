@@ -32,7 +32,8 @@ library
     OpenGL,
     stm,
     array,
-    cereal
+    cereal,
+    zeromq4-haskell
 
   exposed-modules:
     Tracy.Types

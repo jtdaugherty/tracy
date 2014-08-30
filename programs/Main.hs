@@ -23,7 +23,6 @@ data Arg = Help
          | SampleRoot String
          | NoShadows
          | Shadows
-         | SchemeArg String
          | CPUs String
          | Chunks String
          | UseGUI
@@ -34,6 +33,7 @@ data PreConfig =
               , argAccelScheme :: Maybe AccelScheme
               , argCpuCount :: Int
               , argWorkChunks :: Int
+              , argForceShadows :: Maybe Bool
               }
 
 defaultPreConfig :: IO PreConfig
@@ -43,6 +43,7 @@ defaultPreConfig = do
                        , argAccelScheme = Nothing
                        , argCpuCount = n
                        , argWorkChunks = 10
+                       , argForceShadows = Nothing
                        }
 
 mkOpts :: IO [OptDescr Arg]
@@ -52,8 +53,6 @@ mkOpts = do
            , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
-           , Option "a" ["accel"] (ReqArg SchemeArg "SCHEME")
-             ("Override scene-specific acceleration scheme\nValid options:\n " ++ intercalate "\n " (accelSchemes^..folded.schemeName))
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
              ("Number of CPUs to use (max: " ++ show maxc ++ ")")
            , Option "k" ["chunks"] (ReqArg Chunks "COUNT")
@@ -66,8 +65,8 @@ updateConfig :: PreConfig -> Arg -> IO PreConfig
 updateConfig c Help = return c
 updateConfig c UseGUI = return c
 updateConfig c (SampleRoot s) = return $ c { argSampleRoot = read s }
-updateConfig c NoShadows = return c
-updateConfig c Shadows = return c
+updateConfig c NoShadows = return $ c { argForceShadows = Just True }
+updateConfig c Shadows = return $ c { argForceShadows = Just False }
 updateConfig c (Chunks s) =
     case reads s of
         [(cnt, _)] -> return $ c { argWorkChunks = cnt }
@@ -84,11 +83,6 @@ updateConfig c (CPUs s) = do
                 exitFailure
             return $ c { argCpuCount = cnt }
         _ -> usage >> exitFailure
-updateConfig c (SchemeArg s) = do
-    case [sch | sch <- accelSchemes, sch^.schemeName == s] of
-        [] -> usage
-        [v] -> return $ c { argAccelScheme = Just v }
-        _ -> error "BUG: too many acceleration schemes matched!"
 
 usage :: IO a
 usage = do
@@ -109,15 +103,9 @@ main = do
   preCfg <- foldM updateConfig defPreCfg os
 
   when (Help `elem` os) usage
-
   when (length rest /= 1) usage
 
-  let forceShadows = if Shadows `elem` os
-                     then Just True
-                     else if NoShadows `elem` os
-                          then Just False
-                          else Nothing
-      [toRender] = rest
+  let [toRender] = rest
 
   setNumCapabilities $ argCpuCount preCfg
 
@@ -125,16 +113,11 @@ main = do
     Nothing -> putStrLn $ "No such scene: " ++ toRender
     Just sceneDesc -> do
         let Right s = sceneFromDesc sceneDesc
-            Just aScheme = (argAccelScheme preCfg) <|> (Just $ s^.sceneAccelScheme)
             cfg = defCfg & sampleRoot .~ (argSampleRoot preCfg)
-                         & accelScheme .~ aScheme
                          & cpuCount .~ (argCpuCount preCfg)
                          & workChunks .~ (argWorkChunks preCfg)
+                         & forceShadows .~ (argForceShadows preCfg)
 
-            worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
-            worldAccelShadows = case forceShadows of
-                                  Nothing -> worldAccel
-                                  Just v -> worldAccel & worldShadows .~ v
             filename = toRender ++ ".bmp"
 
         putStrLn $ "Rendering " ++ filename ++ " ..."
@@ -142,8 +125,11 @@ main = do
         iChan <- newChan
         dChan <- newChan
 
+        -- XXX
+        -- (s & sceneWorld .~ worldAccelShadows)
+
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender cfg (s & sceneWorld .~ worldAccelShadows) localRenderThread iChan dChan
+        _ <- forkIO $ render toRender cfg sceneDesc localRenderThread iChan dChan
 
         case UseGUI `elem` os of
             False -> fileHandler filename dChan
