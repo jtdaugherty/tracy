@@ -130,7 +130,6 @@ localRenderThread jobReq jobResp = do
           ev <- readChan jobReq
           case ev of
               SetScene cfg sDesc -> do
-                  putStrLn "Got SetScene"
                   let Right s = sceneFromDesc sDesc
                       aScheme = s^.sceneAccelScheme
                       worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
@@ -146,13 +145,10 @@ localRenderThread jobReq jobResp = do
               _ -> writeChan jobResp $ JobError "Expected SetScene or Shutdown, got unexpected event"
 
         processRequests cfg s = do
-          putStrLn "Waiting for request"
           ev <- readChan jobReq
           case ev of
               RenderRequest chunkId (start, stop) -> do
-                  putStrLn $ "Got request for chunkId " ++ show chunkId
                   ch <- renderChunk cfg s (start, stop)
-                  putStrLn "done"
                   writeChan jobResp $ ChunkFinished chunkId ch
                   processRequests cfg s
               RenderFinished -> do
