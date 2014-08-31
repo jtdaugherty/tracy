@@ -97,11 +97,11 @@ display ref = do
     let rasterPos2i = GLUT.rasterPos :: GL.Vertex2 GL.GLint -> IO ()
         sz = GL.Size w h
         w = toEnum $ fromEnum $ windowWidth st
-        h = toEnum $ sum $ length <$> snd <$> (sort $ completed st)
+        h = toEnum $ sum $ length <$> snd <$> completed st
 
     GL.clear [GL.ColorBuffer]
     rasterPos2i (GL.Vertex2 0 0)
-    GL.drawPixels sz =<< mkRenderImage (completed st)
+    GL.drawPixels sz =<< mkRenderImage (sort $ completed st)
     GL.flush
 
 mkRenderImage :: [(Int, [[Colour]])] -> IO Image
