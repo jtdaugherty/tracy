@@ -6,6 +6,7 @@ import Control.Concurrent.STM
 import Control.Concurrent (forkIO)
 import Control.Monad
 import Control.Monad.State
+import Data.List (sort)
 import Data.IORef
 import Foreign (newArray)
 import Data.Colour
@@ -96,7 +97,7 @@ display ref = do
     let rasterPos2i = GLUT.rasterPos :: GL.Vertex2 GL.GLint -> IO ()
         sz = GL.Size w h
         w = toEnum $ fromEnum $ windowWidth st
-        h = toEnum $ sum $ length <$> snd <$> completed st
+        h = toEnum $ sum $ length <$> snd <$> (sort $ completed st)
 
     GL.clear [GL.ColorBuffer]
     rasterPos2i (GL.Vertex2 0 0)
