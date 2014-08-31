@@ -10,6 +10,7 @@ import System.ZMQ4
 import Data.Serialize (encode, decode)
 
 import Tracy.Main
+import Tracy.Types
 
 data Arg = Help
          | CPUs String
@@ -99,8 +100,18 @@ main = do
         case decode msg of
             Left e -> putStrLn $ "Error decoding message: " ++ e
             Right val -> do
-                putStrLn $ "Got: " ++ show val
+                case val of
+                    SetScene cfg _ -> putStrLn $ "Got scene setting, cfg: " ++ show cfg
+                    RenderRequest ch _ -> putStrLn $ "Got chunk request: " ++ show ch
+                    RenderFinished -> putStrLn "Rendering finished"
+                    Shutdown -> putStrLn "Shutdown"
+
                 writeChan jobReq val
                 resp <- readChan jobResp
-                putStrLn "Got response from renderer, sending to manager"
+
+                case resp of
+                    JobAck -> return ()
+                    ChunkFinished ch _ -> putStrLn $ "Finished chunk: " ++ show ch
+                    JobError e -> putStrLn $ "Job error: " ++ e
+
                 send sock [] $ encode resp
