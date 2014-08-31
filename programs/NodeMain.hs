@@ -108,10 +108,9 @@ main = do
 
                 writeChan jobReq val
                 resp <- readChan jobResp
+                send sock [] $ encode resp
 
                 case resp of
                     JobAck -> return ()
                     ChunkFinished ch _ -> putStrLn $ "Finished chunk: " ++ show ch
                     JobError e -> putStrLn $ "Job error: " ++ e
-
-                send sock [] $ encode resp
