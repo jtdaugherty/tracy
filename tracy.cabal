@@ -33,7 +33,8 @@ library
     stm,
     array,
     cereal,
-    zeromq4-haskell
+    zeromq4-haskell,
+    old-locale
 
   exposed-modules:
     Tracy.Types
@@ -67,6 +68,17 @@ executable tracy
     base == 4.*,
     tracy,
     lens
+
+executable tracy-node
+  Hs-Source-Dirs:      programs
+  Main-is:             NodeMain.hs
+  GHC-Options:         -O2 -Wall -threaded
+  build-depends:
+    base == 4.*,
+    tracy,
+    lens,
+    zeromq4-haskell,
+    cereal
 
 executable tracy-debug-samplers
   Hs-Source-Dirs:      programs

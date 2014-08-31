@@ -4,7 +4,6 @@ module Tracy.Types where
 
 import Control.Applicative
 import Control.Lens
-import Control.Monad.Random
 import Data.Serialize
 import Data.Time.Clock
 import qualified Data.Vector as V
@@ -16,6 +15,8 @@ type Color = Colour
 
 data InfoEvent =
       ISampleRoot Float
+    | IConnected String
+    | IConnecting String
     | ISceneName String
     | IAccelScheme AccelSchemeDesc
     | INumObjects Int
@@ -31,7 +32,7 @@ data InfoEvent =
     | IStarted
     | IFinished
     | IShutdown
-    deriving (Eq, Show)
+    deriving (Eq)
 
 data DataEvent =
       DSceneName String
@@ -44,15 +45,16 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene Config SceneDesc
+      SetScene RenderConfig SceneDesc
     | RenderRequest Int (Int, Int)
     | RenderFinished
     | Shutdown
-    deriving (Generic)
+    deriving (Generic, Show)
 
 data JobResponse =
       JobError String
     | ChunkFinished Int [[Color]]
+    | JobAck
     deriving (Generic)
 
 data Shade =
@@ -99,12 +101,6 @@ data World =
           , _worldShadows :: Bool
           }
 
-data TraceState =
-    TraceState { _traceRNG :: StdGen
-               , _traceConfig :: Config
-               , _traceNumSampleSets :: Int
-               }
-
 data Scene a =
     Scene { _sceneWorld :: World
           , _sceneAccelScheme :: AccelScheme
@@ -116,14 +112,12 @@ data AccelScheme =
                 , _schemeApply :: World -> World
                 }
 
-data Config =
-    Config { _sampleRoot :: Float
-           , _accelScheme :: AccelSchemeDesc
-           , _cpuCount :: Int
-           , _workChunks :: Int
-           , _forceShadows :: Maybe Bool
-           }
-           deriving (Generic)
+data RenderConfig =
+    RenderConfig { _sampleRoot :: Float
+                 , _accelScheme :: AccelSchemeDesc
+                 , _forceShadows :: Maybe Bool
+                 }
+                 deriving (Generic, Show)
 
 data BRDF =
     BRDF { _brdfFunction :: BRDFData -> Shade -> V3 Float -> V3 Float -> Color
@@ -159,7 +153,7 @@ type Sampler a = Float -> IO [a]
 
 type CameraRenderer a = Camera a
                       -> Int
-                      -> Config
+                      -> RenderConfig
                       -> World
                       -> V.Vector [(Float, Float)]
                       -> V.Vector [(Float, Float)]
@@ -258,21 +252,20 @@ instance Serialize AccelSchemeDesc where
 instance Serialize ViewPlane where
 instance Serialize JobRequest where
 instance Serialize JobResponse where
-instance Serialize Config where
+instance Serialize RenderConfig where
 
 makeLenses ''Shade
 makeLenses ''Ray
 makeLenses ''Object
 makeLenses ''ViewPlane
 makeLenses ''World
-makeLenses ''TraceState
 makeLenses ''BRDF
 makeLenses ''BRDFData
 makeLenses ''Light
 makeLenses ''Material
 makeLenses ''BBox
 makeLenses ''AccelScheme
-makeLenses ''Config
+makeLenses ''RenderConfig
 makeLenses ''Scene
 makeLenses ''Camera
 makeLenses ''ThinLens

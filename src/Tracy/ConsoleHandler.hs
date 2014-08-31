@@ -2,7 +2,8 @@ module Tracy.ConsoleHandler where
 
 import Control.Concurrent.Chan
 import Control.Monad
-import System.IO
+import Data.Time.Format
+import System.Locale
 
 import Tracy.Types
 
@@ -22,16 +23,18 @@ consoleHandler chan = do
             ISampleRoot root -> output "Sampler root" ((show root) ++ " (" ++ (show $ root ** 2) ++ " samples per pixel)")
             IAccelScheme name -> output "Acceleration method" (show name)
             INumObjects n -> outputS "Objects" n
+            IConnected s -> output "Connected to" s
+            IConnecting s -> output "Connecting to" s
             IShadows val -> output "Shadows" (if val then "yes" else "no")
             IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
             INumCPUs n -> outputS "Using CPUs" n
             INumRowsPerChunk n -> outputS "Pixel rows per chunk" n
             INumChunks n -> outputS "Chunks" n
-            IStartTime t -> outputS "Start time" t
-            IStarted -> (putStr $ "\r  Rendering:") >> hFlush stdout
+            IStartTime t -> outputS "Start time" (formatTime defaultTimeLocale rfc822DateFormat t)
+            IStarted -> return ()
             IChunkFinished cId total est ->
                 case est of
-                    Nothing -> (putStr $ "\r  Rendering: " ++ show cId ++ "/" ++ show total) >> hFlush stdout
+                    Nothing -> output "Finished chunk" (show cId ++ "/" ++ show total)
                     Just t -> let totalSecs = fromEnum t `div` 1000000000000
                                   h = totalSecs `div` 3600
                                   m = (totalSecs `mod` 3600) `div` 60
@@ -43,11 +46,17 @@ consoleHandler chan = do
                                                     , show s
                                                     , "s"
                                                     ]
-                              in (putStr $ "\r  Rendering: " ++ show cId ++ "/" ++ show total ++
-                                 " (" ++ totalStr ++ " remaining)      ") >> hFlush stdout
+                              in output "Finished chunk"
+                                        (concat [ show cId
+                                                , "/"
+                                                , show total
+                                                , " ("
+                                                , totalStr
+                                                , " remaining)"
+                                                ])
             IFinishTime t -> outputS "Finish time" t
             ITotalTime t -> outputS "Total time" t
-            IFinished -> putStrLn ""
+            IFinished -> return ()
             IShutdown -> putStrLn "  Done."
         if ev == IShutdown then
            return False else

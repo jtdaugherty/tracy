@@ -5,13 +5,12 @@ import Control.Parallel.Strategies
 import Control.Lens
 import Control.DeepSeq
 import Control.Monad
-import Control.Concurrent.Chan
+import Control.Concurrent
 import Data.Time.Clock
 import Data.Colour
 import Data.Array.IO
 import Data.Serialize
 import qualified Data.Vector as V
-import GHC.Conc
 import System.Random
 import System.Exit
 import System.ZMQ4
@@ -20,15 +19,12 @@ import Tracy.Types
 import Tracy.Samplers
 import Tracy.SceneBuilder
 
-defaultConfig :: IO Config
-defaultConfig = do
-    n <- getNumProcessors
-    return $ Config { _sampleRoot = 4
-                    , _accelScheme = NoScheme
-                    , _cpuCount = n
-                    , _workChunks = 10
-                    , _forceShadows = Nothing
-                    }
+defaultRenderConfig :: RenderConfig
+defaultRenderConfig =
+    RenderConfig { _sampleRoot = 4
+                 , _accelScheme = NoScheme
+                 , _forceShadows = Nothing
+                 }
 
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
@@ -48,15 +44,15 @@ shuffle xs = do
     mkNewArray n_ xs_ = newListArray (1,n_) xs_
 
 render :: String
-       -> Config
+       -> Int
+       -> RenderConfig
        -> SceneDesc
        -> (Chan JobRequest -> Chan JobResponse -> IO ())
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
-render sceneName cfg s renderManager iChan dChan = do
+render sceneName numChunks renderCfg s renderManager iChan dChan = do
   let w = s^.sceneDescWorld
-      numChunks = cfg^.workChunks
       rowsPerChunk = w^.wdViewPlane.vres / (toEnum numChunks)
       chunk f xs = result : chunk f rest where (result, rest) = f xs
       chunks = filter (not . null) $ take (numChunks + 1) $ chunk (splitAt (fromEnum rowsPerChunk)) rows
@@ -68,11 +64,10 @@ render sceneName cfg s renderManager iChan dChan = do
   writeChan iChan $ ISceneName sceneName
   writeChan dChan $ DSceneName sceneName
 
-  writeChan iChan $ ISampleRoot $ cfg^.sampleRoot
+  writeChan iChan $ ISampleRoot $ renderCfg^.sampleRoot
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
   writeChan iChan $ INumObjects $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
-  writeChan iChan $ INumCPUs $ cfg^.cpuCount
   writeChan iChan $ INumRowsPerChunk $ fromEnum rowsPerChunk
   writeChan iChan $ INumChunks $ length chunks
   writeChan iChan $ IImageSize (fromEnum $ w^.wdViewPlane.hres)
@@ -95,7 +90,7 @@ render sceneName cfg s renderManager iChan dChan = do
   _ <- forkIO (renderManager reqChan respChan)
 
   -- Set the scene
-  writeChan reqChan $ SetScene cfg s
+  writeChan reqChan $ SetScene renderCfg s
 
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests
@@ -107,6 +102,7 @@ render sceneName cfg s renderManager iChan dChan = do
         JobError msg -> do
             putStrLn $ "Yikes! Error in render thread: " ++ msg
             exitSuccess
+        JobAck -> return ()
         ChunkFinished chunkId rs -> do
             t <- getCurrentTime
             let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) *
@@ -134,6 +130,7 @@ localRenderThread jobReq jobResp = do
           ev <- readChan jobReq
           case ev of
               SetScene cfg sDesc -> do
+                  putStrLn "Got SetScene"
                   let Right s = sceneFromDesc sDesc
                       aScheme = s^.sceneAccelScheme
                       worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
@@ -141,33 +138,43 @@ localRenderThread jobReq jobResp = do
                                             Nothing -> worldAccel
                                             Just v -> worldAccel & worldShadows .~ v
                       newScene = s & sceneWorld .~ worldAccelShadows
+                  writeChan jobResp JobAck
                   processRequests cfg newScene
                   waitForJob
-              Shutdown -> return ()
+              Shutdown -> do
+                  writeChan jobResp JobAck
               _ -> writeChan jobResp $ JobError "Expected SetScene or Shutdown, got unexpected event"
 
         processRequests cfg s = do
+          putStrLn "Waiting for request"
           ev <- readChan jobReq
           case ev of
               RenderRequest chunkId (start, stop) -> do
+                  putStrLn $ "Got request for chunkId " ++ show chunkId
                   ch <- renderChunk cfg s (start, stop)
+                  putStrLn "done"
                   writeChan jobResp $ ChunkFinished chunkId ch
                   processRequests cfg s
-              RenderFinished -> return ()
+              RenderFinished -> do
+                  writeChan jobResp JobAck
               _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
 
     waitForJob
 
-networkNodeThread :: String -> Chan JobRequest -> Chan JobResponse -> IO () -> IO ()
-networkNodeThread connStr jobReq jobResp readyNotify = withContext $ \ctx -> do
+networkNodeThread :: String -> Chan InfoEvent -> Chan JobRequest -> Chan JobResponse -> IO () -> IO ()
+networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx -> do
     sock <- socket ctx Req
     connect sock connStr
+    writeChan iChan $ IConnected connStr
+
+    readyNotify
 
     let worker = do
           ev <- readChan jobReq
           case ev of
               SetScene cfg s -> do
                   send sock [] $ encode $ SetScene cfg s
+                  _ <- receive sock
                   worker
               RenderRequest chunkId (start, stop) -> do
                   send sock [] $ encode $ RenderRequest chunkId (start, stop)
@@ -182,14 +189,14 @@ networkNodeThread connStr jobReq jobResp readyNotify = withContext $ \ctx -> do
 
     worker
 
-networkRenderThread :: [String] -> Chan JobRequest -> Chan JobResponse -> IO ()
-networkRenderThread nodes jobReq jobResp = do
+networkRenderThread :: [String] -> Chan InfoEvent -> Chan JobRequest -> Chan JobResponse -> IO ()
+networkRenderThread nodes iChan jobReq jobResp = do
     reqChans <- replicateM (length nodes) newChan
     readyChan <- newChan
 
     -- Connect to all nodes
-    forM_ (zip3 nodes reqChans [0..]) $ \(n, ch, i) ->
-        networkNodeThread n ch jobResp (writeChan readyChan i)
+    forM_ (zip3 nodes reqChans [0..]) $ \(n, ch, i) -> do
+        forkOS $ networkNodeThread n iChan ch jobResp (writeChan readyChan i)
 
     let sendToAll val = forM_ reqChans $ \ch -> writeChan ch val
         chanReader = do
@@ -212,7 +219,7 @@ networkRenderThread nodes jobReq jobResp = do
 
     chanReader
 
-renderChunk :: Config -> Scene ThinLens -> (Int, Int) -> IO [[Color]]
+renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> IO [[Color]]
 renderChunk cfg s (start, stop) = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld

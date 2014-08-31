@@ -95,7 +95,6 @@ main = do
   let (os, rest, _) = getOpt Permute opts args
 
   defPreCfg <- defaultPreConfig
-  defCfg <- defaultConfig
   preCfg <- foldM updateConfig defPreCfg os
 
   when (Help `elem` os) usage
@@ -108,10 +107,8 @@ main = do
   case lookup toRender scenes of
     Nothing -> putStrLn $ "No such scene: " ++ toRender
     Just sceneDesc -> do
-        let cfg = defCfg & sampleRoot .~ (argSampleRoot preCfg)
-                         & cpuCount .~ (argCpuCount preCfg)
-                         & workChunks .~ (argWorkChunks preCfg)
-                         & forceShadows .~ (argForceShadows preCfg)
+        let renderCfg = defaultRenderConfig & sampleRoot .~ (argSampleRoot preCfg)
+                                            & forceShadows .~ (argForceShadows preCfg)
 
             filename = toRender ++ ".bmp"
 
@@ -121,7 +118,9 @@ main = do
         dChan <- newChan
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender cfg sceneDesc localRenderThread iChan dChan
+        -- TODO: use (networkRenderThread nodes) here when appropriate
+        --_ <- forkIO $ render toRender (argWorkChunks preCfg) renderCfg sceneDesc localRenderThread iChan dChan
+        _ <- forkIO $ render toRender (argWorkChunks preCfg) renderCfg sceneDesc (networkRenderThread ["tcp://localhost:12345", "tcp://localhost:12346"] iChan) iChan dChan
 
         case UseGUI `elem` os of
             False -> fileHandler filename dChan
