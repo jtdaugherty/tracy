@@ -96,22 +96,27 @@ render sceneName numChunks renderCfg s renderManager iChan dChan = do
   mapM_ (writeChan reqChan) requests
 
   -- Wait for the responses
-  forM_ requests $ \_ -> do
-    resp <- readChan respChan
-    case resp of
-        JobError msg -> do
-            putStrLn $ "Yikes! Error in render thread: " ++ msg
-            exitSuccess
-        JobAck -> return ()
-        ChunkFinished chunkId rs -> do
-            t <- getCurrentTime
-            let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) *
-                                         (length chunks - chunkId)
-                estimate = if chunkId == 1
-                           then Nothing
-                           else Just remainingTime
-            writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
-            writeChan dChan $ DChunkFinished chunkId rs
+  let collector numFinished = do
+        resp <- readChan respChan
+        case resp of
+            JobError msg -> do
+                putStrLn $ "Yikes! Error in render thread: " ++ msg
+                exitSuccess
+            JobAck -> collector numFinished
+            ChunkFinished chunkId rs -> do
+                t <- getCurrentTime
+                let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) *
+                                             (length chunks - chunkId)
+                    estimate = if chunkId == 1
+                               then Nothing
+                               else Just remainingTime
+                writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
+                writeChan dChan $ DChunkFinished chunkId rs
+                if numFinished + 1 == numChunks then
+                   return () else
+                   collector $ numFinished + 1
+
+  collector 0
 
   t2 <- getCurrentTime
 
