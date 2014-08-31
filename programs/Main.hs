@@ -22,6 +22,7 @@ data Arg = Help
          | CPUs String
          | Chunks String
          | UseGUI
+         | RenderNode String
            deriving (Eq, Show)
 
 data PreConfig =
@@ -30,6 +31,7 @@ data PreConfig =
               , argCpuCount :: Int
               , argWorkChunks :: Int
               , argForceShadows :: Maybe Bool
+              , argRenderNodes :: [String]
               }
 
 defaultPreConfig :: IO PreConfig
@@ -40,6 +42,7 @@ defaultPreConfig = do
                        , argCpuCount = n
                        , argWorkChunks = 10
                        , argForceShadows = Nothing
+                       , argRenderNodes = []
                        }
 
 mkOpts :: IO [OptDescr Arg]
@@ -55,6 +58,8 @@ mkOpts = do
              ("Number of work chunks to use")
            , Option "g" ["gui"] (NoArg UseGUI)
              ("Present a graphical interface during rendering")
+           , Option "d" ["distribute"] (ReqArg RenderNode "NODE")
+             ("Render the job in parallel on this node (specify once for each node)")
            ]
 
 updateConfig :: PreConfig -> Arg -> IO PreConfig
@@ -63,6 +68,7 @@ updateConfig c UseGUI = return c
 updateConfig c (SampleRoot s) = return $ c { argSampleRoot = read s }
 updateConfig c NoShadows = return $ c { argForceShadows = Just True }
 updateConfig c Shadows = return $ c { argForceShadows = Just False }
+updateConfig c (RenderNode n) = return $ c { argRenderNodes = n : argRenderNodes c }
 updateConfig c (Chunks s) =
     case reads s of
         [(cnt, _)] -> return $ c { argWorkChunks = cnt }
@@ -118,9 +124,12 @@ main = do
         dChan <- newChan
 
         _ <- forkIO $ consoleHandler iChan
-        -- TODO: use (networkRenderThread nodes) here when appropriate
-        --_ <- forkIO $ render toRender (argWorkChunks preCfg) renderCfg sceneDesc localRenderThread iChan dChan
-        _ <- forkIO $ render toRender (argWorkChunks preCfg) renderCfg sceneDesc (networkRenderThread ["tcp://localhost:12345", "tcp://localhost:12346"] iChan) iChan dChan
+
+        let manager = if null $ argRenderNodes preCfg
+                      then localRenderThread
+                      else networkRenderThread (argRenderNodes preCfg) iChan
+
+        _ <- forkIO $ render toRender (argWorkChunks preCfg) renderCfg sceneDesc manager iChan dChan
 
         case UseGUI `elem` os of
             False -> fileHandler filename dChan
