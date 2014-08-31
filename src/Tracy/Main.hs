@@ -113,7 +113,7 @@ render sceneName numChunks renderCfg s renderManager iChan dChan = do
                 writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
                 writeChan dChan $ DChunkFinished chunkId rs
                 if numFinished + 1 == numChunks then
-                   return () else
+                   writeChan reqChan RenderFinished else
                    collector $ numFinished + 1
 
   collector 0
@@ -185,8 +185,14 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
                       Right r -> writeChan jobResp r
                   readyNotify
                   worker
-              RenderFinished -> worker
-              Shutdown -> return ()
+              RenderFinished -> do
+                  send sock [] $ encode RenderFinished
+                  _ <- receive sock
+                  worker
+              Shutdown -> do
+                  send sock [] $ encode Shutdown
+                  _ <- receive sock
+                  return ()
 
     worker
 
