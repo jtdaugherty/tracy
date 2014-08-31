@@ -123,12 +123,11 @@ main = do
         iChan <- newChan
         dChan <- newChan
 
-        _ <- forkIO $ consoleHandler iChan
-
         let manager = if null $ argRenderNodes preCfg
                       then localRenderThread
                       else networkRenderThread (argRenderNodes preCfg) iChan
 
+        _ <- forkIO $ consoleHandler iChan
         _ <- forkIO $ render toRender (argWorkChunks preCfg) renderCfg sceneDesc manager iChan dChan
 
         case UseGUI `elem` os of
