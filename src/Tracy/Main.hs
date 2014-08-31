@@ -51,17 +51,18 @@ render :: String
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
-render sceneName numChunks renderCfg s renderManager iChan dChan = do
+render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
   let w = s^.sceneDescWorld
       -- Number of pixel rows per chunk
-      rowsPerChunk = w^.wdViewPlane.vres / (toEnum numChunks)
+      rowsPerChunk = w^.wdViewPlane.vres / (toEnum requestedChunks)
       -- Chunk a list up by a function that gives us the first chunk
       chunk f xs = result : chunk f rest where (result, rest) = f xs
       -- These are the rows we will render
       rows = [0..(fromEnum $ w^.wdViewPlane.vres-1)]
       -- Then we split up the rows into groups (chunks) based on the chunk size
-      chunks = filter (not . null) $ take (numChunks + 1) $
+      chunks = filter (not . null) $ take (requestedChunks + 1) $
                                      chunk (splitAt (fromEnum rowsPerChunk)) rows
+      numChunks = length chunks
       -- For each chunk, construct a rendering request for the relevant row
       -- range and chunk ID
       requests = [ RenderRequest i (ch !! 0, ch !! (length ch - 1))
