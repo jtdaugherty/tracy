@@ -62,6 +62,7 @@ guiHandler chan = do
         atomically $ writeTChan updateChan ()
 
     DFinished <- readChan chan
+    DShutdown <- readChan chan
     return ()
 
   GLUT.mainLoop

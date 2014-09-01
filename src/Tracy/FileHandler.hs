@@ -23,6 +23,7 @@ fileHandler filename chan = do
       return (ch, rs)
 
   DFinished <- readChan chan
+  DShutdown <- readChan chan
 
   let imgBytes = B.concat $ B.concat <$> (getColorBytes <$>) <$> (concat $ snd <$> sort result)
       img = packRGBA32ToBMP (fromEnum rows) (fromEnum cols) imgBytes
