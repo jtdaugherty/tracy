@@ -112,5 +112,5 @@ main = do
 
                 case resp of
                     JobAck -> return ()
-                    ChunkFinished ch _ -> putStrLn $ "Finished chunk: " ++ show ch
+                    ChunkFinished ch _ _ -> putStrLn $ "Finished chunk: " ++ show ch
                     JobError e -> putStrLn $ "Job error: " ++ e

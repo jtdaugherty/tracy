@@ -111,7 +111,7 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
                 putStrLn $ "Yikes! Error in render thread: " ++ msg
                 exitSuccess
             JobAck -> collector numFinished
-            ChunkFinished chunkId rs -> do
+            ChunkFinished chunkId startStop rs -> do
                 t <- getCurrentTime
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) *
                                              (length chunks - chunkId)
@@ -119,7 +119,7 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
                                then Nothing
                                else Just remainingTime
                 writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
-                writeChan dChan $ DChunkFinished chunkId rs
+                writeChan dChan $ DChunkFinished chunkId startStop rs
                 if numFinished + 1 == numChunks then
                    writeChan reqChan RenderFinished else
                    collector $ numFinished + 1
@@ -162,7 +162,7 @@ localRenderThread jobReq jobResp = do
           case ev of
               RenderRequest chunkId (start, stop) -> do
                   ch <- renderChunk cfg s (start, stop)
-                  writeChan jobResp $ ChunkFinished chunkId ch
+                  writeChan jobResp $ ChunkFinished chunkId (start, stop) ch
                   processRequests cfg s
               RenderFinished -> do
                   writeChan jobResp JobAck

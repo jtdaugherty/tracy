@@ -19,7 +19,7 @@ fileHandler filename chan = do
   DStarted <- readChan chan
 
   result <- forM [1..chunks] $ \_ -> do
-      DChunkFinished ch rs <- readChan chan
+      DChunkFinished ch _ rs <- readChan chan
       return (ch, rs)
 
   DFinished <- readChan chan

@@ -37,7 +37,7 @@ data InfoEvent =
 data DataEvent =
       DSceneName String
     | DNumChunks Int
-    | DChunkFinished Int [[Colour]]
+    | DChunkFinished Int (Int, Int) [[Colour]]
     | DImageSize Int Int
     | DStarted
     | DFinished
@@ -53,7 +53,7 @@ data JobRequest =
 
 data JobResponse =
       JobError String
-    | ChunkFinished Int [[Color]]
+    | ChunkFinished Int (Int, Int) [[Color]]
     | JobAck
     deriving (Generic)
 
