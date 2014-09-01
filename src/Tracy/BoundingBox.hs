@@ -1,6 +1,11 @@
-module Tracy.BoundingBox where
+module Tracy.BoundingBox
+  ( boundingBox
+  , boundingBoxHit
+  , inside
+  )
+  where
 
-import Control.Lens
+import Control.Lens hiding (inside)
 import Linear
 
 import Tracy.Types

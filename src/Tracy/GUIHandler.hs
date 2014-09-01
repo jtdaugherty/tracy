@@ -1,4 +1,7 @@
-module Tracy.GUIHandler where
+module Tracy.GUIHandler
+  ( guiHandler
+  )
+  where
 
 import Control.Applicative
 import Control.Concurrent.Chan

@@ -1,4 +1,7 @@
-module Tracy.Box where
+module Tracy.Box
+  ( box
+  )
+  where
 
 import Linear
 

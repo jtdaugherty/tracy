@@ -1,4 +1,7 @@
-module Tracy.ConsoleHandler where
+module Tracy.ConsoleHandler
+  ( consoleHandler
+  )
+  where
 
 import Control.Concurrent.Chan
 import Control.Monad

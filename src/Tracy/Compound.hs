@@ -1,4 +1,7 @@
-module Tracy.Compound where
+module Tracy.Compound
+  ( compound
+  )
+  where
 
 import Tracy.Types
 import Data.Maybe

@@ -1,4 +1,7 @@
-module Tracy.SceneBuilder where
+module Tracy.SceneBuilder
+  ( sceneFromDesc
+  )
+  where
 
 import Control.Applicative
 import Control.Lens ((^.))

@@ -1,4 +1,7 @@
-module Tracy.Triangle where
+module Tracy.Triangle
+  ( tri
+  )
+  where
 
 import Control.Lens
 import Linear

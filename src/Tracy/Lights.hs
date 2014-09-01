@@ -1,4 +1,9 @@
-module Tracy.Lights where
+module Tracy.Lights
+  ( ambientLight
+  , ambientOccluder
+  , pointLight
+  )
+  where
 
 import Control.Applicative
 import Control.Lens

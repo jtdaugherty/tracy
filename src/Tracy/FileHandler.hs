@@ -1,4 +1,7 @@
-module Tracy.FileHandler where
+module Tracy.FileHandler
+  ( fileHandler
+  )
+  where
 
 import Control.Applicative
 import Control.Monad

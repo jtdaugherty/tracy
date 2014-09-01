@@ -1,5 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Tracy.Cameras where
+module Tracy.Cameras
+  ( thinLensCamera
+  )
+  where
 
 import Control.Applicative
 import Control.Lens

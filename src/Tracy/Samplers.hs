@@ -1,4 +1,13 @@
-module Tracy.Samplers where
+module Tracy.Samplers
+  ( regular
+  , jittered
+  , toDisk
+  , toHemi
+  , toUnitDisk
+  , toUnitHemisphere
+  , pureRandom
+  )
+  where
 
 import Control.Applicative
 import Control.Monad

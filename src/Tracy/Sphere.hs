@@ -1,4 +1,7 @@
-module Tracy.Sphere where
+module Tracy.Sphere
+  ( sphere
+  )
+  where
 
 import Control.Applicative
 import Control.Lens
