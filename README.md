@@ -26,6 +26,7 @@ Features:
    - Live GUI with in-progress rendering via GLUT
  * Engine:
    - Multi-core rendering via Haskell's parMap evaluation strategy
+   - Multi-host rendering (use the `tracy-node` program and pass `-d` to `tracy`)
    - Control over per-pixel sample rate
  * Other:
    - Sampler debugging program to test sample distribution for various
