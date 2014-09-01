@@ -8,7 +8,6 @@ import Control.Concurrent.Chan
 import Control.Concurrent.STM
 import Control.Concurrent (forkIO)
 import Control.Monad
-import Control.Monad.State
 import Data.IORef
 import Foreign (Ptr, mallocArray, advancePtr, pokeArray)
 import Data.Colour
@@ -19,10 +18,6 @@ import qualified Graphics.UI.GLUT as GLUT
 import Graphics.UI.GLUT (($=))
 
 import Tracy.Types
-
-type App = StateT MyState IO
-
-type Image = GL.PixelData (GL.Color3 GL.GLubyte)
 
 data MyState =
     MyState { completed :: [(Int, [[Colour]])]
