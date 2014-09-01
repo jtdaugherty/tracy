@@ -26,13 +26,23 @@ boundingBoxHit box ray =
        else Nothing
     where
         localHP t = ray^.origin + (t *^ ray^.direction)
-        maxT0 = maximum [tx_min, ty_min, tz_min]
+
+        max_1 = if tx_min > ty_min
+                then tx_min else ty_min
+        maxT0 = if max_1 > tz_min
+                then max_1 else tz_min
+
         (t0, face_in) = if maxT0 == tx_min
                         then (tx_min, if a >= 0 then 0 else 3)
                         else if maxT0 == ty_min
                              then (ty_min, if b >= 0 then 1 else 4)
                              else (tz_min, if c >= 0 then 2 else 5)
-        minT1 = minimum [tx_max, ty_max, tz_max]
+
+        min_1 = if tx_max < ty_max
+                then tx_max else ty_max
+        minT1 = if tz_max < min_1
+                then tz_max else min_1
+
         (t1, face_out) = if minT1 == tx_max
                          then (tx_max, if a >= 0 then 3 else 0)
                          else if minT1 == ty_max
@@ -74,10 +84,9 @@ faceNormal f = error $ "faceNormal: invalid face " ++ show f
 
 inside :: BBox -> V3 Float -> Bool
 inside b p =
-    and [ p^._x > b^.bboxP0._x
-        , p^._x < b^.bboxP1._x
-        , p^._y > b^.bboxP0._y
-        , p^._y < b^.bboxP1._y
-        , p^._z > b^.bboxP0._z
-        , p^._z < b^.bboxP1._z
-        ]
+    p^._x > b^.bboxP0._x &&
+    p^._x < b^.bboxP1._x &&
+    p^._y > b^.bboxP0._y &&
+    p^._y < b^.bboxP1._y &&
+    p^._z > b^.bboxP0._z &&
+    p^._z < b^.bboxP1._z

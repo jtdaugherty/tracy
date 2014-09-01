@@ -60,17 +60,18 @@ thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam numSets config w squareSampleSets diskSampleSets (theRow, sampleIndices) =
   let root  = config^.sampleRoot
       newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
+      maxToOneDenom = grey (float2Double $ root * root)
+      maxToOneExposure = grey (float2Double $ cam^.exposureTime)
       vp = w^.viewPlane
       colors = getCol (toEnum theRow) <$> [0..vp^.hres-1]
+      worldHitFuncs = w^..objects.folded.hit
       getCol row col =
           let squareSampleSet = squareSampleSets V.! sampleIndex
               diskSampleSet = diskSampleSets V.! sampleIndex
               sampleIndex = sampleIndices !! ((fromEnum col) `mod` numSets)
 
-          in maxToOne ((sum (results row col squareSampleSet diskSampleSet) / grey (float2Double $ root * root)) *
-              grey (float2Double $ cam^.exposureTime))
-
-      worldHitFuncs = w^..objects.folded.hit
+          in maxToOne ((sum (results row col squareSampleSet diskSampleSet) / maxToOneDenom) *
+              maxToOneExposure)
 
       results row col pixelSamples diskSamples = result row col <$> (zip pixelSamples diskSamples)
       result row col ((sx, sy), (dx, dy)) =
@@ -84,7 +85,9 @@ thinLensRender cam numSets config w squareSampleSets diskSampleSets (theRow, sam
                   (lx *^ cam^.cameraU) +
                   (ly *^ cam^.cameraV)
 
-              d = (cam^.cameraData.lensRayDir) cam (V2 x y) (V2 lx ly)
+              d_1 = V2 x y
+              d_2 = V2 lx ly
+              d = (cam^.cameraData.lensRayDir) cam d_1 d_2
 
               ray = Ray { _origin = o
                         , _direction = d
