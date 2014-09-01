@@ -32,28 +32,26 @@ consoleHandler chan = do
             INumChunks n -> outputS "Chunks" n
             IStartTime t -> outputS "Start time" (formatTime defaultTimeLocale rfc822DateFormat t)
             IStarted -> return ()
-            IChunkFinished cId total est ->
-                case est of
-                    Nothing -> output "Finished chunk" (show cId ++ "/" ++ show total)
-                    Just t -> let totalSecs = fromEnum t `div` 1000000000000
-                                  h = totalSecs `div` 3600
-                                  m = (totalSecs `mod` 3600) `div` 60
-                                  s = (totalSecs `mod` 3600) `mod` 60
-                                  totalStr = concat [ show h
-                                                    , "h "
-                                                    , show m
-                                                    , "m "
-                                                    , show s
-                                                    , "s"
-                                                    ]
-                              in output "Finished chunk"
-                                        (concat [ show cId
-                                                , "/"
-                                                , show total
-                                                , " ("
-                                                , totalStr
-                                                , " remaining)"
-                                                ])
+            IChunkFinished cId total t ->
+                    let totalSecs = fromEnum t `div` 1000000000000
+                        h = totalSecs `div` 3600
+                        m = (totalSecs `mod` 3600) `div` 60
+                        s = (totalSecs `mod` 3600) `mod` 60
+                        totalStr = concat [ show h
+                                          , "h "
+                                          , show m
+                                          , "m "
+                                          , show s
+                                          , "s"
+                                          ]
+                    in output "Finished chunk"
+                              (concat [ show cId
+                                      , "/"
+                                      , show total
+                                      , " ("
+                                      , totalStr
+                                      , " remaining)"
+                                      ])
             IFinishTime t -> outputS "Finish time" t
             ITotalTime t -> outputS "Total time" t
             IFinished -> return ()

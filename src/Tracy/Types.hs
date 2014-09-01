@@ -24,7 +24,7 @@ data InfoEvent =
     | INumCPUs Int
     | INumChunks Int
     | INumRowsPerChunk Int
-    | IChunkFinished Int Int (Maybe NominalDiffTime)
+    | IChunkFinished Int Int NominalDiffTime
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime

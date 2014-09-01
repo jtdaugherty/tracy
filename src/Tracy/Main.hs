@@ -123,12 +123,9 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
             JobAck -> collector numFinished
             ChunkFinished chunkId startStop rs -> do
                 t <- getCurrentTime
-                let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` chunkId) *
-                                             (length chunks - chunkId)
-                    estimate = if chunkId == 1
-                               then Nothing
-                               else Just remainingTime
-                writeChan iChan $ IChunkFinished chunkId (length chunks) estimate
+                let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
+                                             (length chunks - (numFinished + 1))
+                writeChan iChan $ IChunkFinished chunkId (length chunks) remainingTime
                 writeChan dChan $ DChunkFinished chunkId startStop rs
                 if numFinished + 1 == numChunks then
                    writeChan reqChan RenderFinished else
