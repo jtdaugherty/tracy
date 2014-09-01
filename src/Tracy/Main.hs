@@ -68,6 +68,16 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
       requests = [ RenderRequest i (ch !! 0, ch !! (length ch - 1))
                  | (i, ch) <- zip [1..] chunks
                  ]
+      numSets = fromEnum (w^.wdViewPlane.hres * 2.3)
+      squareSampler = regular
+      -- XXX this *should* be taken from the camera, but we don't have one of
+      -- those at this stage.  If we ever start using other camera types, this
+      -- could be a problem.
+      diskSampler = toUnitDisk jittered
+
+  -- Generate sample data for square and disk samplers
+  squareSamples <- replicateM numSets $ squareSampler (renderCfg^.sampleRoot)
+  diskSamples <- replicateM numSets $ diskSampler (renderCfg^.sampleRoot)
 
   writeChan iChan $ ISceneName sceneName
   writeChan dChan $ DSceneName sceneName
@@ -98,7 +108,7 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
   _ <- forkIO (renderManager reqChan respChan)
 
   -- Set the scene
-  writeChan reqChan $ SetScene renderCfg s
+  writeChan reqChan $ SetScene renderCfg s squareSamples diskSamples
 
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests
@@ -142,7 +152,7 @@ localRenderThread jobReq jobResp = do
     let waitForJob = do
           ev <- readChan jobReq
           case ev of
-              SetScene cfg sDesc -> do
+              SetScene cfg sDesc sSamples dSamples -> do
                   let Right s = sceneFromDesc sDesc
                       aScheme = s^.sceneAccelScheme
                       worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
@@ -151,19 +161,19 @@ localRenderThread jobReq jobResp = do
                                             Just v -> worldAccel & worldShadows .~ v
                       newScene = s & sceneWorld .~ worldAccelShadows
                   writeChan jobResp JobAck
-                  processRequests cfg newScene
+                  processRequests cfg newScene sSamples dSamples
                   waitForJob
               Shutdown -> do
                   writeChan jobResp JobAck
               _ -> writeChan jobResp $ JobError "Expected SetScene or Shutdown, got unexpected event"
 
-        processRequests cfg s = do
+        processRequests cfg s sSamples dSamples = do
           ev <- readChan jobReq
           case ev of
               RenderRequest chunkId (start, stop) -> do
-                  ch <- renderChunk cfg s (start, stop)
+                  ch <- renderChunk cfg s (start, stop) sSamples dSamples
                   writeChan jobResp $ ChunkFinished chunkId (start, stop) ch
-                  processRequests cfg s
+                  processRequests cfg s sSamples dSamples
               RenderFinished -> do
                   writeChan jobResp JobAck
               _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
@@ -181,8 +191,8 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
     let worker = do
           ev <- readChan jobReq
           case ev of
-              SetScene cfg s -> do
-                  send sock [] $ encode $ SetScene cfg s
+              SetScene cfg s sSamples dSamples -> do
+                  send sock [] $ encode $ SetScene cfg s sSamples dSamples
                   _ <- receive sock
                   worker
               RenderRequest chunkId (start, stop) -> do
@@ -217,8 +227,8 @@ networkRenderThread nodes iChan jobReq jobResp = do
         chanReader = do
             req <- readChan jobReq
             case req of
-                SetScene cfg s -> do
-                    sendToAll $ SetScene cfg s
+                SetScene cfg s sSamples dSamples -> do
+                    sendToAll $ SetScene cfg s sSamples dSamples
                     chanReader
                 RenderRequest chunkId (start, stop) -> do
                     -- Find available (non-busy) node
@@ -234,21 +244,16 @@ networkRenderThread nodes iChan jobReq jobResp = do
 
     chanReader
 
-renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> IO [[Color]]
-renderChunk cfg s (start, stop) = do
+renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> [[(Float, Float)]] -> [[(Float, Float)]] -> IO [[Color]]
+renderChunk cfg s (start, stop) sSamples dSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
       numSets = fromEnum (w^.viewPlane.hres * 2.3)
-      squareSampler = regular
-      diskSampler = cam^.cameraData.lensSampler
       renderer = cam^.cameraRenderWorld
       chunkRows = [start..stop]
-
-  -- Generate sample data for square and disk samplers
-  squareSamples <- V.replicateM numSets $ squareSampler (cfg^.sampleRoot)
-  diskSamples <- V.replicateM numSets $ diskSampler (cfg^.sampleRoot)
-
-  let worker = renderer cam numSets cfg w squareSamples diskSamples
+      squareSamples = V.fromList sSamples
+      diskSamples = V.fromList dSamples
+      worker = renderer cam numSets cfg w squareSamples diskSamples
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
   sampleIndices <- forM chunkRows $ \_ -> shuffle [0..numSets-1]

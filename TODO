@@ -1,7 +1,4 @@
 - Network rendering enhancements:
-  - precompute samples on the manager node, send them with SetScene to avoid
-    computing new samples on each chunk and creating aliasing artifacts
-    (ensures that the same sample sets are used for the entire scene)
   - detect manager disconnection in nodes, clean up gracefully rather than
     getting stuck in the middle of a rendering loop
 - Sampling implementations (n-rooks, hammersley, etc.)
