@@ -67,6 +67,8 @@ thinLensRender cam numSets config w squareSampleSets diskSampleSets (theRow, sam
           in maxToOne ((sum (results row col squareSampleSet diskSampleSet) / grey (float2Double $ root * root)) *
               grey (float2Double $ cam^.exposureTime))
 
+      worldHitFuncs = w^..objects.folded.hit
+
       results row col pixelSamples diskSamples = result row col <$> (zip pixelSamples diskSamples)
       result row col ((sx, sy), (dx, dy)) =
           let x = newPixSize * (col - (0.5 * vp^.hres) + sx)
@@ -84,15 +86,12 @@ thinLensRender cam numSets config w squareSampleSets diskSampleSets (theRow, sam
               ray = Ray { _origin = o
                         , _direction = d
                         }
-          in case hitAnObject w ray of
+          in case hitAnObject worldHitFuncs ray of
                Nothing -> w^.bgColor
                Just (sh, _t) -> (sh^.material.doShading) (toHemi (dx, dy)) (w^.worldShadows) w (sh & shadeRay .~ ray)
 
   in colors
 
-hitAnObject :: World -> Ray -> Maybe (Shade, Float)
-hitAnObject w r =
-    listToMaybe $ sortBy (comparing snd) $ catMaybes results
-    where
-      results = tests <*> pure r
-      tests = w^..objects.folded.hit
+hitAnObject :: [Ray -> Maybe (Shade, Float)] -> Ray -> Maybe (Shade, Float)
+hitAnObject hitFuncs r =
+    listToMaybe $ sortBy (comparing snd) $ catMaybes $ hitFuncs <*> pure r

@@ -12,17 +12,16 @@ compound [] _ = error "empty compound"
 compound [o] _ = o
 compound os m =
     Object { _objectMaterial = m -- XXX unused
-           , _hit = hitCompound os
-           , _shadow_hit = shadowHitCompound os
+           , _hit = hitCompound (os^..folded.hit)
+           , _shadow_hit = shadowHitCompound (os^..folded.hit)
            , _bounding_box = error "compound has no bounding_box"
            }
 
-hitCompound :: [Object] -> Ray -> Maybe (Shade, Float)
-hitCompound os r =
+hitCompound :: [Ray -> Maybe (Shade, Float)] -> Ray -> Maybe (Shade, Float)
+hitCompound hitFuncs r =
     listToMaybe $ sortBy (comparing snd) $ catMaybes results
     where
-      results = tests <*> pure r
-      tests = os^..folded.hit
+      results = hitFuncs <*> pure r
 
-shadowHitCompound :: [Object] -> Ray -> Maybe Float
-shadowHitCompound os r = snd <$> hitCompound os r
+shadowHitCompound :: [Ray -> Maybe (Shade, Float)] -> Ray -> Maybe Float
+shadowHitCompound hitFuncs r = snd <$> hitCompound hitFuncs r
