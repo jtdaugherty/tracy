@@ -11,7 +11,7 @@ defaultVp :: ViewPlane
 defaultVp =
     ViewPlane { _hres = 800
               , _vres = 800
-              , _pixelSize = 0.5
+              , _pixelSize = 1.0
               , _gamma = 1.0
               , _inverseGamma = 1.0
               }
@@ -23,59 +23,35 @@ defCamera =
                    (V3 0 1 0)
                    1.0
                    1.0
-                   300
-                   300
+                   500 -- vpDist
+                   300 -- fpDist
                    0
 
 world :: [ObjectDesc] -> [LightDesc] -> WorldDesc
 world os ls = WorldDesc { _wdViewPlane = defaultVp
                         , _wdObjects = os
                         , _wdBgColor = cBlack
-                        , _wdLights = Point True 2 cWhite (V3 (-500) 500 500) : ls
+                        , _wdLights = ls
                         , _wdAmbient = Ambient 1 cWhite
                         , _wdWorldShadows = True
                         }
 
-worldOcc :: [ObjectDesc] -> [LightDesc] -> WorldDesc
-worldOcc os ls = WorldDesc { _wdViewPlane = defaultVp
-                           , _wdObjects = os
-                           , _wdBgColor = cBlack
-                           , _wdLights = Point True 2 cWhite (V3 (-500) 500 500) : ls
-                           , _wdAmbient = AmbientOccluder cWhite (grey 0.25) 1
-                           , _wdWorldShadows = True
-                           }
+worldOcc :: [ObjectDesc] -> [LightDesc] -> Float -> WorldDesc
+worldOcc os ls ambStr = WorldDesc { _wdViewPlane = defaultVp
+                                  , _wdObjects = os
+                                  , _wdBgColor = cBlack
+                                  , _wdLights =  ls
+                                  , _wdAmbient = AmbientOccluder cWhite cBlack ambStr
+                                  , _wdWorldShadows = True
+                                  }
 
-world1 :: SceneDesc
-world1 =
+oneSphere :: SceneDesc
+oneSphere =
     let s = Sphere (V3 (-40) 0 0) 85.0 (Phong cRed 100)
     in SceneDesc (world [s] []) NoScheme defCamera
 
-world2 :: SceneDesc
-world2 =
-    let s = Sphere (V3 0 0 41) 10.0 (Matte cBlue)
-        s2 = Sphere (V3 0 0 0) 40.0 (Matte cGreen)
-    in SceneDesc (world [s, s2] []) NoScheme defCamera
-
-world2occ :: SceneDesc
-world2occ =
-    let s = Sphere (V3 0 0 41) 10.0 (Matte cBlue)
-        s2 = Sphere (V3 0 0 0) 40.0 (Matte cGreen)
-    in SceneDesc (worldOcc [s, s2] []) NoScheme defCamera
-
-world3 :: SceneDesc
-world3 =
-    let s = Sphere (V3 0 60 80) 30.0 (Matte cBlue)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
-    in SceneDesc (world [s, p] []) NoScheme defCamera
-
-world3occ :: SceneDesc
-world3occ =
-    let s = Sphere (V3 0 60 80) 30.0 (Matte cBlue)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
-    in SceneDesc (worldOcc [s, p] []) NoScheme defCamera
-
-world4 :: SceneDesc
-world4 =
+objectDemo :: SceneDesc
+objectDemo =
     let s = Sphere (V3 0 0 11) 30.0 (Matte cBlue)
         p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
         s2 = Sphere (V3 50 5 0) 10.0 (Matte cMagenta)
@@ -85,10 +61,12 @@ world4 =
         b3 = Box (V3 (-150) 0 25) (V3 (-100) 75 75) (Matte cYellow)
         b4 = Box (V3 (-150) 0 (-75)) (V3 (-100) 75 (-25)) (Matte cWhite)
         t1 = Triangle (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (Matte cWhite)
-    in SceneDesc (world [t1, s, p, s2, s3, b1, b2, b3, b4] []) GridScheme defCamera
+        ls = [ Point True 1 cWhite (V3 (-500) 500 500)
+             ]
+    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] ls 3) NoScheme defCamera
 
-world4occ :: SceneDesc
-world4occ =
+objectDemoNoPoint :: SceneDesc
+objectDemoNoPoint =
     let s = Sphere (V3 0 0 11) 30.0 (Matte cBlue)
         p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
         s2 = Sphere (V3 50 5 0) 10.0 (Matte cMagenta)
@@ -98,10 +76,10 @@ world4occ =
         b3 = Box (V3 (-150) 0 25) (V3 (-100) 75 75) (Matte cYellow)
         b4 = Box (V3 (-150) 0 (-75)) (V3 (-100) 75 (-25)) (Matte cWhite)
         t1 = Triangle (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (Matte cWhite)
-    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] []) NoScheme defCamera
+    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] [] 4) NoScheme defCamera
 
-world5Objects :: [ObjectDesc]
-world5Objects =
+sphereGrid :: [ObjectDesc]
+sphereGrid =
     let spheres = concat [ ss y e r | (y, e, r) <- params ]
         params = [ (-1200, 1   , 30.0)
                  , (-1100, 1   , 20.0)
@@ -153,43 +131,31 @@ world5Objects =
                    ]
     in spheres
 
-world5 :: SceneDesc
-world5 =
-    SceneDesc (world world5Objects [] & wdWorldShadows .~ False)
-              GridScheme
-              (defCamera & thinLensRadius .~ 10.0
-                         & thinLensLookAt .~ (V3 0 30 0))
+clearSpheres :: SceneDesc
+clearSpheres =
+    let ls = [ Point False 1.5 cWhite (V3 (-500) 500 500)
+             ]
+    in SceneDesc (world sphereGrid ls & wdWorldShadows .~ False)
+                 GridScheme
+                 defCamera
 
-world5occ :: SceneDesc
-world5occ =
-    SceneDesc (worldOcc world5Objects [] & wdWorldShadows .~ False)
-              GridScheme
-              (defCamera & thinLensRadius .~ 10.0
-                         & thinLensLookAt .~ (V3 0 30 0))
-
-world6 :: SceneDesc
-world6 =
-    let s = Sphere (V3 0 60 0) 30.0 (Phong cBlue 100)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
-    in SceneDesc (world [s, p] []) NoScheme defCamera
-
-world6occ :: SceneDesc
-world6occ =
-    let s = Sphere (V3 0 30 0) 30.0 (Phong cBlue 100)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
-    in SceneDesc (worldOcc [s, p] []) NoScheme defCamera
+blurrySpheres :: SceneDesc
+blurrySpheres =
+    let ls = [ Point False 1.5 cWhite (V3 (-500) 500 500)
+             ]
+    in SceneDesc (worldOcc sphereGrid ls 1 & wdWorldShadows .~ False)
+                 GridScheme
+                 (defCamera & thinLensRadius .~ 10.0
+                            & thinLensLookAt .~ (V3 0 30 0)
+                            & thinLensVpDist .~ 500
+                            & thinLensFpDist .~ 500
+                            & thinLensEye    .~ (V3 0 50 300))
 
 scenes :: [(String, SceneDesc)]
 scenes =
-    [ ("world1", world1)
-    , ("world2", world2)
-    , ("world2occ", world2occ)
-    , ("world3", world3)
-    , ("world3occ", world3occ)
-    , ("world4", world4)
-    , ("world4occ", world4occ)
-    , ("world5", world5)
-    , ("world5occ", world5occ)
-    , ("world6", world6)
-    , ("world6occ", world6occ)
+    [ ("one-sphere", oneSphere)
+    , ("object-demo", objectDemo)
+    , ("object-demo2", objectDemoNoPoint)
+    , ("clear-spheres", clearSpheres)
+    , ("blurry-spheres", blurrySpheres)
     ]
