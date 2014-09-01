@@ -23,7 +23,7 @@ data PreConfig =
               }
 
 defaultListenPort :: Int
-defaultListenPort = 12345
+defaultListenPort = 9000
 
 defaultPreConfig :: IO PreConfig
 defaultPreConfig = do
