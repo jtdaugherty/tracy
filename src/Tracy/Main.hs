@@ -138,6 +138,18 @@ localRenderThread jobReq jobResp = do
                   sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
                   dSamples <- replicateM numSets $ diskSampler (cfg^.sampleRoot)
 
+                  let processRequests cfg s = do
+                        ev <- readChan jobReq
+                        case ev of
+                            RenderRequest chunkId (start, stop) -> do
+                                ch <- renderChunk cfg s (start, stop) sSamples dSamples
+                                let converted = (cdemote <$>) <$> ch
+                                writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
+                                processRequests cfg s
+                            RenderFinished -> do
+                                writeChan jobResp JobAck
+                            _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
+
                   let Right s = sceneFromDesc sDesc
                       aScheme = s^.sceneAccelScheme
                       worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
@@ -145,24 +157,13 @@ localRenderThread jobReq jobResp = do
                                             Nothing -> worldAccel
                                             Just v -> worldAccel & worldShadows .~ v
                       newScene = s & sceneWorld .~ worldAccelShadows
+
                   writeChan jobResp JobAck
-                  processRequests cfg newScene sSamples dSamples
+                  processRequests cfg newScene
                   waitForJob
               Shutdown -> do
                   writeChan jobResp JobAck
               _ -> writeChan jobResp $ JobError "Expected SetScene or Shutdown, got unexpected event"
-
-        processRequests cfg s sSamples dSamples = do
-          ev <- readChan jobReq
-          case ev of
-              RenderRequest chunkId (start, stop) -> do
-                  ch <- renderChunk cfg s (start, stop) sSamples dSamples
-                  let converted = (cdemote <$>) <$> ch
-                  writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
-                  processRequests cfg s sSamples dSamples
-              RenderFinished -> do
-                  writeChan jobResp JobAck
-              _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
 
     waitForJob
 
