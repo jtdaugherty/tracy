@@ -8,6 +8,7 @@ import Control.Concurrent.Chan
 import Control.Lens
 import Control.Monad
 import Data.Colour
+import qualified Data.Vector as V
 
 import Tracy.Types
 import Tracy.SceneBuilder
@@ -31,11 +32,14 @@ localSetSceneAndRender jobReq jobResp cfg sDesc = do
     sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
     dSamples <- replicateM numSets $ diskSampler (cfg^.sampleRoot)
 
+    let sSamplesVec = V.fromList sSamples
+        dSamplesVec = V.fromList dSamples
+
     let processRequests = do
           ev <- readChan jobReq
           case ev of
               RenderRequest chunkId (start, stop) -> do
-                  ch <- renderChunk cfg scene (start, stop) sSamples dSamples
+                  ch <- renderChunk cfg scene (start, stop) sSamplesVec dSamplesVec
                   let converted = (cdemote <$>) <$> ch
                   writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
                   processRequests

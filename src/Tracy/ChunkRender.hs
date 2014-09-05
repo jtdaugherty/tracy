@@ -17,16 +17,14 @@ import Tracy.Types
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
 
-renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> [[(Float, Float)]] -> [[(Float, Float)]] -> IO [[Color]]
+renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> V.Vector [(Float, Float)] -> V.Vector [(Float, Float)] -> IO [[Color]]
 renderChunk cfg s (start, stop) sSamples dSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
       numSets = fromEnum $ w^.viewPlane.hres
       renderer = cam^.cameraRenderWorld
       chunkRows = [start..stop]
-      squareSamples = V.fromList sSamples
-      diskSamples = V.fromList dSamples
-      worker = renderer cam numSets cfg w squareSamples diskSamples
+      worker = renderer cam numSets cfg w sSamples dSamples
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
   sampleIndices <- replicateM (stop - start + 1) $
