@@ -15,12 +15,11 @@ import Tracy.SceneBuilder
 import Tracy.Samplers
 import Tracy.ChunkRender
 
-localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig -> SceneDesc -> IO ()
-localSetSceneAndRender jobReq jobResp cfg sDesc = do
-    let Right builtScene = sceneFromDesc sDesc
-        squareSampler = regular
+localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig -> Scene ThinLens -> IO ()
+localSetSceneAndRender jobReq jobResp cfg builtScene = do
+    let squareSampler = regular
         diskSampler = builtScene^.sceneCamera.cameraData.lensSampler
-        numSets = fromEnum $ sDesc^.sceneDescWorld^.wdViewPlane.hres
+        numSets = fromEnum $ builtScene^.sceneWorld.viewPlane.hres
         aScheme = builtScene^.sceneAccelScheme
         worldAccel = (aScheme^.schemeApply) (builtScene^.sceneWorld)
         worldAccelShadows = case cfg^.forceShadows of
@@ -47,7 +46,6 @@ localSetSceneAndRender jobReq jobResp cfg sDesc = do
                   writeChan jobResp JobAck
               _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
 
-    writeChan jobResp JobAck
     processRequests
 
 localRenderManager :: Chan JobRequest -> Chan JobResponse -> IO ()
@@ -56,7 +54,11 @@ localRenderManager jobReq jobResp = do
           reqEv <- readChan jobReq
           case reqEv of
               SetScene cfg sDesc -> do
-                  localSetSceneAndRender jobReq jobResp cfg sDesc
+                  case sceneFromDesc sDesc of
+                      Right s -> do
+                          writeChan jobResp JobAck
+                          localSetSceneAndRender jobReq jobResp cfg s
+                      Left e -> writeChan jobResp $ JobError e
                   waitForJob
               Shutdown -> do
                   writeChan jobResp JobAck
