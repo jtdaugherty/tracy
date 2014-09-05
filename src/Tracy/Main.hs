@@ -12,7 +12,6 @@ import Tracy.Types
 defaultRenderConfig :: RenderConfig
 defaultRenderConfig =
     RenderConfig { _sampleRoot = 4
-                 , _accelScheme = NoScheme
                  , _forceShadows = Nothing
                  }
 

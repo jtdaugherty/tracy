@@ -114,7 +114,6 @@ data AccelScheme =
 
 data RenderConfig =
     RenderConfig { _sampleRoot :: Float
-                 , _accelScheme :: AccelSchemeDesc
                  , _forceShadows :: Maybe Bool
                  }
                  deriving (Generic, Show)
