@@ -53,7 +53,7 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
       requests = [ RenderRequest i (ch !! 0, ch !! (length ch - 1))
                  | (i, ch) <- zip [1..] chunks
                  ]
-      numSets = fromEnum (w^.wdViewPlane.hres * 2.3)
+      numSets = fromEnum $ w^.wdViewPlane.hres
       squareSampler = regular
       -- XXX this *should* be taken from the camera, but we don't have one of
       -- those at this stage.  If we ever start using other camera types, this
@@ -230,7 +230,7 @@ renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> [[(Float, Float)]
 renderChunk cfg s (start, stop) sSamples dSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
-      numSets = fromEnum (w^.viewPlane.hres * 2.3)
+      numSets = fromEnum $ w^.viewPlane.hres
       renderer = cam^.cameraRenderWorld
       chunkRows = [start..stop]
       squareSamples = V.fromList sSamples
