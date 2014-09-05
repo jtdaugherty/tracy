@@ -1,5 +1,5 @@
-module Tracy.LocalRender
-  ( localRender
+module Tracy.RenderManagers.Local
+  ( localRenderManager
   )
   where
 
@@ -46,8 +46,8 @@ localSetSceneAndRender jobReq jobResp cfg sDesc = do
     writeChan jobResp JobAck
     processRequests
 
-localRender :: Chan JobRequest -> Chan JobResponse -> IO ()
-localRender jobReq jobResp = do
+localRenderManager :: Chan JobRequest -> Chan JobResponse -> IO ()
+localRenderManager jobReq jobResp = do
     let waitForJob = do
           reqEv <- readChan jobReq
           case reqEv of

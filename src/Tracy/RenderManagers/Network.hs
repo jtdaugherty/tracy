@@ -1,5 +1,5 @@
-module Tracy.NetworkRender
-  ( networkRender
+module Tracy.RenderManagers.Network
+  ( networkRenderManager
   )
   where
 
@@ -45,8 +45,8 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
 
     worker
 
-networkRender :: [String] -> Chan InfoEvent -> Chan JobRequest -> Chan JobResponse -> IO ()
-networkRender nodes iChan jobReq jobResp = do
+networkRenderManager :: [String] -> Chan InfoEvent -> Chan JobRequest -> Chan JobResponse -> IO ()
+networkRenderManager nodes iChan jobReq jobResp = do
     reqChans <- replicateM (length nodes) newChan
     readyChan <- newChan
 

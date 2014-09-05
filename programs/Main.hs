@@ -14,8 +14,9 @@ import Tracy.Types
 import Tracy.FileHandler
 import Tracy.GUIHandler
 import Tracy.ConsoleHandler
-import Tracy.LocalRender
-import Tracy.NetworkRender
+
+import Tracy.RenderManagers.Local
+import Tracy.RenderManagers.Network
 
 data Arg = Help
          | SampleRoot String
@@ -126,8 +127,8 @@ main = do
         dChan <- newChan
 
         let manager = if null $ argRenderNodes preCfg
-                      then localRender
-                      else networkRender (argRenderNodes preCfg) iChan
+                      then localRenderManager
+                      else networkRenderManager (argRenderNodes preCfg) iChan
 
         _ <- forkIO $ consoleHandler iChan
         _ <- forkIO $ render toRender (argWorkChunks preCfg) renderCfg sceneDesc manager iChan dChan

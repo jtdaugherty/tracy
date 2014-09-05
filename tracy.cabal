@@ -54,13 +54,13 @@ library
     Tracy.GUIHandler
     Tracy.BoundingBox
     Tracy.Box
-    Tracy.LocalRender
-    Tracy.NetworkRender
     Tracy.ChunkRender
     Tracy.Triangle
     Tracy.Compound
     Tracy.Grid
     Tracy.SceneBuilder
+    Tracy.RenderManagers.Local
+    Tracy.RenderManagers.Network
 
 executable tracy
   Hs-Source-Dirs:      programs
