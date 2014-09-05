@@ -124,38 +124,38 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
 localRenderThread :: Chan JobRequest -> Chan JobResponse -> IO ()
 localRenderThread jobReq jobResp = do
     let waitForJob = do
-          ev <- readChan jobReq
-          case ev of
+          reqEv <- readChan jobReq
+          case reqEv of
               SetScene cfg sDesc -> do
-                  let Right s = sceneFromDesc sDesc
+                  let Right builtScene = sceneFromDesc sDesc
                       squareSampler = regular
-                      diskSampler = s^.sceneCamera.cameraData.lensSampler
+                      diskSampler = builtScene^.sceneCamera.cameraData.lensSampler
                       numSets = fromEnum $ sDesc^.sceneDescWorld^.wdViewPlane.hres
-                      aScheme = s^.sceneAccelScheme
-                      worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
+                      aScheme = builtScene^.sceneAccelScheme
+                      worldAccel = (aScheme^.schemeApply) (builtScene^.sceneWorld)
                       worldAccelShadows = case cfg^.forceShadows of
                                             Nothing -> worldAccel
                                             Just v -> worldAccel & worldShadows .~ v
-                      newScene = s & sceneWorld .~ worldAccelShadows
+                      scene = builtScene & sceneWorld .~ worldAccelShadows
 
                   -- Generate sample data for square and disk samplers
                   sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
                   dSamples <- replicateM numSets $ diskSampler (cfg^.sampleRoot)
 
-                  let processRequests cfg s = do
+                  let processRequests = do
                         ev <- readChan jobReq
                         case ev of
                             RenderRequest chunkId (start, stop) -> do
-                                ch <- renderChunk cfg s (start, stop) sSamples dSamples
+                                ch <- renderChunk cfg scene (start, stop) sSamples dSamples
                                 let converted = (cdemote <$>) <$> ch
                                 writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
-                                processRequests cfg s
+                                processRequests
                             RenderFinished -> do
                                 writeChan jobResp JobAck
                             _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
 
                   writeChan jobResp JobAck
-                  processRequests cfg newScene
+                  processRequests
                   waitForJob
               Shutdown -> do
                   writeChan jobResp JobAck
