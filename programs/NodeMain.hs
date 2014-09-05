@@ -101,7 +101,7 @@ main = do
             Left e -> putStrLn $ "Error decoding message: " ++ e
             Right val -> do
                 case val of
-                    SetScene cfg _ _ _ -> putStrLn $ "Got scene setting, cfg: " ++ show cfg
+                    SetScene cfg _ -> putStrLn $ "Got scene setting, cfg: " ++ show cfg
                     RenderRequest ch _ -> putStrLn $ "Got chunk request: " ++ show ch
                     RenderFinished -> putStrLn "Rendering finished"
                     Shutdown -> putStrLn "Shutdown"
