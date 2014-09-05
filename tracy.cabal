@@ -31,7 +31,6 @@ library
     parallel,
     OpenGL,
     stm,
-    array,
     cereal,
     zeromq4-haskell,
     old-locale
