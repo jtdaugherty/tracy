@@ -241,9 +241,9 @@ renderChunk cfg s (start, stop) sSamples dSamples = do
       worker = renderer cam numSets cfg w squareSamples diskSamples
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
-  sampleIndices <- timeIt "sampleIndices" $ replicateM (stop - start + 1) $
-                                              replicateM numSets $
-                                                randomRIO (0, numSets - 1)
+  sampleIndices <- replicateM (stop - start + 1) $
+                     replicateM numSets $
+                       randomRIO (0, numSets - 1)
 
   let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleIndices)
   r `deepseq` return ()
