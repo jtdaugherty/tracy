@@ -36,10 +36,15 @@ library
     old-locale
 
   exposed-modules:
+    Tracy.Objects.Plane
+    Tracy.Objects.Sphere
+    Tracy.Objects.Box
+    Tracy.Objects.Triangle
+    Tracy.Objects.Compound
+    Tracy.RenderManagers.Local
+    Tracy.RenderManagers.Network
     Tracy.Types
-    Tracy.Plane
     Tracy.AccelSchemes
-    Tracy.Sphere
     Tracy.Util
     Tracy.Constants
     Tracy.ConsoleHandler
@@ -53,14 +58,9 @@ library
     Tracy.Materials
     Tracy.GUIHandler
     Tracy.BoundingBox
-    Tracy.Box
     Tracy.ChunkRender
-    Tracy.Triangle
-    Tracy.Compound
     Tracy.Grid
     Tracy.SceneBuilder
-    Tracy.RenderManagers.Local
-    Tracy.RenderManagers.Network
 
 executable tracy
   Hs-Source-Dirs:      programs

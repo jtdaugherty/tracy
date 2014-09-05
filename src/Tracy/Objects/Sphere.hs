@@ -1,4 +1,4 @@
-module Tracy.Sphere
+module Tracy.Objects.Sphere
   ( sphere
   )
   where

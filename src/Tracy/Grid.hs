@@ -5,7 +5,7 @@ import Tracy.Types
 import Tracy.Constants
 import Tracy.BoundingBox
 import Tracy.Util
-import Tracy.Compound
+import Tracy.Objects.Compound
 import Data.Maybe
 import Control.Lens hiding (ix, inside)
 import Control.Applicative

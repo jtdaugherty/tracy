@@ -1,4 +1,4 @@
-module Tracy.Box
+module Tracy.Objects.Box
   ( box
   )
   where

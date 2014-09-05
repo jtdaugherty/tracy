@@ -11,10 +11,10 @@ import Tracy.Types
 import Tracy.Cameras
 import Tracy.Materials
 
-import Tracy.Sphere
-import Tracy.Box
-import Tracy.Plane
-import Tracy.Triangle
+import Tracy.Objects.Sphere
+import Tracy.Objects.Box
+import Tracy.Objects.Plane
+import Tracy.Objects.Triangle
 
 import Tracy.Lights
 import Tracy.AccelSchemes

@@ -1,4 +1,4 @@
-module Tracy.Triangle
+module Tracy.Objects.Triangle
   ( tri
   )
   where

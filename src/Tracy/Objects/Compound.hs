@@ -1,4 +1,4 @@
-module Tracy.Compound
+module Tracy.Objects.Compound
   ( compound
   )
   where

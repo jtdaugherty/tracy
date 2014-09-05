@@ -1,4 +1,4 @@
-module Tracy.Plane where
+module Tracy.Objects.Plane where
 
 import Control.Lens
 import Linear
