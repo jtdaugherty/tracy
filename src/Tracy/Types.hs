@@ -45,7 +45,7 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc [[(Float, Float)]] [[(Float, Float)]]
+      SetScene RenderConfig SceneDesc
     | RenderRequest Int (Int, Int)
     | RenderFinished
     | Shutdown

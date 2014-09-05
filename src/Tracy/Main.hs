@@ -54,16 +54,6 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
       requests = [ RenderRequest i (ch !! 0, ch !! (length ch - 1))
                  | (i, ch) <- zip [1..] chunks
                  ]
-      numSets = fromEnum $ w^.wdViewPlane.hres
-      squareSampler = regular
-      -- XXX this *should* be taken from the camera, but we don't have one of
-      -- those at this stage.  If we ever start using other camera types, this
-      -- could be a problem.
-      diskSampler = toUnitDisk jittered
-
-  -- Generate sample data for square and disk samplers
-  squareSamples <- replicateM numSets $ squareSampler (renderCfg^.sampleRoot)
-  diskSamples <- replicateM numSets $ diskSampler (renderCfg^.sampleRoot)
 
   writeChan iChan $ ISceneName sceneName
   writeChan dChan $ DSceneName sceneName
@@ -94,7 +84,7 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
   _ <- forkIO (renderManager reqChan respChan)
 
   -- Set the scene
-  writeChan reqChan $ SetScene renderCfg s squareSamples diskSamples
+  writeChan reqChan $ SetScene renderCfg s
 
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests
@@ -136,7 +126,18 @@ localRenderThread jobReq jobResp = do
     let waitForJob = do
           ev <- readChan jobReq
           case ev of
-              SetScene cfg sDesc sSamples dSamples -> do
+              SetScene cfg sDesc -> do
+                  let squareSampler = regular
+                      -- XXX this *should* be taken from the camera, but we don't have one of
+                      -- those at this stage.  If we ever start using other camera types, this
+                      -- could be a problem.
+                      diskSampler = toUnitDisk jittered
+                      numSets = fromEnum $ sDesc^.sceneDescWorld^.wdViewPlane.hres
+
+                  -- Generate sample data for square and disk samplers
+                  sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
+                  dSamples <- replicateM numSets $ diskSampler (cfg^.sampleRoot)
+
                   let Right s = sceneFromDesc sDesc
                       aScheme = s^.sceneAccelScheme
                       worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
@@ -176,8 +177,8 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
     let worker = do
           ev <- readChan jobReq
           case ev of
-              SetScene cfg s sSamples dSamples -> do
-                  send sock [] $ encode $ SetScene cfg s sSamples dSamples
+              SetScene cfg s -> do
+                  send sock [] $ encode $ SetScene cfg s
                   _ <- receive sock
                   worker
               RenderRequest chunkId (start, stop) -> do
@@ -212,8 +213,8 @@ networkRenderThread nodes iChan jobReq jobResp = do
         chanReader = do
             req <- readChan jobReq
             case req of
-                SetScene cfg s sSamples dSamples -> do
-                    sendToAll $ SetScene cfg s sSamples dSamples
+                SetScene cfg s -> do
+                    sendToAll $ SetScene cfg s
                     chanReader
                 RenderRequest chunkId (start, stop) -> do
                     -- Find available (non-busy) node
