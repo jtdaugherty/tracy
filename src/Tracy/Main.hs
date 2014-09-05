@@ -127,12 +127,16 @@ localRenderThread jobReq jobResp = do
           ev <- readChan jobReq
           case ev of
               SetScene cfg sDesc -> do
-                  let squareSampler = regular
-                      -- XXX this *should* be taken from the camera, but we don't have one of
-                      -- those at this stage.  If we ever start using other camera types, this
-                      -- could be a problem.
-                      diskSampler = toUnitDisk jittered
+                  let Right s = sceneFromDesc sDesc
+                      squareSampler = regular
+                      diskSampler = s^.sceneCamera.cameraData.lensSampler
                       numSets = fromEnum $ sDesc^.sceneDescWorld^.wdViewPlane.hres
+                      aScheme = s^.sceneAccelScheme
+                      worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
+                      worldAccelShadows = case cfg^.forceShadows of
+                                            Nothing -> worldAccel
+                                            Just v -> worldAccel & worldShadows .~ v
+                      newScene = s & sceneWorld .~ worldAccelShadows
 
                   -- Generate sample data for square and disk samplers
                   sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
@@ -149,14 +153,6 @@ localRenderThread jobReq jobResp = do
                             RenderFinished -> do
                                 writeChan jobResp JobAck
                             _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
-
-                  let Right s = sceneFromDesc sDesc
-                      aScheme = s^.sceneAccelScheme
-                      worldAccel = (aScheme^.schemeApply) (s^.sceneWorld)
-                      worldAccelShadows = case cfg^.forceShadows of
-                                            Nothing -> worldAccel
-                                            Just v -> worldAccel & worldShadows .~ v
-                      newScene = s & sceneWorld .~ worldAccelShadows
 
                   writeChan jobResp JobAck
                   processRequests cfg newScene
