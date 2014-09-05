@@ -17,7 +17,12 @@ import Tracy.Types
 instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
 
-renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> V.Vector [(Float, Float)] -> V.Vector [(Float, Float)] -> IO [[Color]]
+renderChunk :: RenderConfig
+            -> Scene ThinLens
+            -> (Int, Int)
+            -> V.Vector [(Float, Float)]
+            -> V.Vector [(Float, Float)]
+            -> IO [[Color]]
 renderChunk cfg s (start, stop) sSamples dSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
