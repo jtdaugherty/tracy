@@ -17,8 +17,6 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
     connect sock connStr
     writeChan iChan $ IConnected connStr
 
-    readyNotify
-
     let worker = do
           ev <- readChan jobReq
           case ev of
@@ -37,6 +35,7 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
               RenderFinished -> do
                   send sock [] $ encode RenderFinished
                   _ <- receive sock
+                  readyNotify
                   worker
               Shutdown -> do
                   send sock [] $ encode Shutdown
@@ -72,5 +71,8 @@ networkRenderManager nodes iChan jobReq jobResp = do
                     chanReader
                 Shutdown -> do
                     sendToAll Shutdown
+
+    -- Cancel any existing job
+    sendToAll RenderFinished
 
     chanReader

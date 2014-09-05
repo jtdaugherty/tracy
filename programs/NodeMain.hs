@@ -89,7 +89,9 @@ main = do
   jobReq <- newChan
   jobResp <- newChan
 
-  _ <- forkIO $ localRenderManager jobReq jobResp
+  -- Start the local renderer in a loop, since each time a render is finished,
+  -- it terminates
+  _ <- forkIO $ forever $ localRenderManager jobReq jobResp
 
   withContext $ \ctx -> do
       sock <- socket ctx Rep
