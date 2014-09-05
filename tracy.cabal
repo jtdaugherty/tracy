@@ -54,6 +54,9 @@ library
     Tracy.GUIHandler
     Tracy.BoundingBox
     Tracy.Box
+    Tracy.LocalRender
+    Tracy.NetworkRender
+    Tracy.ChunkRender
     Tracy.Triangle
     Tracy.Compound
     Tracy.Grid

@@ -2,22 +2,13 @@
 module Tracy.Main where
 
 import Control.Applicative
-import Control.Parallel.Strategies
 import Control.Lens
-import Control.DeepSeq
-import Control.Monad
 import Control.Concurrent
 import Data.Time.Clock
 import Data.Colour
-import Data.Serialize
-import qualified Data.Vector as V
-import System.Random
 import System.Exit
-import System.ZMQ4
 
 import Tracy.Types
-import Tracy.Samplers
-import Tracy.SceneBuilder
 
 defaultRenderConfig :: RenderConfig
 defaultRenderConfig =
@@ -25,9 +16,6 @@ defaultRenderConfig =
                  , _accelScheme = NoScheme
                  , _forceShadows = Nothing
                  }
-
-instance NFData Colour where
-    rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
 
 render :: String
        -> Int
@@ -120,134 +108,3 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
 
   writeChan dChan DShutdown
   writeChan iChan IShutdown
-
-localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig -> SceneDesc -> IO ()
-localSetSceneAndRender jobReq jobResp cfg sDesc = do
-    let Right builtScene = sceneFromDesc sDesc
-        squareSampler = regular
-        diskSampler = builtScene^.sceneCamera.cameraData.lensSampler
-        numSets = fromEnum $ sDesc^.sceneDescWorld^.wdViewPlane.hres
-        aScheme = builtScene^.sceneAccelScheme
-        worldAccel = (aScheme^.schemeApply) (builtScene^.sceneWorld)
-        worldAccelShadows = case cfg^.forceShadows of
-                              Nothing -> worldAccel
-                              Just v -> worldAccel & worldShadows .~ v
-        scene = builtScene & sceneWorld .~ worldAccelShadows
-
-    -- Generate sample data for square and disk samplers
-    sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
-    dSamples <- replicateM numSets $ diskSampler (cfg^.sampleRoot)
-
-    let processRequests = do
-          ev <- readChan jobReq
-          case ev of
-              RenderRequest chunkId (start, stop) -> do
-                  ch <- renderChunk cfg scene (start, stop) sSamples dSamples
-                  let converted = (cdemote <$>) <$> ch
-                  writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
-                  processRequests
-              RenderFinished -> do
-                  writeChan jobResp JobAck
-              _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
-
-    writeChan jobResp JobAck
-    processRequests
-
-localRenderThread :: Chan JobRequest -> Chan JobResponse -> IO ()
-localRenderThread jobReq jobResp = do
-    let waitForJob = do
-          reqEv <- readChan jobReq
-          case reqEv of
-              SetScene cfg sDesc -> do
-                  localSetSceneAndRender jobReq jobResp cfg sDesc
-                  waitForJob
-              Shutdown -> do
-                  writeChan jobResp JobAck
-              _ -> writeChan jobResp $ JobError "Expected SetScene or Shutdown, got unexpected event"
-
-    waitForJob
-
-networkNodeThread :: String -> Chan InfoEvent -> Chan JobRequest -> Chan JobResponse -> IO () -> IO ()
-networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx -> do
-    sock <- socket ctx Req
-    connect sock connStr
-    writeChan iChan $ IConnected connStr
-
-    readyNotify
-
-    let worker = do
-          ev <- readChan jobReq
-          case ev of
-              SetScene cfg s -> do
-                  send sock [] $ encode $ SetScene cfg s
-                  _ <- receive sock
-                  worker
-              RenderRequest chunkId (start, stop) -> do
-                  send sock [] $ encode $ RenderRequest chunkId (start, stop)
-                  reply <- receive sock
-                  case decode reply of
-                      Left e -> writeChan jobResp $ JobError e
-                      Right r -> writeChan jobResp r
-                  readyNotify
-                  worker
-              RenderFinished -> do
-                  send sock [] $ encode RenderFinished
-                  _ <- receive sock
-                  worker
-              Shutdown -> do
-                  send sock [] $ encode Shutdown
-                  _ <- receive sock
-                  return ()
-
-    worker
-
-networkRenderThread :: [String] -> Chan InfoEvent -> Chan JobRequest -> Chan JobResponse -> IO ()
-networkRenderThread nodes iChan jobReq jobResp = do
-    reqChans <- replicateM (length nodes) newChan
-    readyChan <- newChan
-
-    -- Connect to all nodes
-    forM_ (zip3 nodes reqChans [0..]) $ \(n, ch, i) -> do
-        forkIO $ networkNodeThread n iChan ch jobResp (writeChan readyChan i)
-
-    let sendToAll val = forM_ reqChans $ \ch -> writeChan ch val
-        chanReader = do
-            req <- readChan jobReq
-            case req of
-                SetScene cfg s -> do
-                    sendToAll $ SetScene cfg s
-                    chanReader
-                RenderRequest chunkId (start, stop) -> do
-                    -- Find available (non-busy) node
-                    nodeId <- readChan readyChan
-                    -- Send the request to its channel
-                    writeChan (reqChans !! nodeId) $ RenderRequest chunkId (start, stop)
-                    chanReader
-                RenderFinished -> do
-                    sendToAll RenderFinished
-                    chanReader
-                Shutdown -> do
-                    sendToAll Shutdown
-
-    chanReader
-
-renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> [[(Float, Float)]] -> [[(Float, Float)]] -> IO [[Color]]
-renderChunk cfg s (start, stop) sSamples dSamples = do
-  let cam = s^.sceneCamera
-      w = s^.sceneWorld
-      numSets = fromEnum $ w^.viewPlane.hres
-      renderer = cam^.cameraRenderWorld
-      chunkRows = [start..stop]
-      squareSamples = V.fromList sSamples
-      diskSamples = V.fromList dSamples
-      worker = renderer cam numSets cfg w squareSamples diskSamples
-
-  -- Zip up chunkRows values with sets of randomly-generated sample set indices
-  sampleIndices <- replicateM (stop - start + 1) $
-                     replicateM numSets $
-                       randomRIO (0, numSets - 1)
-
-  let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleIndices)
-  r `deepseq` return ()
-
-  return r

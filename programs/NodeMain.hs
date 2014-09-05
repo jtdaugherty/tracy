@@ -9,8 +9,8 @@ import GHC.Conc
 import System.ZMQ4
 import Data.Serialize (encode, decode)
 
-import Tracy.Main
 import Tracy.Types
+import Tracy.LocalRender
 
 data Arg = Help
          | CPUs String
@@ -89,7 +89,7 @@ main = do
   jobReq <- newChan
   jobResp <- newChan
 
-  _ <- forkIO $ localRenderThread jobReq jobResp
+  _ <- forkIO $ localRender jobReq jobResp
 
   withContext $ \ctx -> do
       sock <- socket ctx Rep
