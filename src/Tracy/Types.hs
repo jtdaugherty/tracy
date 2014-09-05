@@ -53,7 +53,7 @@ data JobRequest =
 
 data JobResponse =
       JobError String
-    | ChunkFinished Int (Int, Int) [[Color]]
+    | ChunkFinished Int (Int, Int) [[Colour8]]
     | JobAck
     deriving (Generic)
 
@@ -241,6 +241,10 @@ instance Serialize a => Serialize (V3 a) where
 instance Serialize Colour where
     get = Colour <$> get <*> get <*> get
     put (Colour r g b) = put r >> put g >> put b
+
+instance Serialize Colour8 where
+    get = Colour8 <$> get <*> get <*> get
+    put (Colour8 r g b) = put r >> put g >> put b
 
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where

@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Main where
 
+import Control.Applicative
 import Control.Parallel.Strategies
 import Control.Lens
 import Control.DeepSeq
@@ -110,8 +111,9 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
                 t <- getCurrentTime
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
                                              (length chunks - (numFinished + 1))
+                    converted = (cpromote <$>) <$> rs
                 writeChan iChan $ IChunkFinished chunkId (length chunks) remainingTime
-                writeChan dChan $ DChunkFinished chunkId startStop rs
+                writeChan dChan $ DChunkFinished chunkId startStop converted
                 if numFinished + 1 == numChunks then
                    writeChan reqChan RenderFinished else
                    collector $ numFinished + 1
@@ -154,7 +156,8 @@ localRenderThread jobReq jobResp = do
           case ev of
               RenderRequest chunkId (start, stop) -> do
                   ch <- renderChunk cfg s (start, stop) sSamples dSamples
-                  writeChan jobResp $ ChunkFinished chunkId (start, stop) ch
+                  let converted = (cdemote <$>) <$> ch
+                  writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
                   processRequests cfg s sSamples dSamples
               RenderFinished -> do
                   writeChan jobResp JobAck
