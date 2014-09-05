@@ -1,6 +1,3 @@
-- Network rendering enhancements:
-  - detect manager disconnection in nodes, clean up gracefully rather than
-    getting stuck in the middle of a rendering loop
 - Sampling implementations (n-rooks, hammersley, etc.)
 - Shading / light sources? Emission material?
 - Intersection for
