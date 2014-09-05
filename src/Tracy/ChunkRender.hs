@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.ChunkRender
   ( renderChunk
   )

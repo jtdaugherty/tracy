@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Main where
 
 import Control.Applicative
