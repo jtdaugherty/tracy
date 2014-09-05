@@ -43,9 +43,15 @@ guiHandler chan = do
   _ <- GLUT.createWindow sceneName
 
   GLUT.displayCallback $= display ref imageArray
-  GLUT.idleCallback $= (Just $ checkForChanges updateChan)
   GLUT.reshapeCallback $= Just reshape
   GLUT.keyboardMouseCallback $= Just handleKM
+
+  let updateIntervalMs = 100
+      updater ch = do
+        checkForChanges ch
+        GLUT.addTimerCallback updateIntervalMs (updater ch)
+
+  GLUT.addTimerCallback updateIntervalMs (updater updateChan)
 
   GL.clearColor $= GL.Color4 100 100 200 0
   GL.shadeModel $= GL.Flat
@@ -71,7 +77,7 @@ guiHandler chan = do
 
   return ()
 
-checkForChanges :: TChan () -> GLUT.IdleCallback
+checkForChanges :: TChan () -> IO ()
 checkForChanges ch = do
     v <- atomically $ tryReadTChan ch
     case v of
