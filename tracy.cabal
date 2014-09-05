@@ -46,21 +46,21 @@ library
     Tracy.InfoHandlers.ConsoleHandler
     Tracy.DataHandlers.GUIHandler
     Tracy.DataHandlers.FileHandler
-    Tracy.Types
     Tracy.AccelSchemes
-    Tracy.Util
-    Tracy.Constants
-    Tracy.Main
-    Tracy.Samplers
-    Tracy.Cameras
-    Tracy.Scenes
     Tracy.BRDF
-    Tracy.Lights
-    Tracy.Materials
     Tracy.BoundingBox
+    Tracy.Cameras
     Tracy.ChunkRender
+    Tracy.Constants
     Tracy.Grid
+    Tracy.Lights
+    Tracy.Main
+    Tracy.Materials
+    Tracy.Samplers
     Tracy.SceneBuilder
+    Tracy.Scenes
+    Tracy.Types
+    Tracy.Util
 
 executable tracy
   Hs-Source-Dirs:      programs
