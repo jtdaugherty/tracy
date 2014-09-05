@@ -43,12 +43,13 @@ library
     Tracy.Objects.Compound
     Tracy.RenderManagers.Local
     Tracy.RenderManagers.Network
+    Tracy.InfoHandlers.ConsoleHandler
+    Tracy.DataHandlers.GUIHandler
+    Tracy.DataHandlers.FileHandler
     Tracy.Types
     Tracy.AccelSchemes
     Tracy.Util
     Tracy.Constants
-    Tracy.ConsoleHandler
-    Tracy.FileHandler
     Tracy.Main
     Tracy.Samplers
     Tracy.Cameras
@@ -56,7 +57,6 @@ library
     Tracy.BRDF
     Tracy.Lights
     Tracy.Materials
-    Tracy.GUIHandler
     Tracy.BoundingBox
     Tracy.ChunkRender
     Tracy.Grid

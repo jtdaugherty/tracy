@@ -1,4 +1,4 @@
-module Tracy.FileHandler
+module Tracy.DataHandlers.FileHandler
   ( fileHandler
   )
   where

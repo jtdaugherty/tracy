@@ -1,4 +1,4 @@
-module Tracy.GUIHandler
+module Tracy.DataHandlers.GUIHandler
   ( guiHandler
   )
   where

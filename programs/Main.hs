@@ -11,9 +11,10 @@ import GHC.Conc
 import Tracy.Main
 import Tracy.Scenes
 import Tracy.Types
-import Tracy.FileHandler
-import Tracy.GUIHandler
-import Tracy.ConsoleHandler
+
+import Tracy.DataHandlers.FileHandler
+import Tracy.DataHandlers.GUIHandler
+import Tracy.InfoHandlers.ConsoleHandler
 
 import Tracy.RenderManagers.Local
 import Tracy.RenderManagers.Network

@@ -1,4 +1,4 @@
-module Tracy.ConsoleHandler
+module Tracy.InfoHandlers.ConsoleHandler
   ( consoleHandler
   )
   where
