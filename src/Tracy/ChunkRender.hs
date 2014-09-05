@@ -21,7 +21,7 @@ renderChunk :: RenderConfig -> Scene ThinLens -> (Int, Int) -> V.Vector [(Float,
 renderChunk cfg s (start, stop) sSamples dSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
-      numSets = fromEnum $ w^.viewPlane.hres
+      numSets = V.length sSamples
       renderer = cam^.cameraRenderWorld
       chunkRows = [start..stop]
       worker = renderer cam numSets cfg w sSamples dSamples
