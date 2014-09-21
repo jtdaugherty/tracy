@@ -156,7 +156,7 @@ blurrySpheres =
 
 loadCubeScene :: IO SceneDesc
 loadCubeScene = do
-    mDesc <- loadMesh "cube.ply"
+    mDesc <- loadMesh "meshes/cube.ply"
     let cObj = Mesh mDesc $ Matte cBlue
         p = Plane (V3 0 (-28) 0) (V3 0 1 0) (Matte cGreen)
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
@@ -165,7 +165,7 @@ loadCubeScene = do
 
 loadBunnyScene :: IO SceneDesc
 loadBunnyScene = do
-    mDesc <- loadMesh "bunny2.ply"
+    mDesc <- loadMesh "meshes/bunny.ply"
     let cObj = Mesh mDesc $ Matte cBlue
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
