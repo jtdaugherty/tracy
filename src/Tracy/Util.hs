@@ -1,4 +1,10 @@
-module Tracy.Util where
+module Tracy.Util
+  ( max3
+  , min3
+  , getColorBytes
+  , defaultShade
+  , clamp
+  ) where
 
 import Control.Applicative
 import Data.Colour
@@ -23,8 +29,19 @@ defaultShade =
           , _dir = V3 0 0 0
           }
 
-defaultBBox :: BBox
-defaultBBox = boundingBox (V3 (-1) (-1) (-1)) (V3 1 1 1)
-
 clamp :: (Ord a) => a -> a -> a -> a
-clamp v mn mx = if v < mn then mn else if v > mx then mx else v
+clamp v mnB mxB = if v < mnB
+                  then mnB else if v > mxB
+                                then mxB else v
+
+mx :: (Ord a) => a -> a -> a
+mx a b = if a > b then a else b
+
+mn :: (Ord a) => a -> a -> a
+mn a b = if a < b then a else b
+
+max3 :: (Ord a) => a -> a -> a -> a
+max3 a b c = mx a $ mx b c
+
+min3 :: (Ord a) => a -> a -> a -> a
+min3 a b c = mn a $ mn b c

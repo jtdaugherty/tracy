@@ -139,11 +139,8 @@ hitGrid (nx, ny, nz) bbox m ray =
                            then ((z0 - oz) * c, (z1 - oz) * c)
                            else ((z1 - oz) * c, (z0 - oz) * c)
 
-        mx a b = if a > b then a else b
-        mn a b = if a < b then a else b
-
-        t0 = mx tx_min $ mx ty_min tz_min
-        t1 = mn tx_max $ mn ty_max tz_max
+        t0 = max3 tx_min ty_min tz_min
+        t1 = min3 tx_max ty_max tz_max
 
         iix, iiy, iiz :: Int
         (iix, iiy, iiz) = if inside bbox (ray^.origin)

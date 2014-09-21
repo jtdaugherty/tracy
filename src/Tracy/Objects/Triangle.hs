@@ -24,13 +24,13 @@ triBBox v0 v1 v2 =
     BBox (V3 minx miny minz) (V3 maxx maxy maxz)
     where
       delta = 0.0001
-      minx = minimum [v0^._x, v1^._x, v2^._x] - delta
-      miny = minimum [v0^._y, v1^._y, v2^._y] - delta
-      minz = minimum [v0^._z, v1^._z, v2^._z] - delta
+      minx = min3 (v0^._x) (v1^._x) (v2^._x) - delta
+      miny = min3 (v0^._y) (v1^._y) (v2^._y) - delta
+      minz = min3 (v0^._z) (v1^._z) (v2^._z) - delta
 
-      maxx = maximum [v0^._x, v1^._x, v2^._x] + delta
-      maxy = maximum [v0^._y, v1^._y, v2^._y] + delta
-      maxz = maximum [v0^._z, v1^._z, v2^._z] + delta
+      maxx = max3 (v0^._x) (v1^._x) (v2^._x) + delta
+      maxy = max3 (v0^._y) (v1^._y) (v2^._y) + delta
+      maxz = max3 (v0^._z) (v1^._z) (v2^._z) + delta
 
 _hitTriangle :: V3 Float -> V3 Float -> V3 Float -> Ray -> Maybe Float
 _hitTriangle v0 v1 v2 ray = if beta < 0 || tgamma < 0 || beta + tgamma > 1 || t < epsilon
