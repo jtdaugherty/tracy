@@ -25,7 +25,8 @@ applyGrid w =
 grid :: [Object] -> Object
 grid os =
     let bbox = boundingBox (minCoords os) (maxCoords os)
-        hitF = hitGrid (getDimensions os) bbox $ setupCells bbox os
+        dims = getDimensions os
+        hitF = hitGrid dims bbox $ setupCells bbox os dims
     in Object { _objectMaterial = error "should not use objectMaterial of grid"
               , _hit = hitF
               , _shadow_hit = (snd <$>) . hitF
@@ -68,10 +69,9 @@ getDimensions os = (truncate nx, truncate ny, truncate nz)
       ny = multiplier * wy / s + 1
       nz = multiplier * wz / s + 1
 
-setupCells :: BBox -> [Object] -> M.Map (Int, Int, Int) Object
-setupCells b os = mkCompounds $ foldr addObject M.empty os
+setupCells :: BBox -> [Object] -> (Int, Int, Int) -> M.Map (Int, Int, Int) Object
+setupCells b os (nx, ny, nz) = mkCompounds $ foldr addObject M.empty os
     where
-      (nx, ny, nz) = getDimensions os
       p0 = b^.bboxP0
       p1 = b^.bboxP1
       addObject :: Object -> M.Map (Int, Int, Int) [Object] -> M.Map (Int, Int, Int) [Object]
@@ -95,7 +95,7 @@ setupCells b os = mkCompounds $ foldr addObject M.empty os
                                ]
                       in (foldr (.) id $ addToCell <$> is) m
 
-      mkCompounds m = M.fromList $ (\(k,objs) -> (k, compound objs undefined)) <$> M.toList m
+      mkCompounds m = M.map (\objs -> compound objs undefined) m
 
 data St = St { txNext :: Float
              , tyNext :: Float
