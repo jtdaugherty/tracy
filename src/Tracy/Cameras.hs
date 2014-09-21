@@ -15,6 +15,7 @@ import Linear
 import GHC.Float
 
 import Tracy.Types
+import Tracy.Util (max3)
 import Tracy.Samplers (toHemi)
 
 camera :: V3 Float -> V3 Float -> V3 Float -> Float -> Float
@@ -51,7 +52,7 @@ thinLensRayDir cam pixelPoint lensPoint =
 maxToOne :: Color -> Color
 maxToOne (Colour r g b) = Colour r' g' b'
     where
-      m = maximum [r, g, b]
+      m = max3 r g b
       (r', g', b') = if m > 1
                      then (r/m, g/m, b/m)
                      else (r, g, b)
