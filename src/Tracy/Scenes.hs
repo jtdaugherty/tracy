@@ -157,19 +157,35 @@ blurrySpheres =
 loadCubeScene :: IO SceneDesc
 loadCubeScene = do
     mDesc <- loadMesh "meshes/cube.ply"
-    let cObj = Mesh mDesc $ Matte cBlue
-        p = Plane (V3 0 (-28) 0) (V3 0 1 0) (Matte cGreen)
-        ls = [ Point True 1 cWhite (V3 (-500) 500 500)
+    let cObj = Mesh mDesc $ Matte cWhite
+        ls = [ Point True 1 cWhite (V3 (-10) 10 10)
              ]
-    return $ SceneDesc (world [p, cObj] ls) NoScheme defCamera
+    return $ SceneDesc (world [cObj] ls) NoScheme
+                 (defCamera & thinLensRadius .~ 0.0
+                            & thinLensLookAt .~ (V3 0 0 0)
+                            & thinLensVpDist .~ 200
+                            & thinLensFpDist .~ 200
+                            & thinLensEye    .~ (V3 2.1 2.1 3)
+                            )
 
 loadBunnyScene :: IO SceneDesc
 loadBunnyScene = do
     mDesc <- loadMesh "meshes/bunny.ply"
     let cObj = Mesh mDesc $ Matte cWhite
-        ls = [ Point True 1 cWhite (V3 (-500) 500 500)
+        ls = [ Point True 1 cWhite (V3 (-5) 5 5)
+             , Point True 1 cWhite (V3 5 5 5)
+             , Point True 1 cWhite (V3 5 (-5) 5)
+             , Point True 1 cWhite (V3 5 (-5) (-5))
+             , Point True 1 cWhite (V3 5 0 2)
              ]
-    return $ SceneDesc (world [cObj] ls) NoScheme defCamera
+    return $ SceneDesc (world [cObj] ls) NoScheme
+                 (defCamera & thinLensRadius .~ 0.0
+                            & thinLensLookAt .~ (V3 0 0 0)
+                            & thinLensVpDist .~ 200
+                            & thinLensFpDist .~ 200
+                            & thinLensUp     .~ (V3 0 0 1)
+                            & thinLensEye    .~ (V3 5 0 2)
+                            )
 
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
