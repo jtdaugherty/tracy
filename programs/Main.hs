@@ -114,11 +114,11 @@ main = do
 
   setNumCapabilities $ argCpuCount preCfg
 
-  loadedScenes <- allScenes
-
-  case lookup toRender loadedScenes of
+  case lookup toRender allScenes of
     Nothing -> putStrLn $ "No such scene: " ++ toRender
-    Just sceneDesc -> do
+    Just loadSceneDesc -> do
+        sceneDesc <- loadSceneDesc
+
         let renderCfg = defaultRenderConfig & sampleRoot .~ (argSampleRoot preCfg)
                                             & forceShadows .~ (argForceShadows preCfg)
 

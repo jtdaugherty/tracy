@@ -166,29 +166,18 @@ loadCubeScene = do
 loadBunnyScene :: IO SceneDesc
 loadBunnyScene = do
     mDesc <- loadMesh "meshes/bunny.ply"
-    let cObj = Mesh mDesc $ Matte cBlue
+    let cObj = Mesh mDesc $ Matte cWhite
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
     return $ SceneDesc (world [cObj] ls) NoScheme defCamera
 
-pureScenes :: [(String, SceneDesc)]
-pureScenes =
-    [ ("one-sphere", oneSphere)
-    , ("object-demo", objectDemo)
-    , ("object-demo2", objectDemoNoPoint)
-    , ("clear-spheres", clearSpheres)
-    , ("blurry-spheres", blurrySpheres)
+allScenes :: [(String, IO SceneDesc)]
+allScenes =
+    [ ("one-sphere", return oneSphere)
+    , ("object-demo", return objectDemo)
+    , ("object-demo2", return objectDemoNoPoint)
+    , ("clear-spheres", return clearSpheres)
+    , ("blurry-spheres", return blurrySpheres)
+    , ("cube", loadCubeScene)
+    , ("bunny", loadBunnyScene)
     ]
-
-ioScenes :: IO [(String, SceneDesc)]
-ioScenes = do
-    cubeScene <- loadCubeScene
-    bunnyScene <- loadBunnyScene
-    return [ ("cube", cubeScene)
-           , ("bunny", bunnyScene)
-           ]
-
-allScenes :: IO [(String, SceneDesc)]
-allScenes = do
-    loaded <- ioScenes
-    return $ loaded ++ pureScenes
