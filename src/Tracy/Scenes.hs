@@ -1,11 +1,14 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Tracy.Scenes where
+module Tracy.Scenes
+  ( allScenes
+  ) where
 
 import Control.Lens
 import Data.Colour
 import Linear
 
 import Tracy.Types
+import Tracy.Objects.Mesh
 
 defaultVp :: ViewPlane
 defaultVp =
@@ -151,11 +154,45 @@ blurrySpheres =
                             & thinLensFpDist .~ 500
                             & thinLensEye    .~ (V3 0 50 300))
 
-scenes :: [(String, SceneDesc)]
-scenes =
+loadCubeScene :: IO SceneDesc
+loadCubeScene = do
+    mDesc <- loadMesh "cube.ply"
+    let cObj = Mesh mDesc $ Matte cBlue
+        p = Plane (V3 0 (-28) 0) (V3 0 1 0) (Matte cGreen)
+        ls = [ Point True 1 cWhite (V3 (-500) 500 500)
+             ]
+    return $ SceneDesc (world [p, cObj] ls) NoScheme defCamera
+
+loadBunnyScene :: IO SceneDesc
+loadBunnyScene = do
+    mDesc <- loadMesh "bunny2.ply"
+    let cObj = Mesh mDesc $ Matte cBlue
+        ls = [ Point True 1 cWhite (V3 (-500) 500 500)
+             ]
+    return $ SceneDesc (world [cObj] ls) NoScheme defCamera
+--                 (defCamera & thinLensLookAt .~ (V3 0 0 0)
+--                            & thinLensVpDist .~ 
+--                            & thinLensFpDist .~ 0.5
+--                            & thinLensEye    .~ (V3 0 0.1 0.1))
+
+pureScenes :: [(String, SceneDesc)]
+pureScenes =
     [ ("one-sphere", oneSphere)
     , ("object-demo", objectDemo)
     , ("object-demo2", objectDemoNoPoint)
     , ("clear-spheres", clearSpheres)
     , ("blurry-spheres", blurrySpheres)
     ]
+
+ioScenes :: IO [(String, SceneDesc)]
+ioScenes = do
+    cubeScene <- loadCubeScene
+    bunnyScene <- loadBunnyScene
+    return [ ("cube", cubeScene)
+           , ("bunny", bunnyScene)
+           ]
+
+allScenes :: IO [(String, SceneDesc)]
+allScenes = do
+    loaded <- ioScenes
+    return $ loaded ++ pureScenes

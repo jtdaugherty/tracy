@@ -114,7 +114,9 @@ main = do
 
   setNumCapabilities $ argCpuCount preCfg
 
-  case lookup toRender scenes of
+  loadedScenes <- allScenes
+
+  case lookup toRender loadedScenes of
     Nothing -> putStrLn $ "No such scene: " ++ toRender
     Just sceneDesc -> do
         let renderCfg = defaultRenderConfig & sampleRoot .~ (argSampleRoot preCfg)

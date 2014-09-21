@@ -203,11 +203,18 @@ data WorldDesc =
               }
     deriving (Eq, Show, Generic)
 
+data MeshDesc =
+    MeshDesc { meshDescVertices :: [V3 Float]
+             , meshDescFaces :: [[Int]]
+             }
+    deriving (Eq, Show, Generic)
+
 data ObjectDesc =
       Sphere (V3 Float) Float MaterialDesc
     | Triangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
     | Box (V3 Float) (V3 Float) MaterialDesc
     | Plane (V3 Float) (V3 Float) MaterialDesc
+    | Mesh MeshDesc MaterialDesc
     deriving (Eq, Show, Generic)
 
 data LightDesc =
@@ -256,6 +263,7 @@ instance Serialize ViewPlane where
 instance Serialize JobRequest where
 instance Serialize JobResponse where
 instance Serialize RenderConfig where
+instance Serialize MeshDesc where
 
 makeLenses ''Shade
 makeLenses ''Ray

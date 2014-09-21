@@ -1,5 +1,6 @@
 module Tracy.Objects.Triangle
   ( tri
+  , triWithNormal
   )
   where
 
@@ -13,11 +14,15 @@ import Tracy.Constants
 tri :: V3 Float -> V3 Float -> V3 Float -> Material -> Object
 tri v0 v1 v2 mat =
     let n = signorm $ cross (v1 - v0) (v2 - v0)
-    in Object { _objectMaterial = mat
-              , _hit = hitTriangle v0 v1 v2 n mat
-              , _shadow_hit = shadowHitTriangle v0 v1 v2
-              , _bounding_box = Just $ triBBox v0 v1 v2
-              }
+    in triWithNormal v0 v1 v2 n mat
+
+triWithNormal :: V3 Float -> V3 Float -> V3 Float -> V3 Float -> Material -> Object
+triWithNormal v0 v1 v2 n mat =
+    Object { _objectMaterial = mat
+           , _hit = hitTriangle v0 v1 v2 n mat
+           , _shadow_hit = shadowHitTriangle v0 v1 v2
+           , _bounding_box = Just $ triBBox v0 v1 v2
+           }
 
 triBBox :: V3 Float -> V3 Float -> V3 Float -> BBox
 triBBox v0 v1 v2 =

@@ -15,6 +15,7 @@ import Tracy.Objects.Sphere
 import Tracy.Objects.Box
 import Tracy.Objects.Plane
 import Tracy.Objects.Triangle
+import Tracy.Objects.Mesh
 
 import Tracy.Lights
 import Tracy.AccelSchemes
@@ -43,6 +44,7 @@ objectFromDesc (Sphere c r m) = sphere c r <$> materialFromDesc m
 objectFromDesc (Triangle v1 v2 v3 m) = tri v1 v2 v3 <$> materialFromDesc m
 objectFromDesc (Box v1 v2 m) = box v1 v2 <$> materialFromDesc m
 objectFromDesc (Plane c norm m) = plane c norm <$> materialFromDesc m
+objectFromDesc (Mesh mDesc m) = mesh mDesc <$> materialFromDesc m
 
 lightsFromDesc :: [LightDesc] -> Either String [Light]
 lightsFromDesc ls = sequenceA (lightFromDesc <$> ls)
