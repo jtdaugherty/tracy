@@ -77,21 +77,21 @@ setupCells b os (nx, ny, nz) = mkCompounds $ foldr addObject M.empty os
       addObject :: Object -> M.Map (Int, Int, Int) [Object] -> M.Map (Int, Int, Int) [Object]
       addObject o m = let Just ob = o^.bounding_box
 
-                          ixmin = clamp ((ob^.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (toEnum (nx - 1))
-                          iymin = clamp ((ob^.bboxP0._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (toEnum (ny - 1))
-                          izmin = clamp ((ob^.bboxP0._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (toEnum (nz - 1))
+                          ixmin = clamp (fromEnum $ (ob^.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (nx - 1)
+                          iymin = clamp (fromEnum $ (ob^.bboxP0._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (ny - 1)
+                          izmin = clamp (fromEnum $ (ob^.bboxP0._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (nz - 1)
 
-                          ixmax = clamp ((ob^.bboxP1._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (toEnum (nx - 1))
-                          iymax = clamp ((ob^.bboxP1._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (toEnum (ny - 1))
-                          izmax = clamp ((ob^.bboxP1._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (toEnum (nz - 1))
+                          ixmax = clamp (fromEnum $ (ob^.bboxP1._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (nx - 1)
+                          iymax = clamp (fromEnum $ (ob^.bboxP1._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (ny - 1)
+                          izmax = clamp (fromEnum $ (ob^.bboxP1._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (nz - 1)
 
                           ins Nothing = Just [o]
                           ins (Just xs) = Just (o : xs)
                           addToCell = M.alter ins
                           is = [ (x, y, z)
-                               | z <- [fromEnum izmin..fromEnum izmax]
-                               , y <- [fromEnum iymin..fromEnum iymax]
-                               , x <- [fromEnum ixmin..fromEnum ixmax]
+                               | z <- [izmin..izmax]
+                               , y <- [iymin..iymax]
+                               , x <- [ixmin..ixmax]
                                ]
                       in (foldr (.) id $ addToCell <$> is) m
 
@@ -139,19 +139,22 @@ hitGrid (nx, ny, nz) bbox m ray =
                            then ((z0 - oz) * c, (z1 - oz) * c)
                            else ((z1 - oz) * c, (z0 - oz) * c)
 
-        t0 = maximum [tx_min, ty_min, tz_min]
-        t1 = minimum [tx_max, ty_max, tz_max]
+        mx a b = if a > b then a else b
+        mn a b = if a < b then a else b
+
+        t0 = mx tx_min $ mx ty_min tz_min
+        t1 = mn tx_max $ mn ty_max tz_max
 
         iix, iiy, iiz :: Int
         (iix, iiy, iiz) = if inside bbox (ray^.origin)
-                          then ( truncate $ clamp ((ox - x0) * (toEnum nx) / (x1 - x0)) 0 (toEnum (nx - 1))
-                               , truncate $ clamp ((oy - y0) * (toEnum ny) / (y1 - y0)) 0 (toEnum (ny - 1))
-                               , truncate $ clamp ((oz - z0) * (toEnum nz) / (z1 - z0)) 0 (toEnum (nz - 1))
+                          then ( clamp (fromEnum $ (ox - x0) * (toEnum nx) / (x1 - x0)) 0 (nx - 1)
+                               , clamp (fromEnum $ (oy - y0) * (toEnum ny) / (y1 - y0)) 0 (ny - 1)
+                               , clamp (fromEnum $ (oz - z0) * (toEnum nz) / (z1 - z0)) 0 (nz - 1)
                                )
                           else let p = ray^.origin + t0 *^ ray^.direction
-                               in ( truncate $ clamp ((p^._x - x0) * (toEnum nx) / (x1 - x0)) 0 (toEnum (nx - 1))
-                                  , truncate $ clamp ((p^._y - y0) * (toEnum ny) / (y1 - y0)) 0 (toEnum (ny - 1))
-                                  , truncate $ clamp ((p^._z - z0) * (toEnum nz) / (z1 - z0)) 0 (toEnum (nz - 1))
+                               in ( clamp (fromEnum $ (p^._x - x0) * (toEnum nx) / (x1 - x0)) 0 (nx - 1)
+                                  , clamp (fromEnum $ (p^._y - y0) * (toEnum ny) / (y1 - y0)) 0 (ny - 1)
+                                  , clamp (fromEnum $ (p^._z - z0) * (toEnum nz) / (z1 - z0)) 0 (nz - 1)
                                   )
 
         dtx = (tx_max - tx_min) / toEnum nx
