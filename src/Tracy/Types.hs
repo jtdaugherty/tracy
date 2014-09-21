@@ -204,10 +204,10 @@ data WorldDesc =
     deriving (Eq, Show, Generic)
 
 data MeshDesc =
-    MeshDesc { meshDescVertices :: [V3 Float]
+    MeshDesc { meshDescVertices :: V.Vector (V3 Float, V3 Float)
              , meshDescFaces :: [[Int]]
              }
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Show)
 
 data ObjectDesc =
       Sphere (V3 Float) Float MaterialDesc
@@ -263,7 +263,10 @@ instance Serialize ViewPlane where
 instance Serialize JobRequest where
 instance Serialize JobResponse where
 instance Serialize RenderConfig where
+
 instance Serialize MeshDesc where
+    get = MeshDesc <$> (V.fromList <$> get) <*> get
+    put (MeshDesc vs fs) = put (V.toList vs) >> put fs
 
 makeLenses ''Shade
 makeLenses ''Ray
