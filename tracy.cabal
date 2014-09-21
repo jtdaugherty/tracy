@@ -33,7 +33,8 @@ library
     stm,
     cereal,
     zeromq4-haskell,
-    old-locale
+    old-locale,
+    ply-loader >= 0.4
 
   exposed-modules:
     Tracy.AccelSchemes
