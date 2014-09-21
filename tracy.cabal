@@ -60,6 +60,7 @@ library
     Tracy.Objects.Plane
     Tracy.Objects.Sphere
     Tracy.Objects.Triangle
+    Tracy.Objects.Mesh
     Tracy.RenderManagers.Local
     Tracy.RenderManagers.Network
 

@@ -170,10 +170,6 @@ loadBunnyScene = do
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
     return $ SceneDesc (world [cObj] ls) NoScheme defCamera
---                 (defCamera & thinLensLookAt .~ (V3 0 0 0)
---                            & thinLensVpDist .~ 
---                            & thinLensFpDist .~ 0.5
---                            & thinLensEye    .~ (V3 0 0.1 0.1))
 
 pureScenes :: [(String, SceneDesc)]
 pureScenes =
