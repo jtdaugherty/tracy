@@ -4,7 +4,7 @@ module Tracy.Objects.Mesh
   ) where
 
 import Control.Applicative
-import Data.ByteString.Char8
+import Data.ByteString.Char8 hiding (putStrLn)
 import qualified Data.Vector as V
 import Linear
 import PLY
@@ -16,8 +16,11 @@ import Tracy.Objects.Triangle
 
 loadMesh :: FilePath -> IO MeshDesc
 loadMesh filename = do
+    putStrLn $ "Loading mesh from " ++ filename ++ "..."
     Right vs <- loadElements (pack "vertex") filename
+    putStrLn $ "  " ++ show (V.length vs) ++ " vertices"
     Right fs <- loadElements (pack "face") filename
+    putStrLn $ "  " ++ show (V.length fs) ++ " faces"
 
     let toFloat (Sfloat f) = f
         toFloat e = error $ "Could not get float from scalar: " ++ show e
