@@ -4,6 +4,7 @@ module Tracy.Objects.Mesh
   ) where
 
 import Control.Applicative
+import Control.Concurrent
 import Data.ByteString.Char8 hiding (putStrLn)
 import qualified Data.Vector as V
 import Linear
@@ -18,18 +19,21 @@ import Tracy.Objects.Triangle
 loadMesh :: FilePath -> IO MeshDesc
 loadMesh filename = do
     putStrLn $ "Loading mesh from " ++ filename ++ "..."
-    result <- loadHeader filename
 
-    ply <- case result of
-             Left e -> do
-                 putStrLn $ "Error loading mesh from " ++ filename ++ ": " ++ e
-                 exitSuccess
-             Right h -> return h
+    mv1 <- newEmptyMVar
+    mv2 <- newEmptyMVar
 
-    let Right vs = loadPlyElements (pack "vertex") ply
-        Right fs = loadPlyElements (pack "face") ply
+    _ <- forkIO $ do
+      Right vs <- loadElements (pack "vertex") filename
+      putMVar mv1 vs
 
+    _ <- forkIO $ do
+      Right fs <- loadElements (pack "face") filename
+      putMVar mv2 fs
+
+    vs <- takeMVar mv1
     putStrLn $ "  " ++ show (V.length vs) ++ " vertices"
+    fs <- takeMVar mv2
     putStrLn $ "  " ++ show (V.length fs) ++ " faces"
 
     let toFloat (Sfloat f) = f
