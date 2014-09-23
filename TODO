@@ -1,7 +1,5 @@
 - Sampling implementations (n-rooks, hammersley, etc.)
 - Shading / light sources? Emission material?
-- Intersection for
-  - triangle meshes
 - Procedural texture support
 - Image textures
 - Area lights
