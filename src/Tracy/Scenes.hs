@@ -203,14 +203,30 @@ loadDragonScene = do
                             & thinLensEye    .~ (V3 (-0.1) 0.1 0.2)
                             )
 
+loadMonkeyScene :: IO SceneDesc
+loadMonkeyScene = do
+    mDesc <- loadMesh "meshes/monkey.ply"
+    let cObj = Mesh mDesc $ Phong cMagenta 50
+        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
+        ls = [ Point True 1 cWhite (V3 0 20 0)
+             ]
+    return $ SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
+                 (defCamera & thinLensRadius .~ 0.0
+                            & thinLensLookAt .~ (V3 0 2 0)
+                            & thinLensVpDist .~ 300
+                            & thinLensFpDist .~ 300
+                            & thinLensEye    .~ (V3 (-3) 2.5 4)
+                            )
+
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
-    [ ("one-sphere", return oneSphere)
-    , ("object-demo", return objectDemo)
-    , ("object-demo2", return objectDemoNoPoint)
-    , ("clear-spheres", return clearSpheres)
-    , ("blurry-spheres", return blurrySpheres)
-    , ("cube", loadCubeScene)
-    , ("bunny", loadBunnyScene)
-    , ("dragon", loadDragonScene)
+    [ ("one-sphere",      return oneSphere)
+    , ("object-demo",     return objectDemo)
+    , ("object-demo2",    return objectDemoNoPoint)
+    , ("clear-spheres",   return clearSpheres)
+    , ("blurry-spheres",  return blurrySpheres)
+    , ("cube",            loadCubeScene)
+    , ("bunny",           loadBunnyScene)
+    , ("dragon",          loadDragonScene)
+    , ("monkey",          loadMonkeyScene)
     ]
