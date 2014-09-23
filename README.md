@@ -38,3 +38,6 @@ Basic shapes with ambient occlusion:
 
 Thin-lens view with specular highlights and ambient occlusion:
 ![demo2](/demo2.png)
+
+Stanford Bunny mesh:
+![demo3](/demo3.png)
