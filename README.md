@@ -9,7 +9,9 @@ Features:
    - Spheres
    - Cubes
    - Planes
-   - Triangle meshes (PLY file loading)
+ * Flat-shaded triangle meshes
+ * Triangle mesh file formats:
+   - PLY
  * Acceleration aids:
    - Regular grids
  * Materials and shading:
