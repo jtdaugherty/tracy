@@ -41,3 +41,6 @@ Thin-lens view with specular highlights and ambient occlusion:
 
 Stanford Bunny mesh:
 ![demo3](/demo3.png)
+
+Dragon mesh:
+![demo4](/demo4.png)
