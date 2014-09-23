@@ -11,3 +11,6 @@
 - Load scenes from disk
   - Reload scenes from disk and re-render
 - Ultimately: want to read blender scenes or a format that blender can export
+- Mesh support: extra features
+  * Vertex colors & interpolation? Affect material shading & properties?
+  * Consider triangulation for faces with 4 vertices

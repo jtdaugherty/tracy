@@ -171,20 +171,21 @@ loadCubeScene = do
 loadBunnyScene :: IO SceneDesc
 loadBunnyScene = do
     mDesc <- loadMesh "meshes/bunny.ply"
-    let cObj = Mesh mDesc $ Matte cWhite
+    let cObj = Mesh mDesc $ Phong cWhite 100
+        p = Plane (V3 0 0 0.1) (V3 0 0 1) (Matte cGreen)
         ls = [ Point True 1 cWhite (V3 (-5) 5 5)
              , Point True 1 cWhite (V3 5 5 5)
              , Point True 1 cWhite (V3 5 (-5) 5)
              , Point True 1 cWhite (V3 5 (-5) (-5))
              , Point True 1 cWhite (V3 5 0 2)
              ]
-    return $ SceneDesc (world [cObj] ls) NoScheme
+    return $ SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
                  (defCamera & thinLensRadius .~ 0.0
-                            & thinLensLookAt .~ (V3 0 0 0)
-                            & thinLensVpDist .~ 200
-                            & thinLensFpDist .~ 200
+                            & thinLensLookAt .~ (V3 0 0 2)
+                            & thinLensVpDist .~ 300
+                            & thinLensFpDist .~ 300
                             & thinLensUp     .~ (V3 0 0 1)
-                            & thinLensEye    .~ (V3 5 0 2)
+                            & thinLensEye    .~ (V3 (-6) (-3) 3)
                             )
 
 allScenes :: [(String, IO SceneDesc)]

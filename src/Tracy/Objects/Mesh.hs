@@ -9,6 +9,7 @@ import qualified Data.Vector as V
 import Linear
 import PLY
 import PLY.Types
+import System.Exit
 
 import Tracy.Types
 import Tracy.Grid
@@ -17,9 +18,18 @@ import Tracy.Objects.Triangle
 loadMesh :: FilePath -> IO MeshDesc
 loadMesh filename = do
     putStrLn $ "Loading mesh from " ++ filename ++ "..."
-    Right vs <- loadElements (pack "vertex") filename
+    result <- loadHeader filename
+
+    ply <- case result of
+             Left e -> do
+                 putStrLn $ "Error loading mesh from " ++ filename ++ ": " ++ e
+                 exitSuccess
+             Right h -> return h
+
+    let Right vs = loadPlyElements (pack "vertex") ply
+        Right fs = loadPlyElements (pack "face") ply
+
     putStrLn $ "  " ++ show (V.length vs) ++ " vertices"
-    Right fs <- loadElements (pack "face") filename
     putStrLn $ "  " ++ show (V.length fs) ++ " faces"
 
     let toFloat (Sfloat f) = f
