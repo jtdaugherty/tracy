@@ -15,22 +15,22 @@ Features:
  * Acceleration aids:
    - Regular grids
  * Materials and shading:
-   - Phong shading
- * Shadows and effects:
-   - Basic shadows
-   - Ambient occlusion
+   - Phong
+   - Matte
+ * Global illumation:
+   - Ambient occlusion (approximation technique)
  * Cameras:
    - Thin-lens camera
- * Light sources:
-   - Point sources
-   - Ambient light
+ * Light source types:
+   - Ambient
+   - Point (with hard shadows)
  * User interface:
    - Console output with status information
    - Live GUI with in-progress rendering via GLUT
  * Engine:
-   - Multi-core rendering via Haskell's parMap evaluation strategy
-   - Multi-host rendering (use the `tracy-node` program and pass `-d` to `tracy`)
-   - Control over per-pixel sample rate
+   - Multi-core rendering via Haskell's `parMap` evaluation strategy
+   - Multi-host rendering (run `tracy -d tcp://slave:9000` on the master,
+     `tracy-node` on the slave(s))
  * Other:
    - Sampler debugging program to test sample distribution for various
      sampling methods
