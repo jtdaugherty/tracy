@@ -188,6 +188,21 @@ loadBunnyScene = do
                             & thinLensEye    .~ (V3 (-6) (-3) 3)
                             )
 
+loadDragonScene :: IO SceneDesc
+loadDragonScene = do
+    mDesc <- loadMesh "meshes/dragon.ply"
+    let cObj = Mesh mDesc $ Phong cRed 50
+        p = Plane (V3 0 0.002 0) (V3 0 1 0) (Matte cWhite)
+        ls = [ Point True 1 cWhite (V3 0 2 0)
+             ]
+    return $ SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
+                 (defCamera & thinLensRadius .~ 0.0
+                            & thinLensLookAt .~ (V3 0 0.15 0)
+                            & thinLensVpDist .~ 300
+                            & thinLensFpDist .~ 300
+                            & thinLensEye    .~ (V3 (-0.1) 0.1 0.2)
+                            )
+
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
     [ ("one-sphere", return oneSphere)
@@ -197,4 +212,5 @@ allScenes =
     , ("blurry-spheres", return blurrySpheres)
     , ("cube", loadCubeScene)
     , ("bunny", loadBunnyScene)
+    , ("dragon", loadDragonScene)
     ]
