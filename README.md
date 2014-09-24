@@ -17,6 +17,8 @@ Features:
  * Materials and shading:
    - Phong
    - Matte
+ * Object instancing
+ * Object transformations
  * Global illumation:
    - Ambient occlusion (approximation technique)
  * Cameras:
