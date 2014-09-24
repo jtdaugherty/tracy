@@ -12,7 +12,6 @@ import Linear
 import qualified Data.ByteString as B
 
 import Tracy.Types
-import Tracy.BoundingBox
 
 getColorBytes :: Colour -> B.ByteString
 getColorBytes (Colour r g b) =
