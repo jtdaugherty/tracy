@@ -5,9 +5,11 @@ module Tracy.Scenes
 
 import Control.Lens
 import Data.Colour
+import Data.Monoid ((<>))
 import Linear
 
 import Tracy.Types
+import Tracy.Transformations
 import Tracy.Objects.Mesh
 
 defaultVp :: ViewPlane
@@ -51,7 +53,42 @@ worldOcc os ls ambStr = WorldDesc { _wdViewPlane = defaultVp
 oneSphere :: SceneDesc
 oneSphere =
     let s = Sphere (V3 (-40) 0 0) 85.0 (Phong cRed 100)
-    in SceneDesc (world [s] []) NoScheme defCamera
+        ls = [ Point True 1 cWhite (V3 (-500) 500 500)
+             ]
+    in SceneDesc (world [s] ls) NoScheme defCamera
+
+instancedSpheres :: SceneDesc
+instancedSpheres =
+    let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 100)
+        p = Plane (V3 0 (-100) 0) (V3 0 1 0) (Matte cWhite)
+        ls = [ Point False 1 cWhite (V3 (-500) 500 500)
+             ]
+        is = Instances s [ (translate (-50) 50 0     , Just $ Phong cBlue 50)
+                         , (translate (-50) (-50) 0  , Just $ Phong cWhite 50)
+                         , (translate 50 50 0        , Just $ Phong cRed 50)
+                         , (translate 50 (-50) 0     , Just $ Phong cGreen 50)
+                         ]
+    in SceneDesc (worldOcc [is, p] ls 1) NoScheme
+         (defCamera & thinLensLookAt .~ (V3 0 0 0)
+                    & thinLensEye    .~ (V3 0 0 200)
+                    )
+
+instancedSpheresGrid :: SceneDesc
+instancedSpheresGrid =
+    let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 100)
+        p = Plane (V3 0 (-100) 0) (V3 0 1 0) (Matte cWhite)
+        ls = [ Point False 1 cWhite (V3 (-500) 500 500)
+             ]
+        g = Grid [ Instances s [ (translate (-50) 50 0     , Just $ Phong cBlue 50)
+                               , (translate (-50) (-50) 0  , Just $ Phong cWhite 50)
+                               , (translate 50 50 0        , Just $ Phong cRed 50)
+                               , (translate 50 (-50) 0     , Just $ Phong cGreen 50)
+                               ]
+                 ]
+    in SceneDesc (worldOcc [g, p] ls 1) NoScheme
+         (defCamera & thinLensLookAt .~ (V3 0 0 0)
+                    & thinLensEye    .~ (V3 0 0 200)
+                    )
 
 objectDemo :: SceneDesc
 objectDemo =
@@ -221,6 +258,8 @@ loadMonkeyScene = do
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
     [ ("one-sphere",      return oneSphere)
+    , ("instanced-spheres", return instancedSpheres)
+    , ("instanced-spheres-grid", return instancedSpheresGrid)
     , ("object-demo",     return objectDemo)
     , ("object-demo2",    return objectDemoNoPoint)
     , ("clear-spheres",   return clearSpheres)

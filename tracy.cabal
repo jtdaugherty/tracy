@@ -51,12 +51,14 @@ library
     Tracy.SceneBuilder
     Tracy.Scenes
     Tracy.Types
+    Tracy.Transformations
     Tracy.Util
     Tracy.DataHandlers.GUIHandler
     Tracy.DataHandlers.FileHandler
     Tracy.InfoHandlers.ConsoleHandler
     Tracy.Objects.Box
     Tracy.Objects.Compound
+    Tracy.Objects.Instance
     Tracy.Objects.Plane
     Tracy.Objects.Sphere
     Tracy.Objects.Triangle

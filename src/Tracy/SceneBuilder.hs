@@ -16,6 +16,7 @@ import Tracy.Objects.Box
 import Tracy.Objects.Plane
 import Tracy.Objects.Triangle
 import Tracy.Objects.Mesh
+import Tracy.Objects.Instance
 
 import Tracy.Lights
 import Tracy.AccelSchemes
@@ -37,14 +38,27 @@ worldFromDesc wd =
           <*> (pure              $ wd^.wdWorldShadows)
 
 objectsFromDesc :: [ObjectDesc] -> Either String [Object]
-objectsFromDesc os = sequenceA (objectFromDesc <$> os)
+objectsFromDesc os = concat <$> sequenceA (objectFromDesc <$> os)
 
-objectFromDesc :: ObjectDesc -> Either String Object
-objectFromDesc (Sphere c r m) = sphere c r <$> materialFromDesc m
-objectFromDesc (Triangle v1 v2 v3 m) = tri v1 v2 v3 <$> materialFromDesc m
-objectFromDesc (Box v1 v2 m) = box v1 v2 <$> materialFromDesc m
-objectFromDesc (Plane c norm m) = plane c norm <$> materialFromDesc m
-objectFromDesc (Mesh mDesc m) = mesh mDesc <$> materialFromDesc m
+single :: Either a b -> Either a [b]
+single v = (:[]) <$> v
+
+objectFromDesc :: ObjectDesc -> Either String [Object]
+objectFromDesc (Sphere c r m) = single $ sphere c r <$> materialFromDesc m
+objectFromDesc (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc m
+objectFromDesc (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc m
+objectFromDesc (Plane c norm m) = single $ plane c norm <$> materialFromDesc m
+objectFromDesc (Mesh mDesc m) = single $ mesh mDesc <$> materialFromDesc m
+objectFromDesc (Grid os) = single $ grid <$> (concat <$> sequenceA (objectFromDesc <$> os))
+objectFromDesc (Instances oDesc pairs) =
+    let mkInstance o (mMatrix, mMat) =
+            case mMat of
+                Nothing -> Right $ inst mMatrix Nothing o
+                Just mDesc -> inst mMatrix <$> (Just <$> materialFromDesc mDesc) <*> (pure o)
+    in case objectFromDesc oDesc of
+          Left e -> Left e
+          Right [o] -> sequenceA (mkInstance o <$> pairs)
+          Right _ -> error "Error: Instances of (multiple) Instances not allowed"
 
 lightsFromDesc :: [LightDesc] -> Either String [Light]
 lightsFromDesc ls = sequenceA (lightFromDesc <$> ls)
