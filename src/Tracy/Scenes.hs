@@ -5,7 +5,6 @@ module Tracy.Scenes
 
 import Control.Lens
 import Data.Colour
-import Data.Monoid ((<>))
 import Linear
 
 import Tracy.Types

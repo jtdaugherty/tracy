@@ -10,7 +10,6 @@ import qualified Data.Vector as V
 import Linear
 import PLY
 import PLY.Types
-import System.Exit
 
 import Tracy.Types
 import Tracy.Grid
