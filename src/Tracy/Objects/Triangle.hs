@@ -1,9 +1,10 @@
 module Tracy.Objects.Triangle
   ( tri
-  , triWithNormal
+  , triWithNormals
   )
   where
 
+import Control.Applicative
 import Control.Lens
 import Linear
 
@@ -14,15 +15,21 @@ import Tracy.Constants
 tri :: V3 Float -> V3 Float -> V3 Float -> Material -> Object
 tri v0 v1 v2 mat =
     let n = signorm $ cross (v1 - v0) (v2 - v0)
-    in triWithNormal v0 v1 v2 n mat
+    in triWithNormals v0 v1 v2 n n n mat
 
-triWithNormal :: V3 Float -> V3 Float -> V3 Float -> V3 Float -> Material -> Object
-triWithNormal v0 v1 v2 n mat =
+triWithNormals :: V3 Float -> V3 Float -> V3 Float -> V3 Float -> V3 Float -> V3 Float -> Material -> Object
+triWithNormals v0 v1 v2 n0 n1 n2 mat =
     Object { _objectMaterial = mat
-           , _hit = hitTriangle v0 v1 v2 n mat
+           , _hit = hitTriangle v0 v1 v2 n0 n1 n2 mat
            , _shadow_hit = shadowHitTriangle v0 v1 v2
            , _bounding_box = Just $ triBBox v0 v1 v2
            }
+
+interpolateNormal :: V3 Float -> V3 Float -> V3 Float -> Float -> Float -> V3 Float
+interpolateNormal n0 n1 n2 beta tgamma =
+    signorm $ (1 - beta - tgamma) *^ n0 +
+              beta *^ n1 +
+              tgamma *^ n2
 
 triBBox :: V3 Float -> V3 Float -> V3 Float -> BBox
 triBBox v0 v1 v2 =
@@ -37,9 +44,13 @@ triBBox v0 v1 v2 =
       maxy = max3 (v0^._y) (v1^._y) (v2^._y) + delta
       maxz = max3 (v0^._z) (v1^._z) (v2^._z) + delta
 
-_hitTriangle :: V3 Float -> V3 Float -> V3 Float -> Ray -> Maybe Float
-_hitTriangle v0 v1 v2 ray = if beta < 0 || tgamma < 0 || beta + tgamma > 1 || t < epsilon
-                            then Nothing else Just t
+_hitTriangle :: V3 Float -> V3 Float -> V3 Float
+             -> V3 Float -> V3 Float -> V3 Float
+             -> Ray -> Maybe (Float, V3 Float)
+_hitTriangle v0 v1 v2 n0 n1 n2 ray =
+        if beta < 0 || tgamma < 0 || beta + tgamma > 1 || t < epsilon
+           then Nothing
+           else Just (t, theNormal)
     where
         t = e3 * inv_denom
         e3 = a * p - b * r + d * s
@@ -66,17 +77,19 @@ _hitTriangle v0 v1 v2 ray = if beta < 0 || tgamma < 0 || beta + tgamma > 1 || t 
         j = v0^._z - v2^._z
         k = ray^.direction._z
         l = v0^._z - ray^.origin._z
+        theNormal = interpolateNormal n0 n1 n2 beta tgamma
 
 hitTriangle :: V3 Float -> V3 Float -> V3 Float -> V3 Float
+            -> V3 Float -> V3 Float
             -> Material -> Ray -> Maybe (Shade, Float)
-hitTriangle v0 v1 v2 n m ray =
-    let mkShade t = defaultShade { _localHitPoint = ray^.origin + (t *^ ray^.direction)
-                                 , _normal = n
-                                 , _material = m
-                                 }
-    in case _hitTriangle v0 v1 v2 ray of
+hitTriangle v0 v1 v2 n0 n1 n2 m ray =
+    let mkShade t n = defaultShade { _localHitPoint = ray^.origin + (t *^ ray^.direction)
+                                   , _normal = n
+                                   , _material = m
+                                   }
+    in case _hitTriangle v0 v1 v2 n0 n1 n2 ray of
           Nothing -> Nothing
-          Just t -> Just (mkShade t, t)
+          Just (t, n) -> Just (mkShade t n, t)
 
 shadowHitTriangle :: V3 Float -> V3 Float -> V3 Float -> Ray -> Maybe Float
-shadowHitTriangle = _hitTriangle
+shadowHitTriangle v0 v1 v2 r = fst <$> _hitTriangle v0 v1 v2 undefined undefined undefined r

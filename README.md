@@ -9,7 +9,9 @@ Features:
    - Spheres
    - Cubes
    - Planes
- * Flat-shaded triangle meshes
+ * Triangle meshes
+   - Flat shading
+   - Smooth shading (if vertex normals are available in mesh data)
  * Triangle mesh file formats:
    - PLY
  * Acceleration aids:

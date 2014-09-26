@@ -57,5 +57,5 @@ mesh mDesc m =
         mkTri is = let (v0, n0) = (meshDescVertices mDesc) V.! (is !! 0)
                        (v1, n1) = (meshDescVertices mDesc) V.! (is !! 1)
                        (v2, n2) = (meshDescVertices mDesc) V.! (is !! 2)
-                   in triWithNormal v0 v1 v2 (signorm $ n0 + n1 + n2) m
+                   in triWithNormals v0 v1 v2 n0 n1 n2 m
     in grid tris
