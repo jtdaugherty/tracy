@@ -58,6 +58,8 @@ data JobResponse =
     | JobAck
     deriving (Generic)
 
+-- A transformation is a pair of (forward transformation matrix, inverse
+-- transformation matrix).  Note the Monoid instance for this type.
 data Transformation = Trans (M44 Float, M44 Float)
     deriving (Eq, Read, Show, Generic)
 
