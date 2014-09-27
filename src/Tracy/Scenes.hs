@@ -242,7 +242,7 @@ loadDragonScene = do
 loadMonkeyScene :: IO SceneDesc
 loadMonkeyScene = do
     mDesc <- loadMesh "meshes/monkey.ply"
-    let cObj = Mesh mDesc $ Phong cMagenta 50
+    let cObj = Mesh mDesc $ Phong cWhite 50
         ls = [ Point True 1 cWhite (V3 (-10) 10 10)
              ]
     return $ SceneDesc (worldOcc [cObj] ls 1) NoScheme
