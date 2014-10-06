@@ -89,8 +89,5 @@ thinLensRender cam numSets config w traceFunc squareSampleSets diskSampleSets (t
               ray = Ray { _origin = o
                         , _direction = d
                         }
-          in case traceFunc ray of
-               Nothing -> w^.bgColor
-               Just (sh, _t) -> (sh^.material.doShading) (toHemi (dx, dy)) (w^.worldShadows) w (sh & shadeRay .~ ray)
-
+          in traceFunc (toHemi (dx, dy)) w ray
   in colors

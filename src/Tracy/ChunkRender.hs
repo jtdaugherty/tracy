@@ -10,6 +10,7 @@ import Control.Parallel.Strategies
 import Control.DeepSeq
 import Data.Colour
 import qualified Data.Vector as V
+import Linear (V3)
 import System.Random
 
 import Tracy.Types
@@ -20,7 +21,7 @@ instance NFData Colour where
 renderChunk :: RenderConfig
             -> Scene ThinLens
             -> (Int, Int)
-            -> (Ray -> Maybe (Shade, Float))
+            -> (V3 Float -> World -> Ray -> Color)
             -> V.Vector [(Float, Float)]
             -> V.Vector [(Float, Float)]
             -> IO [[Color]]
