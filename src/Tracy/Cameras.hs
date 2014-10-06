@@ -56,7 +56,7 @@ maxToOne (Colour r g b) = Colour r' g' b'
 
 thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam numSets config w traceFunc squareSampleSets diskSampleSets (theRow, sampleIndices) =
-  let root  = config^.sampleRoot
+  let root = config^.sampleRoot
       newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
       maxToOneDenom = grey (float2Double $ root * root)
       maxToOneExposure = grey (float2Double $ cam^.exposureTime)
