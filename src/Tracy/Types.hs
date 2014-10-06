@@ -111,7 +111,7 @@ data Scene a =
     Scene { _sceneWorld :: World
           , _sceneAccelScheme :: AccelScheme
           , _sceneCamera :: Camera a
-          , _sceneTracer :: Tracer
+          , _sceneBuildTracer :: World -> Tracer
           }
 
 data AccelScheme =

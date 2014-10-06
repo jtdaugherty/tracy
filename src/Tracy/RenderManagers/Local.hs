@@ -26,7 +26,7 @@ localSetSceneAndRender jobReq jobResp cfg builtScene = do
                               Nothing -> worldAccel
                               Just v -> worldAccel & worldShadows .~ v
         scene = builtScene & sceneWorld .~ worldAccelShadows
-        tracer = builtScene^.sceneTracer
+        tracer = (builtScene^.sceneBuildTracer) worldAccelShadows
 
     -- Generate sample data for square and disk samplers
     sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
