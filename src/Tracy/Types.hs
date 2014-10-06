@@ -111,6 +111,7 @@ data Scene a =
     Scene { _sceneWorld :: World
           , _sceneAccelScheme :: AccelScheme
           , _sceneCamera :: Camera a
+          , _sceneTracer :: Tracer
           }
 
 data AccelScheme =
@@ -160,7 +161,7 @@ type CameraRenderer a = Camera a
                       -> Int
                       -> RenderConfig
                       -> World
-                      -> (V3 Float -> World -> Ray -> Color)
+                      -> Tracer
                       -> V.Vector [(Float, Float)]
                       -> V.Vector [(Float, Float)]
                       -> (Int, [Int])
@@ -185,13 +186,22 @@ data ThinLens =
              , _lensSampler :: Sampler (Float, Float)
              }
 
+data Tracer =
+    Tracer { _doTrace :: V3 Float -> World -> Ray -> Color
+           }
+
 ---------------------------------------------------------------------------
 -- World description types for transmission between rendering nodes
 ---------------------------------------------------------------------------
+data TracerDesc =
+    RayCastTracer
+    deriving (Eq, Show, Generic)
+
 data SceneDesc =
     SceneDesc { _sceneDescWorld :: WorldDesc
               , _sceneDescAccelScheme :: AccelSchemeDesc
               , _sceneDescCamera :: CameraDesc
+              , _sceneDescTracer :: TracerDesc
               }
     deriving (Eq, Show, Generic)
 
@@ -272,6 +282,7 @@ instance Serialize ObjectDesc where
 instance Serialize LightDesc where
 instance Serialize MaterialDesc where
 instance Serialize AccelSchemeDesc where
+instance Serialize TracerDesc where
 instance Serialize ViewPlane where
 instance Serialize JobRequest where
 instance Serialize JobResponse where
@@ -302,6 +313,7 @@ makeLenses ''RenderConfig
 makeLenses ''Scene
 makeLenses ''Camera
 makeLenses ''ThinLens
+makeLenses ''Tracer
 
 makeLenses ''SceneDesc
 makeLenses ''WorldDesc

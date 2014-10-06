@@ -54,7 +54,7 @@ oneSphere =
     let s = Sphere (V3 (-40) 0 0) 85.0 (Phong cRed 100)
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
-    in SceneDesc (world [s] ls) NoScheme defCamera
+    in SceneDesc (world [s] ls) NoScheme defCamera RayCastTracer
 
 instancedSpheres :: SceneDesc
 instancedSpheres =
@@ -71,6 +71,7 @@ instancedSpheres =
          (defCamera & thinLensLookAt .~ (V3 0 0 0)
                     & thinLensEye    .~ (V3 0 0 200)
                     )
+         RayCastTracer
 
 instancedSpheresGrid :: SceneDesc
 instancedSpheresGrid =
@@ -88,6 +89,7 @@ instancedSpheresGrid =
          (defCamera & thinLensLookAt .~ (V3 0 0 0)
                     & thinLensEye    .~ (V3 0 0 200)
                     )
+         RayCastTracer
 
 objectDemo :: SceneDesc
 objectDemo =
@@ -102,7 +104,7 @@ objectDemo =
         t1 = Triangle (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (Matte cWhite)
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
-    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] ls 3) NoScheme defCamera
+    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] ls 3) NoScheme defCamera RayCastTracer
 
 objectDemoNoPoint :: SceneDesc
 objectDemoNoPoint =
@@ -115,7 +117,7 @@ objectDemoNoPoint =
         b3 = Box (V3 (-150) 0 25) (V3 (-100) 75 75) (Matte cYellow)
         b4 = Box (V3 (-150) 0 (-75)) (V3 (-100) 75 (-25)) (Matte cWhite)
         t1 = Triangle (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (Matte cWhite)
-    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] [] 4) NoScheme defCamera
+    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] [] 4) NoScheme defCamera RayCastTracer
 
 sphereGrid :: [ObjectDesc]
 sphereGrid =
@@ -177,6 +179,7 @@ clearSpheres =
     in SceneDesc (world sphereGrid ls & wdWorldShadows .~ False)
                  GridScheme
                  defCamera
+                 RayCastTracer
 
 blurrySpheres :: SceneDesc
 blurrySpheres =
@@ -189,6 +192,7 @@ blurrySpheres =
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
                             & thinLensEye    .~ (V3 0 50 300))
+                 RayCastTracer
 
 loadCubeScene :: IO SceneDesc
 loadCubeScene = do
@@ -203,6 +207,7 @@ loadCubeScene = do
                             & thinLensFpDist .~ 200
                             & thinLensEye    .~ (V3 2.1 2.1 3)
                             )
+                 RayCastTracer
 
 loadBunnyScene :: IO SceneDesc
 loadBunnyScene = do
@@ -223,6 +228,7 @@ loadBunnyScene = do
                             & thinLensUp     .~ (V3 0 0 1)
                             & thinLensEye    .~ (V3 (-6) (-3) 3)
                             )
+                 RayCastTracer
 
 loadDragonScene :: IO SceneDesc
 loadDragonScene = do
@@ -238,6 +244,7 @@ loadDragonScene = do
                             & thinLensFpDist .~ 300
                             & thinLensEye    .~ (V3 (-0.1) 0.1 0.2)
                             )
+                 RayCastTracer
 
 loadMonkeyScene :: IO SceneDesc
 loadMonkeyScene = do
@@ -252,6 +259,7 @@ loadMonkeyScene = do
                             & thinLensFpDist .~ 300
                             & thinLensEye    .~ (V3 0 0 4)
                             )
+                 RayCastTracer
 
 allScenes :: [(String, IO SceneDesc)]
 allScenes =

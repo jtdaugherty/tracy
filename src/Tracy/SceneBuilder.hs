@@ -19,6 +19,7 @@ import Tracy.Objects.Mesh
 import Tracy.Objects.Instance
 
 import Tracy.Lights
+import Tracy.Tracers
 import Tracy.AccelSchemes
 import Tracy.Samplers
 
@@ -27,6 +28,7 @@ sceneFromDesc sd =
     Scene <$> (worldFromDesc       $ sd^.sceneDescWorld)
           <*> (accelSchemeFromDesc $ sd^.sceneDescAccelScheme)
           <*> (cameraFromDesc      $ sd^.sceneDescCamera)
+          <*> (tracerFromDesc      $ sd^.sceneDescTracer)
 
 worldFromDesc :: WorldDesc -> Either String World
 worldFromDesc wd =
@@ -75,6 +77,9 @@ accelSchemeFromDesc GridScheme = Right gridScheme
 materialFromDesc :: MaterialDesc -> Either String Material
 materialFromDesc (Matte c) = Right $ matteFromColor c
 materialFromDesc (Phong c e) = Right $ phongFromColor c e
+
+tracerFromDesc :: TracerDesc -> Either String Tracer
+tracerFromDesc RayCastTracer = Right rayCastTracer
 
 cameraFromDesc :: CameraDesc -> Either String (Camera ThinLens)
 cameraFromDesc cd@(ThinLensCamera { }) =

@@ -14,7 +14,6 @@ import Tracy.Types
 import Tracy.SceneBuilder
 import Tracy.Samplers
 import Tracy.ChunkRender
-import Tracy.Tracers
 
 localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig -> Scene ThinLens -> IO ()
 localSetSceneAndRender jobReq jobResp cfg builtScene = do
@@ -27,9 +26,7 @@ localSetSceneAndRender jobReq jobResp cfg builtScene = do
                               Nothing -> worldAccel
                               Just v -> worldAccel & worldShadows .~ v
         scene = builtScene & sceneWorld .~ worldAccelShadows
-
-        worldHitFuncs = worldAccelShadows^..objects.folded.hit
-        traceFunc = basicTracer worldHitFuncs
+        tracer = builtScene^.sceneTracer
 
     -- Generate sample data for square and disk samplers
     sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
@@ -42,7 +39,7 @@ localSetSceneAndRender jobReq jobResp cfg builtScene = do
           ev <- readChan jobReq
           case ev of
               RenderRequest chunkId (start, stop) -> do
-                  ch <- renderChunk cfg scene (start, stop) traceFunc sSamplesVec dSamplesVec
+                  ch <- renderChunk cfg scene (start, stop) tracer sSamplesVec dSamplesVec
                   let converted = (cdemote <$>) <$> ch
                   writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
                   processRequests

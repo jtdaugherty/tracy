@@ -55,7 +55,7 @@ maxToOne (Colour r g b) = Colour r' g' b'
                      else (r, g, b)
 
 thinLensRender :: CameraRenderer ThinLens
-thinLensRender cam numSets config w traceFunc squareSampleSets diskSampleSets (theRow, sampleIndices) =
+thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theRow, sampleIndices) =
   let root = config^.sampleRoot
       newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
       maxToOneDenom = grey (float2Double $ root * root)
@@ -89,5 +89,5 @@ thinLensRender cam numSets config w traceFunc squareSampleSets diskSampleSets (t
               ray = Ray { _origin = o
                         , _direction = d
                         }
-          in traceFunc (toHemi (dx, dy)) w ray
+          in (tracer^.doTrace) (toHemi (dx, dy)) w ray
   in colors
