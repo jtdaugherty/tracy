@@ -20,16 +20,17 @@ instance NFData Colour where
 renderChunk :: RenderConfig
             -> Scene ThinLens
             -> (Int, Int)
+            -> (Ray -> Maybe (Shade, Float))
             -> V.Vector [(Float, Float)]
             -> V.Vector [(Float, Float)]
             -> IO [[Color]]
-renderChunk cfg s (start, stop) sSamples dSamples = do
+renderChunk cfg s (start, stop) traceFunc sSamples dSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
       numSets = V.length sSamples
       renderer = cam^.cameraRenderWorld
       chunkRows = [start..stop]
-      worker = renderer cam numSets cfg w sSamples dSamples
+      worker = renderer cam numSets cfg w traceFunc sSamples dSamples
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
   sampleIndices <- replicateM (stop - start + 1) $

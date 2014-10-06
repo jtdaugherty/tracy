@@ -160,6 +160,7 @@ type CameraRenderer a = Camera a
                       -> Int
                       -> RenderConfig
                       -> World
+                      -> (Ray -> Maybe (Shade, Float))
                       -> V.Vector [(Float, Float)]
                       -> V.Vector [(Float, Float)]
                       -> (Int, [Int])

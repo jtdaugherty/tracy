@@ -6,9 +6,6 @@ module Tracy.Cameras
 
 import Control.Applicative
 import Control.Lens
-import Data.List
-import Data.Maybe
-import Data.Ord (comparing)
 import Data.Colour
 import qualified Data.Vector as V
 import Linear
@@ -58,14 +55,13 @@ maxToOne (Colour r g b) = Colour r' g' b'
                      else (r, g, b)
 
 thinLensRender :: CameraRenderer ThinLens
-thinLensRender cam numSets config w squareSampleSets diskSampleSets (theRow, sampleIndices) =
+thinLensRender cam numSets config w traceFunc squareSampleSets diskSampleSets (theRow, sampleIndices) =
   let root  = config^.sampleRoot
       newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
       maxToOneDenom = grey (float2Double $ root * root)
       maxToOneExposure = grey (float2Double $ cam^.exposureTime)
       vp = w^.viewPlane
       colors = getCol (toEnum theRow) <$> [0..vp^.hres-1]
-      worldHitFuncs = w^..objects.folded.hit
       getCol row col =
           let squareSampleSet = squareSampleSets V.! sampleIndex
               diskSampleSet = diskSampleSets V.! sampleIndex
@@ -93,12 +89,8 @@ thinLensRender cam numSets config w squareSampleSets diskSampleSets (theRow, sam
               ray = Ray { _origin = o
                         , _direction = d
                         }
-          in case hitAnObject worldHitFuncs ray of
+          in case traceFunc ray of
                Nothing -> w^.bgColor
                Just (sh, _t) -> (sh^.material.doShading) (toHemi (dx, dy)) (w^.worldShadows) w (sh & shadeRay .~ ray)
 
   in colors
-
-hitAnObject :: [Ray -> Maybe (Shade, Float)] -> Ray -> Maybe (Shade, Float)
-hitAnObject hitFuncs r =
-    listToMaybe $ sortBy (comparing snd) $ catMaybes $ hitFuncs <*> pure r
