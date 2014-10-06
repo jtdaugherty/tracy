@@ -67,4 +67,3 @@ localRenderManager jobReq jobResp = do
               _ -> writeChan jobResp $ JobError "Expected SetScene or Shutdown, got unexpected event"
 
     waitForJob
-
