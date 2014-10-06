@@ -12,7 +12,7 @@ import Tracy.Samplers
 
 matte :: BRDF -> BRDF -> Material
 matte ambBrdf diffBrdf =
-    Material (ambShading ambBrdf diffBrdf)
+    Material (matteShading ambBrdf diffBrdf)
 
 phong :: BRDF -> BRDF -> BRDF -> Material
 phong ambBrdf diffBrdf glossyBrdf =
@@ -29,8 +29,8 @@ phongFromColor c e = phong
          (lambertian (toUnitHemisphere jittered) c 0.65)
          (glossySpecular c e)
 
-ambShading :: BRDF -> BRDF -> V3 Float -> Bool -> World -> Shade -> Color
-ambShading ambBrdf diffBrdf sample enableShadows w sh =
+matteShading :: BRDF -> BRDF -> V3 Float -> Bool -> World -> Shade -> Color
+matteShading ambBrdf diffBrdf sample enableShadows w sh =
     let wo = -1 *^ sh^.shadeRay.direction
         baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * (w^.ambient.lightColor) w sample sh
         otherLs = getL <$> w^.lights
