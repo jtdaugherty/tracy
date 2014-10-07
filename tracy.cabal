@@ -44,7 +44,6 @@ library
     Tracy.ChunkRender
     Tracy.Constants
     Tracy.Grid
-    Tracy.Lights
     Tracy.Main
     Tracy.Samplers
     Tracy.SceneBuilder
@@ -56,6 +55,9 @@ library
     Tracy.DataHandlers.GUIHandler
     Tracy.DataHandlers.FileHandler
     Tracy.InfoHandlers.ConsoleHandler
+    Tracy.Lights.Ambient
+    Tracy.Lights.AmbientOccluder
+    Tracy.Lights.Point
     Tracy.Materials.Matte
     Tracy.Materials.Phong
     Tracy.Objects.Box

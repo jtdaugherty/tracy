@@ -20,7 +20,10 @@ import Tracy.Objects.Triangle
 import Tracy.Objects.Mesh
 import Tracy.Objects.Instance
 
-import Tracy.Lights
+import Tracy.Lights.Ambient
+import Tracy.Lights.AmbientOccluder
+import Tracy.Lights.Point
+
 import Tracy.Tracers
 import Tracy.AccelSchemes
 import Tracy.Samplers
