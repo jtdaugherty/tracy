@@ -64,6 +64,11 @@ data JobResponse =
 data Transformation = Trans (M44 Float, M44 Float)
     deriving (Eq, Read, Show, Generic)
 
+instance Monoid Transformation where
+    mempty = Trans (eye4, eye4)
+    (Trans (f1, i1)) `mappend` (Trans (f2, i2)) =
+        Trans (f1 !*! f2, i2 !*! i1)
+
 data Shade =
     Shade { _localHitPoint :: V3 Float
           , _normal :: V3 Float
@@ -299,11 +304,6 @@ instance Serialize JobRequest where
 instance Serialize JobResponse where
 instance Serialize RenderConfig where
 instance Serialize Transformation where
-
-instance Monoid Transformation where
-    mempty = Trans (eye4, eye4)
-    (Trans (f1, i1)) `mappend` (Trans (f2, i2)) =
-        Trans (f1 !*! f2, i2 !*! i1)
 
 instance Serialize MeshDesc where
     get = MeshDesc <$> (V.fromList <$> get) <*> get
