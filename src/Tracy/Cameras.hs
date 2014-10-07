@@ -62,19 +62,20 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theR
       maxToOneDenom = grey (float2Double $ root * root)
       maxToOneExposure = grey (float2Double $ cam^.exposureTime)
       vp = w^.viewPlane
-      colors = getCol (toEnum theRow) <$> [0..vp^.hres-1]
+      row = toEnum theRow
+      colors = getCol <$> [0..vp^.hres-1]
       hitFuncs = w^..objects.folded.hit
       shadowHitFuncs = w^..objects.folded.shadow_hit
-      getCol row col =
+      getCol col =
           let squareSampleSet = squareSampleSets V.! sampleIndex
               diskSampleSet = diskSampleSets V.! sampleIndex
               sampleIndex = sampleIndices !! ((fromEnum col) `mod` numSets)
 
-          in maxToOne ((sum (results row col squareSampleSet diskSampleSet) / maxToOneDenom) *
+          in maxToOne ((sum (results col squareSampleSet diskSampleSet) / maxToOneDenom) *
               maxToOneExposure)
 
-      results row col pixelSamples diskSamples = result row col <$> (zip pixelSamples diskSamples)
-      result row col ((sx, sy), (dx, dy)) =
+      results col pixelSamples diskSamples = result col <$> (zip pixelSamples diskSamples)
+      result col ((sx, sy), (dx, dy)) =
           let x = newPixSize * (col - (0.5 * vp^.hres) + sx)
               y = newPixSize * (row - (0.5 * vp^.vres) + sy)
 
