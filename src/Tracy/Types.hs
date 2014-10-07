@@ -147,7 +147,7 @@ data Light =
           }
 
 data Material =
-    Material { _doShading :: V3 Float -> Bool -> World -> Shade -> Color
+    Material { _doShading :: Shade -> TraceM Color
              }
 
 data BBox =

@@ -29,14 +29,17 @@ phongFromColor c e = phong
          (lambertian (toUnitHemisphere jittered) c 0.65)
          (glossySpecular c e)
 
-matteShading :: BRDF -> BRDF -> V3 Float -> Bool -> World -> Shade -> Color
-matteShading ambBrdf diffBrdf sample enableShadows w sh =
+matteShading :: BRDF -> BRDF -> Shade -> TraceM Color
+matteShading ambBrdf diffBrdf sh = do
+    sample <- view tdHemiSample
+    w <- view tdWorld
+
     let wo = -1 *^ sh^.shadeRay.direction
         baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * (w^.ambient.lightColor) w sample sh
         otherLs = getL <$> w^.lights
         getL light = let wi = (light^.lightDirection) sample sh
                          ndotwi = (sh^.normal) `dot` wi
-                         shad = enableShadows && light^.lightShadows
+                         shad = w^.worldShadows && light^.lightShadows
                          in_shadow = (light^.inLightShadow) w shadowRay
                          shadowRay = Ray { _origin = sh^.localHitPoint
                                          , _direction = wi
@@ -44,16 +47,20 @@ matteShading ambBrdf diffBrdf sample enableShadows w sh =
                      in if ndotwi > 0 && (not shad || (shad && not in_shadow))
                         then (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi * (light^.lightColor) w sample sh * (grey $ float2Double ndotwi)
                         else 0.0
-    in baseL + sum otherLs
 
-phongShading :: BRDF -> BRDF -> BRDF -> V3 Float -> Bool -> World -> Shade -> Color
-phongShading ambBrdf diffBrdf glossyBrdf sample enableShadows w sh =
+    return $ baseL + sum otherLs
+
+phongShading :: BRDF -> BRDF -> BRDF -> Shade -> TraceM Color
+phongShading ambBrdf diffBrdf glossyBrdf sh = do
+    sample <- view tdHemiSample
+    w <- view tdWorld
+
     let wo = -1 *^ sh^.shadeRay.direction
         baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * (w^.ambient.lightColor) w sample sh
         otherLs = getL <$> w^.lights
         getL light = let wi = (light^.lightDirection) sample sh
                          ndotwi = (sh^.normal) `dot` wi
-                         shad = enableShadows && light^.lightShadows
+                         shad = w^.worldShadows && light^.lightShadows
                          in_shadow = (light^.inLightShadow) w shadowRay
                          shadowRay = Ray { _origin = sh^.localHitPoint
                                          , _direction = wi
@@ -63,4 +70,5 @@ phongShading ambBrdf diffBrdf glossyBrdf sample enableShadows w sh =
                               (glossyBrdf^.brdfFunction) (glossyBrdf^.brdfData) sh wo wi) *
                                  (light^.lightColor) w sample sh * (grey $ float2Double ndotwi)
                         else 0.0
-    in baseL + sum otherLs
+
+    return $ baseL + sum otherLs
