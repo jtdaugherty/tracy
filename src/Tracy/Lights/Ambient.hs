@@ -11,7 +11,13 @@ import Tracy.Types
 
 ambientLight :: Float -> Color -> Light
 ambientLight ls c =
-    Light False ambDir (ambColor ls c) ambShadow
+    Light False ambDir (ambColor ls c) ambShadow ambG ambPDF
+
+ambG :: Shade -> Float
+ambG = const 1.0
+
+ambPDF :: Shade -> Float
+ambPDF = const 1.0
 
 ambDir :: Shade -> TraceM (V3 Float)
 ambDir = const $ return $ V3 0 0 0

@@ -14,7 +14,13 @@ import Tracy.Types
 
 ambientOccluder :: Color -> Color -> Float -> Light
 ambientOccluder c min_amount ls =
-    Light True ambOccDir (ambOccColor ls c min_amount) ambOccShadow
+    Light True ambOccDir (ambOccColor ls c min_amount) ambOccShadow ambOccG ambOccPDF
+
+ambOccG :: Shade -> Float
+ambOccG = const 1.0
+
+ambOccPDF :: Shade -> Float
+ambOccPDF = const 1.0
 
 ambOccUVW :: Shade -> (V3 Float, V3 Float, V3 Float)
 ambOccUVW sh =

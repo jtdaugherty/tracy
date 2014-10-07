@@ -14,7 +14,13 @@ import Tracy.Types
 
 pointLight :: Bool -> Float -> Color -> V3 Float -> Light
 pointLight sh ls c loc =
-    Light sh (ptDir ls c loc) (ptColor ls c) (ptShadow loc)
+    Light sh (ptDir ls c loc) (ptColor ls c) (ptShadow loc) ptG ptPDF
+
+ptG :: Shade -> Float
+ptG = const 1.0
+
+ptPDF :: Shade -> Float
+ptPDF = const 1.0
 
 ptShadow :: V3 Float -> Ray -> TraceM Bool
 ptShadow loc r = do

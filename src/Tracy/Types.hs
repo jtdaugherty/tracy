@@ -156,6 +156,8 @@ data Light =
           , _lightDirection :: Shade -> TraceM (V3 Float)
           , _lightColor :: Shade -> TraceM Color
           , _inLightShadow :: Ray -> TraceM Bool
+          , _lightG :: Shade -> Float
+          , _lightPDF :: Shade -> Float
           }
 
 data Material =
