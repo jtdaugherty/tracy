@@ -29,7 +29,8 @@ matteShading ambBrdf diffBrdf sh = do
     w <- view tdWorld
 
     let wo = -1 *^ sh^.shadeRay.direction
-        baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * (w^.ambient.lightColor) w sample sh
+        baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo *
+                (w^.ambient.lightColor) w sample sh
         otherLs = getL <$> w^.lights
         getL light = let wi = (light^.lightDirection) sample sh
                          ndotwi = (sh^.normal) `dot` wi
@@ -39,7 +40,9 @@ matteShading ambBrdf diffBrdf sh = do
                                          , _direction = wi
                                          }
                      in if ndotwi > 0 && (not shad || (shad && not in_shadow))
-                        then (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi * (light^.lightColor) w sample sh * (grey $ float2Double ndotwi)
+                        then (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi *
+                             (light^.lightColor) w sample sh *
+                             (grey $ float2Double ndotwi)
                         else 0.0
 
     return $ baseL + sum otherLs

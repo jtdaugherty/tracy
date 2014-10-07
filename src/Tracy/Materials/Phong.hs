@@ -30,7 +30,8 @@ phongShading ambBrdf diffBrdf glossyBrdf sh = do
     w <- view tdWorld
 
     let wo = -1 *^ sh^.shadeRay.direction
-        baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * (w^.ambient.lightColor) w sample sh
+        baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo *
+                (w^.ambient.lightColor) w sample sh
         otherLs = getL <$> w^.lights
         getL light = let wi = (light^.lightDirection) sample sh
                          ndotwi = (sh^.normal) `dot` wi
