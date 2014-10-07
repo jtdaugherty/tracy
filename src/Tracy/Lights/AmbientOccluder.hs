@@ -35,6 +35,8 @@ ambOccDir sh = do
     let (u, v, w) = ambOccUVW sh
         ldir = sample^._x *^ u + sample^._y *^ v + sample^._z *^ w
     return $ LD { _lightDir = ldir
+                , _lightSamplePoint = V3 0 0 0
+                , _lightNormal = V3 0 0 0
                 }
 
 ambOccShadow :: Ray -> TraceM Bool

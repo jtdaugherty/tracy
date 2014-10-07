@@ -30,8 +30,12 @@ ptShadow loc r = do
     return $ (not . null) $ filter (< d) $ catMaybes results
 
 ptDir :: Float -> Color -> V3 Float -> Shade -> TraceM LightDir
-ptDir _ _ loc sh = return $ LD { _lightDir = signorm $ loc - (sh^.localHitPoint)
-                               }
+ptDir _ _ loc sh = do
+    let d = signorm $ loc - (sh^.localHitPoint)
+    return $ LD { _lightDir = d
+                , _lightNormal = V3 0 0 0
+                , _lightSamplePoint = V3 0 0 0
+                }
 
 ptColor :: Float -> Color -> Shade -> TraceM Color
 ptColor ls c = const $ return $ grey (float2Double ls) * c

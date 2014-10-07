@@ -21,6 +21,8 @@ ambPDF = const 1.0
 
 ambDir :: Shade -> TraceM LightDir
 ambDir = const $ return $ LD { _lightDir = V3 0 0 0
+                             , _lightSamplePoint = V3 0 0 0
+                             , _lightNormal = V3 0 0 0
                              }
 
 ambColor :: Float -> Color -> Shade -> TraceM Color

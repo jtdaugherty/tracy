@@ -153,6 +153,8 @@ data BRDFData =
 
 data LightDir =
     LD { _lightDir :: V3 Float
+       , _lightSamplePoint :: V3 Float
+       , _lightNormal :: V3 Float
        }
 
 data Light =
