@@ -31,15 +31,17 @@ localSetSceneAndRender jobReq jobResp cfg builtScene = do
     -- Generate sample data for square and disk samplers
     sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
     dSamples <- replicateM numSets $ diskSampler (cfg^.sampleRoot)
+    oSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
 
     let sSamplesVec = V.fromList sSamples
         dSamplesVec = V.fromList dSamples
+        oSamplesVec = V.fromList oSamples
 
     let processRequests = do
           ev <- readChan jobReq
           case ev of
               RenderRequest chunkId (start, stop) -> do
-                  ch <- renderChunk cfg scene (start, stop) tracer sSamplesVec dSamplesVec
+                  ch <- renderChunk cfg scene (start, stop) tracer sSamplesVec dSamplesVec oSamplesVec
                   let converted = (cdemote <$>) <$> ch
                   writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
                   processRequests

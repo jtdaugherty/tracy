@@ -23,14 +23,15 @@ renderChunk :: RenderConfig
             -> Tracer
             -> V.Vector [(Float, Float)]
             -> V.Vector [(Float, Float)]
+            -> V.Vector [(Float, Float)]
             -> IO [[Color]]
-renderChunk cfg s (start, stop) tracer sSamples dSamples = do
+renderChunk cfg s (start, stop) tracer sSamples dSamples oSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
       numSets = V.length sSamples
       renderer = cam^.cameraRenderWorld
       chunkRows = [start..stop]
-      worker = renderer cam numSets cfg w tracer sSamples dSamples
+      worker = renderer cam numSets cfg w tracer sSamples dSamples oSamples
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
   sampleIndices <- replicateM (stop - start + 1) $

@@ -187,6 +187,7 @@ type CameraRenderer a = Camera a
                       -> Tracer
                       -> V.Vector [(Float, Float)]
                       -> V.Vector [(Float, Float)]
+                      -> V.Vector [(Float, Float)]
                       -> (Int, [Int])
                       -> [Color]
 
@@ -213,6 +214,7 @@ data TraceData =
     TD { _tdHemiSample :: V3 Float
        , _tdDiskSample :: V2 Float
        , _tdSquareSample :: V2 Float
+       , _tdObjectSurfaceSample :: V2 Float
        , _tdWorld :: World
        , _tdWorldHitFuncs :: [Ray -> Maybe (Shade, Float)]
        , _tdWorldShadowHitFuncs :: [Ray -> Maybe Float]

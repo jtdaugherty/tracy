@@ -56,7 +56,7 @@ maxToOne (Colour r g b) = Colour r' g' b'
                      else (r, g, b)
 
 thinLensRender :: CameraRenderer ThinLens
-thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theRow, sampleIndices) =
+thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets objectSampleSets (theRow, sampleIndices) =
   let root = config^.sampleRoot
       newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
       maxToOneDenom = grey (float2Double $ root * root)
@@ -69,13 +69,16 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theR
       getCol col =
           let squareSampleSet = squareSampleSets V.! sampleIndex
               diskSampleSet = diskSampleSets V.! sampleIndex
+              objectSampleSet = objectSampleSets V.! sampleIndex
               sampleIndex = sampleIndices !! ((fromEnum col) `mod` numSets)
 
-          in maxToOne ((sum (results col squareSampleSet diskSampleSet) / maxToOneDenom) *
+          in maxToOne ((sum (results col squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
               maxToOneExposure)
 
-      results col pixelSamples diskSamples = result col <$> (zip pixelSamples diskSamples)
-      result col ((sx, sy), (dx, dy)) =
+      results col pixelSamples diskSamples objectSamples =
+          result col <$> (zip3 pixelSamples diskSamples objectSamples)
+
+      result col ((sx, sy), (dx, dy), (ox, oy)) =
           let x = newPixSize * (col - (0.5 * vp^.hres) + sx)
               y = newPixSize * (row - (0.5 * vp^.vres) + sy)
 
@@ -96,6 +99,7 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theR
               st = TD { _tdHemiSample = toHemi (dx, dy)
                       , _tdDiskSample = V2 dx dy
                       , _tdSquareSample = V2 sx sy
+                      , _tdObjectSurfaceSample = V2 ox oy
                       , _tdWorld = w
                       , _tdWorldHitFuncs = hitFuncs
                       , _tdWorldShadowHitFuncs = shadowHitFuncs

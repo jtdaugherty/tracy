@@ -50,7 +50,7 @@ rectAreaLight rect =
 
 rectSurfaceSample :: Rect -> TraceM (V3 Float)
 rectSurfaceSample rect = do
-    sample_point <- view tdSquareSample
+    sample_point <- view tdObjectSurfaceSample
     return (rectP0 rect + (sample_point^._x *^ (rectA rect)) +
                           (sample_point^._y *^ (rectB rect)))
 
