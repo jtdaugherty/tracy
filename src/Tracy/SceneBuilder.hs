@@ -9,7 +9,9 @@ import Data.Traversable (sequenceA)
 
 import Tracy.Types
 import Tracy.Cameras
-import Tracy.Materials
+
+import Tracy.Materials.Phong
+import Tracy.Materials.Matte
 
 import Tracy.Objects.Sphere
 import Tracy.Objects.Box

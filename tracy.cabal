@@ -46,7 +46,6 @@ library
     Tracy.Grid
     Tracy.Lights
     Tracy.Main
-    Tracy.Materials
     Tracy.Samplers
     Tracy.SceneBuilder
     Tracy.Scenes
@@ -57,6 +56,8 @@ library
     Tracy.DataHandlers.GUIHandler
     Tracy.DataHandlers.FileHandler
     Tracy.InfoHandlers.ConsoleHandler
+    Tracy.Materials.Matte
+    Tracy.Materials.Phong
     Tracy.Objects.Box
     Tracy.Objects.Compound
     Tracy.Objects.Instance
