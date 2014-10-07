@@ -12,7 +12,7 @@ import PLY
 import PLY.Types
 
 import Tracy.Types
-import Tracy.Grid
+import Tracy.Objects.Grid
 import Tracy.Objects.Triangle
 
 loadMesh :: FilePath -> IO MeshDesc

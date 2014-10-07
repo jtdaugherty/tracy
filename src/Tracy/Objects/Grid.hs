@@ -1,5 +1,5 @@
 {-# LANGUAGE ParallelListComp #-}
-module Tracy.Grid where
+module Tracy.Objects.Grid where
 
 import Tracy.Types
 import Tracy.Constants
@@ -12,15 +12,6 @@ import Control.Applicative
 import Control.Monad.State
 import qualified Data.Map as M
 import Linear
-
-gridScheme :: AccelScheme
-gridScheme = AccelScheme "grid" applyGrid
-
-applyGrid :: World -> World
-applyGrid w =
-    let gObjs = [o | o <- _objects w, isJust $ o^.bounding_box ]
-        objs = [o | o <- _objects w, not $ isJust $ o^.bounding_box ]
-    in w { _objects = grid gObjs:objs }
 
 grid :: [Object] -> Object
 grid os =

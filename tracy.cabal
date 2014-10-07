@@ -43,7 +43,6 @@ library
     Tracy.Cameras
     Tracy.ChunkRender
     Tracy.Constants
-    Tracy.Grid
     Tracy.Main
     Tracy.Samplers
     Tracy.SceneBuilder
@@ -63,6 +62,7 @@ library
     Tracy.Objects.Box
     Tracy.Objects.Compound
     Tracy.Objects.Instance
+    Tracy.Objects.Grid
     Tracy.Objects.Plane
     Tracy.Objects.Sphere
     Tracy.Objects.Triangle

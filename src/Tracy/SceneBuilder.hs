@@ -15,6 +15,7 @@ import Tracy.Materials.Matte
 
 import Tracy.Objects.Sphere
 import Tracy.Objects.Box
+import Tracy.Objects.Grid
 import Tracy.Objects.Plane
 import Tracy.Objects.Triangle
 import Tracy.Objects.Mesh
