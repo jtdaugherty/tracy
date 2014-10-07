@@ -78,7 +78,7 @@ materialFromDesc :: MaterialDesc -> Either String Material
 materialFromDesc (Matte c) = Right $ matteFromColor c
 materialFromDesc (Phong c e) = Right $ phongFromColor c e
 
-tracerFromDesc :: TracerDesc -> Either String (World -> Tracer)
+tracerFromDesc :: TracerDesc -> Either String Tracer
 tracerFromDesc RayCastTracer = Right rayCastTracer
 
 cameraFromDesc :: CameraDesc -> Either String (Camera ThinLens)

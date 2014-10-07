@@ -6,6 +6,7 @@ module Tracy.Cameras
 
 import Control.Applicative
 import Control.Lens
+import Control.Monad.Reader
 import Data.Colour
 import qualified Data.Vector as V
 import Linear
@@ -62,6 +63,7 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theR
       maxToOneExposure = grey (float2Double $ cam^.exposureTime)
       vp = w^.viewPlane
       colors = getCol (toEnum theRow) <$> [0..vp^.hres-1]
+      hitFuncs = w^..objects.folded.hit
       getCol row col =
           let squareSampleSet = squareSampleSets V.! sampleIndex
               diskSampleSet = diskSampleSets V.! sampleIndex
@@ -89,5 +91,11 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theR
               ray = Ray { _origin = o
                         , _direction = d
                         }
-          in (tracer^.doTrace) (toHemi (dx, dy)) w ray
+              st = TD { tdHemiSample = toHemi (dx, dy)
+                      , tdDiskSample = V2 dx dy
+                      , tdSquareSample = V2 sx sy
+                      , tdWorld = w
+                      , tdWorldHitFuncs = hitFuncs
+                      }
+          in runReader ((tracer^.doTrace) ray) st
   in colors

@@ -5,29 +5,30 @@ module Tracy.Tracers
 
 import Control.Applicative
 import Control.Lens
+import Control.Monad.Reader
 import Data.List
 import Data.Maybe
 import Data.Ord (comparing)
-import Linear (V3)
 
 import Tracy.Types
 
-rayCastTracer :: World -> Tracer
-rayCastTracer w =
-    let hitFuncs = w^..objects.folded.hit
-    in Tracer { _doTrace = rayCastTrace hitFuncs
-              }
+rayCastTracer :: Tracer
+rayCastTracer =
+    Tracer { _doTrace = rayCastTrace
+           }
 
-rayCastTrace :: [Ray -> Maybe (Shade, Float)]
-             -> V3 Float
-             -> World
-             -> Ray
-             -> Color
-rayCastTrace hitFuncs hemiCoords w ray =
-    case doHit hitFuncs ray of
-        Nothing -> w^.bgColor
-        Just (sh, _t) -> (sh^.material.doShading) hemiCoords (w^.worldShadows) w (sh & shadeRay .~ ray)
+rayCastTrace :: Ray -> TraceM Color
+rayCastTrace ray = do
+    v <- doHit ray
+    w <- asks tdWorld
+    hSample <- asks tdHemiSample
+    case v of
+        Nothing -> return $ w^.bgColor
+        Just (sh, _t) ->
+            return $ (sh^.material.doShading) hSample (w^.worldShadows)
+                       w (sh & shadeRay .~ ray)
 
-doHit :: [Ray -> Maybe (Shade, Float)] -> Ray -> Maybe (Shade, Float)
-doHit hitFuncs r =
-    listToMaybe $ sortBy (comparing snd) $ catMaybes $ hitFuncs <*> pure r
+doHit :: Ray -> TraceM (Maybe (Shade, Float))
+doHit r = do
+    hitFuncs <- asks tdWorldHitFuncs
+    return $ listToMaybe $ sortBy (comparing snd) $ catMaybes $ hitFuncs <*> pure r

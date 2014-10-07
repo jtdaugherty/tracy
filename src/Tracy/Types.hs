@@ -6,6 +6,7 @@ import Control.Applicative
 import Control.Lens
 import Data.Serialize
 import Data.Time.Clock
+import Control.Monad.Reader
 import qualified Data.Vector as V
 import GHC.Generics
 import Linear
@@ -111,7 +112,7 @@ data Scene a =
     Scene { _sceneWorld :: World
           , _sceneAccelScheme :: AccelScheme
           , _sceneCamera :: Camera a
-          , _sceneBuildTracer :: World -> Tracer
+          , _sceneTracer :: Tracer
           }
 
 data AccelScheme =
@@ -186,8 +187,18 @@ data ThinLens =
              , _lensSampler :: Sampler (Float, Float)
              }
 
+data TraceData =
+    TD { tdHemiSample :: V3 Float
+       , tdDiskSample :: V2 Float
+       , tdSquareSample :: V2 Float
+       , tdWorld :: World
+       , tdWorldHitFuncs :: [Ray -> Maybe (Shade, Float)]
+       }
+
+type TraceM a = Reader TraceData a
+
 data Tracer =
-    Tracer { _doTrace :: V3 Float -> World -> Ray -> Color
+    Tracer { _doTrace :: Ray -> TraceM Color
            }
 
 ---------------------------------------------------------------------------
