@@ -18,8 +18,8 @@ pointLight sh ls c loc =
 
 ptShadow :: V3 Float -> Ray -> TraceM Bool
 ptShadow loc r = do
-    w <- view tdWorld
-    let results = (w^..objects.folded.shadow_hit) <*> pure r
+    hitFuncs <- view tdWorldShadowHitFuncs
+    let results = hitFuncs <*> pure r
         d = distance loc (r^.origin)
     return $ (not . null) $ filter (< d) $ catMaybes results
 

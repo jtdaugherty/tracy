@@ -64,6 +64,7 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theR
       vp = w^.viewPlane
       colors = getCol (toEnum theRow) <$> [0..vp^.hres-1]
       hitFuncs = w^..objects.folded.hit
+      shadowHitFuncs = w^..objects.folded.shadow_hit
       getCol row col =
           let squareSampleSet = squareSampleSets V.! sampleIndex
               diskSampleSet = diskSampleSets V.! sampleIndex
@@ -96,6 +97,7 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theR
                       , _tdSquareSample = V2 sx sy
                       , _tdWorld = w
                       , _tdWorldHitFuncs = hitFuncs
+                      , _tdWorldShadowHitFuncs = shadowHitFuncs
                       }
           in runReader ((tracer^.doTrace) ray) st
   in colors

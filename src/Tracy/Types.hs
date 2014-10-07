@@ -198,6 +198,7 @@ data TraceData =
        , _tdSquareSample :: V2 Float
        , _tdWorld :: World
        , _tdWorldHitFuncs :: [Ray -> Maybe (Shade, Float)]
+       , _tdWorldShadowHitFuncs :: [Ray -> Maybe Float]
        }
 
 type TraceM a = Reader TraceData a
