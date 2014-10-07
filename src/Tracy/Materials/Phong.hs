@@ -17,6 +17,7 @@ phong :: BRDF -> BRDF -> BRDF -> Material
 phong ambBrdf diffBrdf glossyBrdf =
     Material { _doShading = phongShading ambBrdf diffBrdf glossyBrdf lightContrib
              , _doAreaShading = phongShading ambBrdf diffBrdf glossyBrdf areaLightContrib
+             , _getLe = const cBlack
              }
 
 phongFromColor :: Color -> Float -> Material

@@ -12,12 +12,10 @@ import Tracy.Types
 
 emissive :: Color -> Float -> Material
 emissive c ls =
-    Material { _doShading = emissiveShading c ls
+    Material { _doShading = emissiveAreaShading c ls
              , _doAreaShading = emissiveAreaShading c ls
+             , _getLe = const $ grey (float2Double ls) * c
              }
-
-emissiveShading :: Color -> Float -> Shade -> TraceM Color
-emissiveShading _ _ _ = return cBlack
 
 emissiveAreaShading :: Color -> Float -> Shade -> TraceM Color
 emissiveAreaShading c ls sh = do

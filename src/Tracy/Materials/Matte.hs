@@ -22,6 +22,7 @@ matte :: BRDF -> BRDF -> Material
 matte ambBrdf diffBrdf =
     Material { _doShading = matteShading ambBrdf diffBrdf lightContrib
              , _doAreaShading = matteShading ambBrdf diffBrdf areaLightContrib
+             , _getLe = const cBlack
              }
 
 matteShading :: BRDF -> BRDF

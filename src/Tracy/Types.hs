@@ -169,6 +169,7 @@ data Light =
 data Material =
     Material { _doShading :: Shade -> TraceM Color
              , _doAreaShading :: Shade -> TraceM Color
+             , _getLe :: Shade -> Color
              }
 
 data BBox =
@@ -274,6 +275,7 @@ data LightDesc =
       Ambient Float Color
     | AmbientOccluder Color Color Float
     | Point Bool Float Color (V3 Float)
+    | Area Bool ObjectDesc
     deriving (Eq, Show, Generic)
 
 data MaterialDesc =
@@ -346,6 +348,7 @@ makeLenses ''ThinLens
 makeLenses ''Tracer
 makeLenses ''TraceData
 makeLenses ''LightDir
+makeLenses ''ObjectAreaLightImpl
 
 makeLenses ''SceneDesc
 makeLenses ''WorldDesc

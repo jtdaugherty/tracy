@@ -25,6 +25,7 @@ import Tracy.Objects.Instance
 
 import Tracy.Lights.Ambient
 import Tracy.Lights.AmbientOccluder
+import Tracy.Lights.Area
 import Tracy.Lights.Point
 
 import Tracy.Tracers
@@ -78,6 +79,11 @@ lightFromDesc :: LightDesc -> Either String Light
 lightFromDesc (Ambient s c) = Right $ ambientLight s c
 lightFromDesc (AmbientOccluder c min_amt s) = Right $ ambientOccluder c min_amt s
 lightFromDesc (Point sh ls c loc) = Right $ pointLight sh ls c loc
+lightFromDesc (Area sh oDesc) =
+    case objectFromDesc oDesc of
+      Left e -> Left e
+      Right [o] -> Right $ areaLight sh o
+      Right _ -> Left "Could not create area light from multiple objects"
 
 accelSchemeFromDesc :: AccelSchemeDesc -> Either String AccelScheme
 accelSchemeFromDesc NoScheme = Right noScheme
