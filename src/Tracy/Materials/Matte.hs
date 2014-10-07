@@ -20,12 +20,14 @@ matteFromColor c = matte
 
 matte :: BRDF -> BRDF -> Material
 matte ambBrdf diffBrdf =
-    Material { _doShading = matteShading ambBrdf diffBrdf
-             , _doAreaShading = matteShading ambBrdf diffBrdf
+    Material { _doShading = matteShading ambBrdf diffBrdf lightContrib
+             , _doAreaShading = matteShading ambBrdf diffBrdf areaLightContrib
              }
 
-matteShading :: BRDF -> BRDF -> Shade -> TraceM Color
-matteShading ambBrdf diffBrdf sh = do
+matteShading :: BRDF -> BRDF
+             -> (BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
+             -> Shade -> TraceM Color
+matteShading ambBrdf diffBrdf perLight sh = do
     w <- view tdWorld
 
     ambientColor <- (w^.ambient.lightColor) sh
@@ -45,11 +47,32 @@ matteShading ambBrdf diffBrdf sh = do
             in_shadow <- (light^.inLightShadow) shadowRay
 
             case ndotwi > 0 && (not shad || (shad && not in_shadow)) of
-                True -> do
-                        lColor <- (light^.lightColor) sh
-                        return $ (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi *
-                                 lColor * (grey $ float2Double ndotwi)
+                True -> perLight diffBrdf light ld wo sh
                 False -> return 0.0
 
     otherLs <- mapM getL $ w^.lights
     return $ baseL + sum otherLs
+
+lightContrib :: BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color
+lightContrib diffBrdf light ld wo sh = do
+    let wi = ld^.lightDir
+        ndotwi = (sh^.normal) `dot` wi
+
+    lColor <- (light^.lightColor) sh
+    return $ (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi *
+             lColor * (grey $ float2Double ndotwi)
+
+areaLightContrib :: BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color
+areaLightContrib diffBrdf light ld wo sh = do
+    let wi = ld^.lightDir
+        ndotwi = (sh^.normal) `dot` wi
+        gValue = (light^.lightG) sh
+        pdfValue = (light^.lightPDF) sh
+
+    lColor <- (light^.lightColor) sh
+
+    return $ (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi *
+             lColor *
+             (grey $ float2Double gValue) *
+             (grey $ float2Double ndotwi) /
+             (grey $ float2Double pdfValue)
