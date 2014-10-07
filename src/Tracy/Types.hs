@@ -141,9 +141,9 @@ data BRDFData =
 
 data Light =
     Light { _lightShadows :: Bool
-          , _lightDirection :: V3 Float -> Shade -> V3 Float
-          , _lightColor :: World -> V3 Float -> Shade -> Color
-          , _inLightShadow :: World -> Ray -> Bool
+          , _lightDirection :: Shade -> TraceM (V3 Float)
+          , _lightColor :: Shade -> TraceM Color
+          , _inLightShadow :: Ray -> TraceM Bool
           }
 
 data Material =

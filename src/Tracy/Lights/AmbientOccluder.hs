@@ -23,22 +23,28 @@ ambOccUVW sh =
         u = v `cross` w
     in (u, v, w)
 
-ambOccDir :: V3 Float -> Shade -> V3 Float
-ambOccDir sample sh =
+ambOccDir :: Shade -> TraceM (V3 Float)
+ambOccDir sh = do
+    sample <- view tdHemiSample
     let (u, v, w) = ambOccUVW sh
-    in sample^._x *^ u + sample^._y *^ v + sample^._z *^ w
+    return $ sample^._x *^ u + sample^._y *^ v + sample^._z *^ w
 
-ambOccShadow :: World -> Ray -> Bool
-ambOccShadow w r =
-    (not . null) $ catMaybes results
-    where
-        results = (w^..objects.folded.shadow_hit) <*> pure r
+ambOccShadow :: Ray -> TraceM Bool
+ambOccShadow r = do
+    w <- view tdWorld
+    let results = (w^..objects.folded.shadow_hit) <*> pure r
+    return $ (not . null) $ catMaybes results
 
-ambOccColor :: Float -> Color -> Color -> World -> V3 Float -> Shade -> Color
-ambOccColor ls color min_amount w sample sh =
+ambOccColor :: Float -> Color -> Color -> Shade -> TraceM Color
+ambOccColor ls color min_amount sh = do
+    w <- view tdWorld
+    sample <- view tdHemiSample
+    shadow_d <- ambOccDir sh
+
     let shadow_o = sh^.localHitPoint
-        shadow_d = ambOccDir sample sh
         shadow_r = Ray shadow_o shadow_d
-    in if ambOccShadow w shadow_r
-       then min_amount * (grey $ float2Double ls) * color
-       else (grey $ float2Double ls) * color
+
+    shad <- ambOccShadow shadow_r
+    return $ if shad
+             then min_amount * (grey $ float2Double ls) * color
+             else (grey $ float2Double ls) * color
