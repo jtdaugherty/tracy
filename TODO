@@ -14,6 +14,8 @@
 
 - Global illumination technique(s)
 
+- Progressive rendering
+
 - Load scenes from disk
   * GUI: keystroke to trigger a reload scenes from disk and re-render
   * COLLADA (or at least a subset of it)
