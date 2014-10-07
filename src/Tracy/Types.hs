@@ -151,9 +151,13 @@ data BRDFData =
              , _brdfColor :: Color
              }
 
+data LightDir =
+    LD { _lightDir :: V3 Float
+       }
+
 data Light =
     Light { _lightShadows :: Bool
-          , _lightDirection :: Shade -> TraceM (V3 Float)
+          , _lightDirection :: Shade -> TraceM LightDir
           , _lightColor :: Shade -> TraceM Color
           , _inLightShadow :: Ray -> TraceM Bool
           , _lightG :: Shade -> Float
@@ -338,6 +342,7 @@ makeLenses ''Camera
 makeLenses ''ThinLens
 makeLenses ''Tracer
 makeLenses ''TraceData
+makeLenses ''LightDir
 
 makeLenses ''SceneDesc
 makeLenses ''WorldDesc

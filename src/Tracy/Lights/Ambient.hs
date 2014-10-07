@@ -19,8 +19,9 @@ ambG = const 1.0
 ambPDF :: Shade -> Float
 ambPDF = const 1.0
 
-ambDir :: Shade -> TraceM (V3 Float)
-ambDir = const $ return $ V3 0 0 0
+ambDir :: Shade -> TraceM LightDir
+ambDir = const $ return $ LD { _lightDir = V3 0 0 0
+                             }
 
 ambColor :: Float -> Color -> Shade -> TraceM Color
 ambColor ls c = const $ return $ grey (float2Double ls) * c

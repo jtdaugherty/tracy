@@ -34,9 +34,9 @@ phongShading ambBrdf diffBrdf glossyBrdf sh = do
     let wo = -1 *^ sh^.shadeRay.direction
         baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * ambientColor
         getL light = do
-            wi <- (light^.lightDirection) sh
-
-            let ndotwi = (sh^.normal) `dot` wi
+            ld <- (light^.lightDirection) sh
+            let wi = ld^.lightDir
+                ndotwi = (sh^.normal) `dot` wi
                 shad = w^.worldShadows && light^.lightShadows
                 shadowRay = Ray { _origin = sh^.localHitPoint
                                 , _direction = wi

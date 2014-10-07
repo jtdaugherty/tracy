@@ -29,11 +29,13 @@ ambOccUVW sh =
         u = v `cross` w
     in (u, v, w)
 
-ambOccDir :: Shade -> TraceM (V3 Float)
+ambOccDir :: Shade -> TraceM LightDir
 ambOccDir sh = do
     sample <- view tdHemiSample
     let (u, v, w) = ambOccUVW sh
-    return $ sample^._x *^ u + sample^._y *^ v + sample^._z *^ w
+        ldir = sample^._x *^ u + sample^._y *^ v + sample^._z *^ w
+    return $ LD { _lightDir = ldir
+                }
 
 ambOccShadow :: Ray -> TraceM Bool
 ambOccShadow r = do
@@ -43,9 +45,10 @@ ambOccShadow r = do
 
 ambOccColor :: Float -> Color -> Color -> Shade -> TraceM Color
 ambOccColor ls color min_amount sh = do
-    shadow_d <- ambOccDir sh
+    ld <- ambOccDir sh
 
-    let shadow_o = sh^.localHitPoint
+    let shadow_d = ld^.lightDir
+        shadow_o = sh^.localHitPoint
         shadow_r = Ray shadow_o shadow_d
 
     shad <- ambOccShadow shadow_r
