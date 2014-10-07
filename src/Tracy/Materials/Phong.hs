@@ -15,7 +15,9 @@ import Tracy.Samplers
 
 phong :: BRDF -> BRDF -> BRDF -> Material
 phong ambBrdf diffBrdf glossyBrdf =
-    Material (phongShading ambBrdf diffBrdf glossyBrdf)
+    Material { _doShading = phongShading ambBrdf diffBrdf glossyBrdf
+             , _doAreaShading = phongShading ambBrdf diffBrdf glossyBrdf
+             }
 
 phongFromColor :: Color -> Float -> Material
 phongFromColor c e = phong

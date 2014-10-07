@@ -20,7 +20,9 @@ matteFromColor c = matte
 
 matte :: BRDF -> BRDF -> Material
 matte ambBrdf diffBrdf =
-    Material (matteShading ambBrdf diffBrdf)
+    Material { _doShading = matteShading ambBrdf diffBrdf
+             , _doAreaShading = matteShading ambBrdf diffBrdf
+             }
 
 matteShading :: BRDF -> BRDF -> Shade -> TraceM Color
 matteShading ambBrdf diffBrdf sh = do

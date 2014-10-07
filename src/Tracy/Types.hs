@@ -160,6 +160,7 @@ data Light =
 
 data Material =
     Material { _doShading :: Shade -> TraceM Color
+             , _doAreaShading :: Shade -> TraceM Color
              }
 
 data BBox =
