@@ -57,6 +57,7 @@ library
     Tracy.Lights.Ambient
     Tracy.Lights.AmbientOccluder
     Tracy.Lights.Point
+    Tracy.Materials.Emissive
     Tracy.Materials.Matte
     Tracy.Materials.Phong
     Tracy.Objects.Box

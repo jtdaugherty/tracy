@@ -10,6 +10,7 @@ import Data.Traversable (sequenceA)
 import Tracy.Types
 import Tracy.Cameras
 
+import Tracy.Materials.Emissive
 import Tracy.Materials.Phong
 import Tracy.Materials.Matte
 
@@ -85,6 +86,7 @@ accelSchemeFromDesc GridScheme = Right gridScheme
 materialFromDesc :: MaterialDesc -> Either String Material
 materialFromDesc (Matte c) = Right $ matteFromColor c
 materialFromDesc (Phong c e) = Right $ phongFromColor c e
+materialFromDesc (Emissive c e) = Right $ emissive c e
 
 tracerFromDesc :: TracerDesc -> Either String Tracer
 tracerFromDesc RayCastTracer = Right rayCastTracer

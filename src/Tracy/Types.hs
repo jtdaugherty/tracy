@@ -279,6 +279,7 @@ data LightDesc =
 data MaterialDesc =
       Matte Color
     | Phong Color Float
+    | Emissive Color Float
     deriving (Eq, Show, Generic)
 
 data CameraDesc =
