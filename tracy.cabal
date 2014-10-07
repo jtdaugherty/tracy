@@ -24,6 +24,7 @@ library
     bytestring,
     time,
     mtl,
+    distributive,
     MonadRandom,
     random,
     deepseq,

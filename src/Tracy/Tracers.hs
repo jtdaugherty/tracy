@@ -1,5 +1,6 @@
 module Tracy.Tracers
   ( rayCastTracer
+  , areaLightTracer
   )
   where
 
@@ -27,3 +28,16 @@ doHit :: Ray -> TraceM (Maybe (Shade, Float))
 doHit r = do
     hitFuncs <- view tdWorldHitFuncs
     return $ listToMaybe $ sortBy (comparing snd) $ catMaybes $ hitFuncs <*> pure r
+
+areaLightTracer :: Tracer
+areaLightTracer =
+    Tracer { _doTrace = areaLightTrace
+           }
+
+areaLightTrace :: Ray -> TraceM Color
+areaLightTrace ray = do
+    v <- doHit ray
+    case v of
+        Nothing -> view $ tdWorld.bgColor
+        Just (sh, _t) -> (sh^.material.doAreaShading) (sh & shadeRay .~ ray)
+

@@ -229,6 +229,7 @@ data Tracer =
 ---------------------------------------------------------------------------
 data TracerDesc =
     RayCastTracer
+  | AreaLightTracer
     deriving (Eq, Show, Generic)
 
 data SceneDesc =

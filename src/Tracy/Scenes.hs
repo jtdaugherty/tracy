@@ -5,6 +5,7 @@ module Tracy.Scenes
 
 import Control.Lens
 import Data.Colour
+import Data.Monoid
 import Linear
 
 import Tracy.Types
@@ -270,6 +271,18 @@ rectangles =
              ]
     in SceneDesc (world [r1, r2, p] ls) NoScheme defCamera RayCastTracer
 
+areaLightScene :: SceneDesc
+areaLightScene =
+    let r1 = Rectangle (V3 10 0 0) (V3 100 0 0) (V3 0 130 0)     (Phong cBlue  50)
+        r2 = Rectangle (V3 (-120) 0 0) (V3 100 0 0) (V3 0 110 0) (Phong cGreen 50)
+        r3 = Rectangle (V3 0 0 0) (V3 30 0 0) (V3 0 30 0) (Emissive cWhite 3)
+        r4 = Instances r3 [ ((translate (-25) 50 (-200)) <> (rotateX (0.75)), Just $ Emissive cWhite 3)
+                          ]
+        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
+        ls = [ Area True r4
+             ]
+    in SceneDesc (world [r1, r2, r4, p] ls) NoScheme defCamera RayCastTracer
+
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
     [ ("one-sphere",      return oneSphere)
@@ -284,4 +297,5 @@ allScenes =
     , ("dragon",          loadDragonScene)
     , ("monkey",          loadMonkeyScene)
     , ("rectangles",      return rectangles)
+    , ("area-light",      return areaLightScene)
     ]

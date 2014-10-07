@@ -96,6 +96,7 @@ materialFromDesc (Emissive c e) = Right $ emissive c e
 
 tracerFromDesc :: TracerDesc -> Either String Tracer
 tracerFromDesc RayCastTracer = Right rayCastTracer
+tracerFromDesc AreaLightTracer = Right areaLightTracer
 
 cameraFromDesc :: CameraDesc -> Either String (Camera ThinLens)
 cameraFromDesc cd@(ThinLensCamera { }) =
