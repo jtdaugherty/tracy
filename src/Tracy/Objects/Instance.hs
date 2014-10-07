@@ -18,7 +18,17 @@ inst trans newMat o =
               , _hit = instHit tInverse theMaterial o
               , _shadow_hit = instShadowHit tInverse theMaterial o
               , _bounding_box = bbox
-              , _areaLightImpl = o^.areaLightImpl
+              , _areaLightImpl = transLightImpl tForward <$> (o^.areaLightImpl)
+              }
+
+transLightImpl :: M44 Float -> ObjectAreaLightImpl -> ObjectAreaLightImpl
+transLightImpl tForward ali =
+    ObjectALI { _objectSurfaceSample = do
+                  s <- ali^.objectSurfaceSample
+                  return $ tForward !*. s
+              , _objectGetNormal = \sh ->
+                  signorm $ toV3 $ tForward !* (toV4 $ (ali^.objectGetNormal) sh)
+              , _objectPDF = ali^.objectPDF
               }
 
 transBBox :: M44 Float -> BBox -> BBox
