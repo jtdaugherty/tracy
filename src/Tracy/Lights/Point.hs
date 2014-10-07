@@ -16,14 +16,14 @@ pointLight :: Bool -> Float -> Color -> V3 Float -> Light
 pointLight sh ls c loc =
     Light sh (ptDir ls c loc) (ptColor ls c) (ptShadow loc) ptG ptPDF
 
-ptG :: Shade -> Float
-ptG = const 1.0
+ptG :: LightDir -> Shade -> Float
+ptG = const $ const 1.0
 
 ptPDF :: Shade -> Float
 ptPDF = const 1.0
 
-ptShadow :: V3 Float -> Ray -> TraceM Bool
-ptShadow loc r = do
+ptShadow :: V3 Float -> LightDir -> Ray -> TraceM Bool
+ptShadow loc _ld r = do
     hitFuncs <- view tdWorldShadowHitFuncs
     let results = hitFuncs <*> pure r
         d = distance loc (r^.origin)
@@ -37,5 +37,5 @@ ptDir _ _ loc sh = do
                 , _lightSamplePoint = V3 0 0 0
                 }
 
-ptColor :: Float -> Color -> Shade -> TraceM Color
-ptColor ls c = const $ return $ grey (float2Double ls) * c
+ptColor :: Float -> Color -> LightDir -> Shade -> TraceM Color
+ptColor ls c = const $ const $ return $ grey (float2Double ls) * c

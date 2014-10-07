@@ -44,7 +44,7 @@ phongShading ambBrdf diffBrdf glossyBrdf perLight sh = do
                                 , _direction = wi
                                 }
 
-            in_shadow <- (light^.inLightShadow) shadowRay
+            in_shadow <- (light^.inLightShadow) ld shadowRay
 
             case ndotwi > 0 && (not shad || (shad && not in_shadow)) of
                 True -> perLight diffBrdf glossyBrdf light ld wo sh
@@ -58,7 +58,7 @@ lightContrib diffBrdf glossyBrdf light ld wo sh = do
     let wi = ld^.lightDir
         ndotwi = (sh^.normal) `dot` wi
 
-    lColor <- (light^.lightColor) sh
+    lColor <- (light^.lightColor) ld sh
     return $ ((diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi +
              (glossyBrdf^.brdfFunction) (glossyBrdf^.brdfData) sh wo wi) *
              lColor * (grey $ float2Double ndotwi)
@@ -67,10 +67,10 @@ areaLightContrib :: BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> Tr
 areaLightContrib diffBrdf glossyBrdf light ld wo sh = do
     let wi = ld^.lightDir
         ndotwi = (sh^.normal) `dot` wi
-        gValue = (light^.lightG) sh
+        gValue = (light^.lightG) ld sh
         pdfValue = (light^.lightPDF) sh
 
-    lColor <- (light^.lightColor) sh
+    lColor <- (light^.lightColor) ld sh
 
     return $ ((diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi +
               (glossyBrdf^.brdfFunction) (glossyBrdf^.brdfData) sh wo wi) *

@@ -160,9 +160,9 @@ data LightDir =
 data Light =
     Light { _lightShadows :: Bool
           , _lightDirection :: Shade -> TraceM LightDir
-          , _lightColor :: Shade -> TraceM Color
-          , _inLightShadow :: Ray -> TraceM Bool
-          , _lightG :: Shade -> Float
+          , _lightColor :: LightDir -> Shade -> TraceM Color
+          , _inLightShadow :: LightDir -> Ray -> TraceM Bool
+          , _lightG :: LightDir -> Shade -> Float
           , _lightPDF :: Shade -> Float
           }
 
