@@ -91,11 +91,11 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets (theR
               ray = Ray { _origin = o
                         , _direction = d
                         }
-              st = TD { tdHemiSample = toHemi (dx, dy)
-                      , tdDiskSample = V2 dx dy
-                      , tdSquareSample = V2 sx sy
-                      , tdWorld = w
-                      , tdWorldHitFuncs = hitFuncs
+              st = TD { _tdHemiSample = toHemi (dx, dy)
+                      , _tdDiskSample = V2 dx dy
+                      , _tdSquareSample = V2 sx sy
+                      , _tdWorld = w
+                      , _tdWorldHitFuncs = hitFuncs
                       }
           in runReader ((tracer^.doTrace) ray) st
   in colors

@@ -188,11 +188,11 @@ data ThinLens =
              }
 
 data TraceData =
-    TD { tdHemiSample :: V3 Float
-       , tdDiskSample :: V2 Float
-       , tdSquareSample :: V2 Float
-       , tdWorld :: World
-       , tdWorldHitFuncs :: [Ray -> Maybe (Shade, Float)]
+    TD { _tdHemiSample :: V3 Float
+       , _tdDiskSample :: V2 Float
+       , _tdSquareSample :: V2 Float
+       , _tdWorld :: World
+       , _tdWorldHitFuncs :: [Ray -> Maybe (Shade, Float)]
        }
 
 type TraceM a = Reader TraceData a
@@ -325,6 +325,7 @@ makeLenses ''Scene
 makeLenses ''Camera
 makeLenses ''ThinLens
 makeLenses ''Tracer
+makeLenses ''TraceData
 
 makeLenses ''SceneDesc
 makeLenses ''WorldDesc
