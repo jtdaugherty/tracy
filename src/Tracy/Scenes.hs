@@ -273,17 +273,21 @@ rectangles =
 
 areaLightScene :: SceneDesc
 areaLightScene =
-    let r1 = Rectangle (V3 10 0 0) (V3 100 0 0) (V3 0 130 0)     (Phong cBlue  50)
-        r2 = Rectangle (V3 (-120) 0 0) (V3 100 0 0) (V3 0 110 0) (Phong cGreen 50)
-        r3 = Rectangle (V3 (-10) 50 (-100)) (V3 30 0 0) (V3 0 30 0) (Emissive cRed 3)
-        r4 = Rectangle (V3 (-200) 50 (-100)) (V3 30 0 0) (V3 0 30 0) (Emissive cBlue 3)
-        r5 = Rectangle (V3 (200) 50 (-100)) (V3 30 0 0) (V3 0 30 0) (Emissive cGreen 3)
+    let r1 = Rectangle (V3 10 0 0) (V3 100 0 0) (V3 0 110 0)     (Matte cBlue)
+        r2 = Rectangle (V3 (-120) 0 0) (V3 100 0 0) (V3 0 110 0) (Matte cGreen)
         p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
-        ls = [ Area True r3
-             , Area True r4
-             , Area True r5
+
+        a = Rectangle (V3 0 0 0) (V3 20 0 0) (V3 0 20 0) (Matte cWhite)
+
+        i1 = Instances a [(translate (-100) 130 (-100) <> rotateX (pi/6), Just $ Emissive cRed 3)]
+        i2 = Instances a [(translate (-10) 130 (-100) <> rotateX (pi/4) , Just $ Emissive cGreen 3)]
+        i3 = Instances a [(translate 110 130 (-100) <> rotateX (pi/3)   , Just $ Emissive cBlue 3)]
+
+        ls = [ Area True i1
+             , Area True i2
+             , Area True i3
              ]
-    in SceneDesc (worldOcc [r1, r2, r3, r4, r5, p] ls 1) NoScheme defCamera RayCastTracer
+    in SceneDesc (worldOcc [r1, r2, p, i1, i2, i3] ls 1) NoScheme defCamera RayCastTracer
 
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
