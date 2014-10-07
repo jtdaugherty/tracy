@@ -19,24 +19,46 @@ data Rect =
          , rectNormal :: V3 Float
          , rectALen2 :: Float
          , rectBLen2 :: Float
+         , rectInvArea :: Float
          }
 
 rectangle :: V3 Float -> V3 Float -> V3 Float -> Material -> Object
 rectangle p a b mat =
-    let r = Rect { rectP0 = p
+    let area = norm a * norm b
+        r = Rect { rectP0 = p
                  , rectA = a
                  , rectB = b
                  , rectMaterial = mat
                  , rectNormal = signorm $ a `cross` b
                  , rectALen2 = norm a ** 2
                  , rectBLen2 = norm b ** 2
+                 , rectInvArea = 1 / area
                  }
     in Object { _objectMaterial = mat
               , _hit = rectHit r
               , _shadow_hit = (snd <$>) . (rectHit r)
               , _bounding_box = Just $ rectBoundingBox r
-              , _areaLightImpl = Nothing
+              , _areaLightImpl = Just $ rectAreaLight r
               }
+
+rectAreaLight :: Rect -> ObjectAreaLightImpl
+rectAreaLight rect =
+    ObjectALI { _objectSurfaceSample = rectSurfaceSample rect
+              , _objectGetNormal = rectGetNormal rect
+              , _objectPDF = rectPDF rect
+              }
+
+rectSurfaceSample :: Rect -> TraceM (V3 Float)
+rectSurfaceSample rect = do
+    sample_point <- view tdSquareSample
+    return (rectP0 rect + (sample_point^._x *^ (rectA rect)) +
+                          (sample_point^._y *^ (rectB rect)))
+
+rectGetNormal :: Rect -> V3 Float -> V3 Float
+rectGetNormal rect = const $ rectNormal rect
+
+rectPDF :: Rect -> Shade -> Float
+rectPDF rect = const $ rectInvArea rect
 
 rectBoundingBox :: Rect -> BBox
 rectBoundingBox rect = BBox v0 v1
