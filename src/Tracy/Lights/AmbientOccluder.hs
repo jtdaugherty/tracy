@@ -37,8 +37,6 @@ ambOccShadow r = do
 
 ambOccColor :: Float -> Color -> Color -> Shade -> TraceM Color
 ambOccColor ls color min_amount sh = do
-    w <- view tdWorld
-    sample <- view tdHemiSample
     shadow_d <- ambOccDir sh
 
     let shadow_o = sh^.localHitPoint

@@ -4,7 +4,6 @@ module Tracy.Materials.Matte
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Linear
 import Data.Colour
@@ -25,7 +24,6 @@ matte ambBrdf diffBrdf =
 
 matteShading :: BRDF -> BRDF -> Shade -> TraceM Color
 matteShading ambBrdf diffBrdf sh = do
-    sample <- view tdHemiSample
     w <- view tdWorld
 
     ambientColor <- (w^.ambient.lightColor) sh
