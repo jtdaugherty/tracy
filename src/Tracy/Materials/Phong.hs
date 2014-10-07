@@ -31,7 +31,11 @@ phongShading :: BRDF -> BRDF -> BRDF
 phongShading ambBrdf diffBrdf glossyBrdf perLight sh = do
     w <- view tdWorld
 
-    ambientColor <- (w^.ambient.lightColor) sh
+    let nullLD = LD { _lightDir = V3 0 0 0
+                    , _lightSamplePoint = V3 0 0 0
+                    , _lightNormal = V3 0 0 0
+                    }
+    ambientColor <- (w^.ambient.lightColor) nullLD sh
 
     let wo = -1 *^ sh^.shadeRay.direction
         baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * ambientColor
