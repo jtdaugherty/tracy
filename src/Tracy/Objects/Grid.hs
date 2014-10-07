@@ -22,6 +22,7 @@ grid os =
               , _hit = hitF
               , _shadow_hit = (snd <$>) . hitF
               , _bounding_box = Just bbox
+              , _areaLightImpl = Nothing
               }
 
 minCoords :: [Object] -> V3 Float

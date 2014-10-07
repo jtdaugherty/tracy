@@ -13,6 +13,7 @@ plane o n m =
            , _hit = hitPlane o n m
            , _shadow_hit = shadowHitPlane o n
            , _bounding_box = Nothing
+           , _areaLightImpl = Nothing
            }
 
 shadowHitPlane :: V3 Float -> V3 Float -> Ray -> Maybe Float

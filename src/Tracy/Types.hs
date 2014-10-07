@@ -85,11 +85,18 @@ data Ray =
         }
     deriving (Show)
 
+data ObjectAreaLightImpl =
+    ObjectALI { _objectSurfaceSample :: TraceM (V3 Float)
+              , _objectGetNormal :: V3 Float -> V3 Float
+              , _objectPDF :: Shade -> Float
+              }
+
 data Object =
     Object { _objectMaterial :: Material
            , _hit :: Ray -> Maybe (Shade, Float)
            , _shadow_hit :: Ray -> Maybe Float
            , _bounding_box :: Maybe BBox
+           , _areaLightImpl :: Maybe ObjectAreaLightImpl
            }
 
 instance Show Object where

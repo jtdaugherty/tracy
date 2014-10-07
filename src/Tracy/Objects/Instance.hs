@@ -18,6 +18,7 @@ inst trans newMat o =
               , _hit = instHit tInverse theMaterial o
               , _shadow_hit = instShadowHit tInverse theMaterial o
               , _bounding_box = bbox
+              , _areaLightImpl = o^.areaLightImpl
               }
 
 transBBox :: M44 Float -> BBox -> BBox

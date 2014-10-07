@@ -18,6 +18,7 @@ sphere p rad m =
            , _hit = hitSphere p rad m
            , _shadow_hit = shadowHitSphere p rad
            , _bounding_box = Just $ sphereBBox p rad
+           , _areaLightImpl = Nothing
            }
 
 sphereBBox :: V3 Float -> Float -> BBox

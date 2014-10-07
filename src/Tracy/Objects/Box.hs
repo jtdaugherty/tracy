@@ -15,6 +15,7 @@ box p0 p1 m =
            , _hit = hitBox p0 p1 m
            , _shadow_hit = shadowHitBox p0 p1
            , _bounding_box = Nothing
+           , _areaLightImpl = Nothing
            }
 
 shadowHitBox :: V3 Float -> V3 Float -> Ray -> Maybe Float

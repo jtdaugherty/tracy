@@ -18,6 +18,7 @@ compound os m =
            , _hit = hitCompound (os^..folded.hit)
            , _shadow_hit = shadowHitCompound (os^..folded.hit)
            , _bounding_box = error "compound has no bounding_box"
+           , _areaLightImpl = Nothing
            }
 
 hitCompound :: [Ray -> Maybe (Shade, Float)] -> Ray -> Maybe (Shade, Float)

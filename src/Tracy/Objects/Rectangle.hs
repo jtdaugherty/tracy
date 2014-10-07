@@ -35,6 +35,7 @@ rectangle p a b mat =
               , _hit = rectHit r
               , _shadow_hit = (snd <$>) . (rectHit r)
               , _bounding_box = Just $ rectBoundingBox r
+              , _areaLightImpl = Nothing
               }
 
 rectBoundingBox :: Rect -> BBox
