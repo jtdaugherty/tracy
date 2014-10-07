@@ -261,6 +261,15 @@ loadMonkeyScene = do
                             )
                  RayCastTracer
 
+rectangles :: SceneDesc
+rectangles =
+    let r1 = Rectangle (V3 10 0 0) (V3 100 0 0) (V3 0 130 0)     (Phong cBlue  50)
+        r2 = Rectangle (V3 (-120) 0 0) (V3 100 0 0) (V3 0 110 0) (Phong cGreen 50)
+        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
+        ls = [ Point True 2 cWhite (V3 (-500) 500 500)
+             ]
+    in SceneDesc (world [r1, r2, p] ls) NoScheme defCamera RayCastTracer
+
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
     [ ("one-sphere",      return oneSphere)
@@ -274,4 +283,5 @@ allScenes =
     , ("bunny",           loadBunnyScene)
     , ("dragon",          loadDragonScene)
     , ("monkey",          loadMonkeyScene)
+    , ("rectangles",      return rectangles)
     ]

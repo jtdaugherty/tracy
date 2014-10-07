@@ -17,6 +17,7 @@ import Tracy.Objects.Sphere
 import Tracy.Objects.Box
 import Tracy.Objects.Grid
 import Tracy.Objects.Plane
+import Tracy.Objects.Rectangle
 import Tracy.Objects.Triangle
 import Tracy.Objects.Mesh
 import Tracy.Objects.Instance
@@ -53,6 +54,7 @@ single v = (:[]) <$> v
 
 objectFromDesc :: ObjectDesc -> Either String [Object]
 objectFromDesc (Sphere c r m) = single $ sphere c r <$> materialFromDesc m
+objectFromDesc (Rectangle p0 a b m) = single $ rectangle p0 a b <$> materialFromDesc m
 objectFromDesc (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc m
 objectFromDesc (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc m
 objectFromDesc (Plane c norm m) = single $ plane c norm <$> materialFromDesc m

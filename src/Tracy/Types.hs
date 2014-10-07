@@ -245,6 +245,7 @@ data MeshDesc =
 
 data ObjectDesc =
       Sphere (V3 Float) Float MaterialDesc
+    | Rectangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
     | Triangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
     | Box (V3 Float) (V3 Float) MaterialDesc
     | Plane (V3 Float) (V3 Float) MaterialDesc

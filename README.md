@@ -9,6 +9,7 @@ Features:
    - Spheres
    - Cubes
    - Planes
+   - Rectangles
  * Triangle meshes
    - Flat shading
    - Smooth shading (if vertex normals are available in mesh data)

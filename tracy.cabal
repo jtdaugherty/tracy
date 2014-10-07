@@ -64,6 +64,7 @@ library
     Tracy.Objects.Instance
     Tracy.Objects.Grid
     Tracy.Objects.Plane
+    Tracy.Objects.Rectangle
     Tracy.Objects.Sphere
     Tracy.Objects.Triangle
     Tracy.Objects.Mesh
