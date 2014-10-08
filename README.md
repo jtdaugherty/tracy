@@ -29,6 +29,7 @@ Features:
  * Light source types:
    - Ambient
    - Point (with hard shadows)
+   - Area lights (rectangles)
  * User interface:
    - Console output with status information
    - Live GUI with in-progress rendering via GLUT
