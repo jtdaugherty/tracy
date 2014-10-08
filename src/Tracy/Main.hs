@@ -6,6 +6,7 @@ import Control.Concurrent
 import Data.Time.Clock
 import Data.Colour
 import System.Exit
+import System.Random (getStdGen)
 
 import Tracy.Types
 
@@ -69,8 +70,10 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
   -- Start the renderer thread
   _ <- forkIO (renderManager reqChan respChan)
 
+  gen <- getStdGen
+
   -- Set the scene
-  writeChan reqChan $ SetScene renderCfg s
+  writeChan reqChan $ SetScene renderCfg s gen
 
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests

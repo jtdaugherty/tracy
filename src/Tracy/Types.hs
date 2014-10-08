@@ -12,6 +12,7 @@ import GHC.Generics
 import Linear
 import Data.Colour
 import Data.Monoid
+import System.Random (StdGen)
 
 type Color = Colour
 
@@ -47,7 +48,7 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc
+      SetScene RenderConfig SceneDesc StdGen
     | RenderRequest Int (Int, Int)
     | RenderFinished
     | Shutdown
@@ -328,6 +329,10 @@ instance Serialize JobRequest where
 instance Serialize JobResponse where
 instance Serialize RenderConfig where
 instance Serialize Transformation where
+
+instance Serialize StdGen where
+    get = get >>= (return . read)
+    put = put . show
 
 instance Serialize MeshDesc where
     get = MeshDesc <$> (V.fromList <$> get) <*> get
