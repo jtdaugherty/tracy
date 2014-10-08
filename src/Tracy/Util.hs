@@ -4,9 +4,11 @@ module Tracy.Util
   , getColorBytes
   , defaultShade
   , clamp
+  , dSquared
   ) where
 
 import Control.Applicative
+import Control.Lens
 import Data.Colour
 import Linear
 import qualified Data.ByteString as B
@@ -44,3 +46,8 @@ max3 a b c = mx a $ mx b c
 
 min3 :: (Ord a) => a -> a -> a -> a
 min3 a b c = mn a $ mn b c
+
+dSquared :: (Floating a, Num a) => V3 a -> V3 a -> a
+dSquared v1 v2 = (v1^._x - v2^._x) ** 2 +
+                 (v1^._y - v2^._y) ** 2 +
+                 (v1^._z - v2^._z) ** 2

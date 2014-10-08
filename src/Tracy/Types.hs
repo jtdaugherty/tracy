@@ -76,7 +76,7 @@ data Shade =
           , _material :: Material
           , _hitPoint :: V3 Float
           , _shadeRay :: Ray
-          , _depth :: Float
+          , _depth :: Int
           , _dir :: V3 Float
           }
 
@@ -109,6 +109,7 @@ data ViewPlane =
               , _pixelSize :: Float
               , _gamma :: Float
               , _inverseGamma :: Float
+              , _maxDepth :: Int
               }
     deriving (Show, Eq, Generic)
 
@@ -140,17 +141,11 @@ data RenderConfig =
                  deriving (Generic, Show)
 
 data BRDF =
-    BRDF { _brdfFunction :: BRDFData -> Shade -> V3 Float -> V3 Float -> Color
-         , _brdfSampleF :: BRDFData -> Shade -> V3 Float -> V3 Float -> V3 Float -> (Float, Color)
-         , _brdfRho :: BRDFData -> Shade -> V3 Float -> Color
+    BRDF { _brdfFunction :: Shade -> V3 Float -> V3 Float -> Color
+         , _brdfSampleF :: Shade -> V3 Float -> TraceM (Float, Color, V3 Float)
+         , _brdfRho ::  Shade -> V3 Float -> Color
          , _brdfSampler :: Sampler (V3 Float)
-         , _brdfData :: BRDFData
          }
-
-data BRDFData =
-    BRDFData { _brdfKD :: Float
-             , _brdfColor :: Color
-             }
 
 data LightDir =
     LD { _lightDir :: V3 Float
@@ -168,8 +163,8 @@ data Light =
           }
 
 data Material =
-    Material { _doShading :: Shade -> TraceM Color
-             , _doAreaShading :: Shade -> TraceM Color
+    Material { _doShading :: Shade -> Tracer -> TraceM Color
+             , _doAreaShading :: Shade -> Tracer -> TraceM Color
              , _getLe :: Shade -> Color
              }
 
@@ -224,7 +219,7 @@ data TraceData =
 type TraceM a = Reader TraceData a
 
 data Tracer =
-    Tracer { _doTrace :: Ray -> TraceM Color
+    Tracer { _doTrace :: Ray -> Int -> TraceM Color
            }
 
 ---------------------------------------------------------------------------
@@ -233,6 +228,7 @@ data Tracer =
 data TracerDesc =
     RayCastTracer
   | AreaLightTracer
+  | WhittedTracer
     deriving (Eq, Show, Generic)
 
 data SceneDesc =
@@ -286,6 +282,7 @@ data MaterialDesc =
       Matte Color
     | Phong Color Float
     | Emissive Color Float
+    | Reflective Color Float Color Float
     deriving (Eq, Show, Generic)
 
 data CameraDesc =
@@ -344,7 +341,6 @@ makeLenses ''Object
 makeLenses ''ViewPlane
 makeLenses ''World
 makeLenses ''BRDF
-makeLenses ''BRDFData
 makeLenses ''Light
 makeLenses ''Material
 makeLenses ''BBox

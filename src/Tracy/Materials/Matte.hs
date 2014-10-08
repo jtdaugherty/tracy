@@ -27,8 +27,8 @@ matte ambBrdf diffBrdf =
 
 matteShading :: BRDF -> BRDF
              -> (BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
-             -> Shade -> TraceM Color
-matteShading ambBrdf diffBrdf perLight sh = do
+             -> Shade -> Tracer -> TraceM Color
+matteShading ambBrdf diffBrdf perLight sh _ = do
     w <- view tdWorld
 
     let nullLD = LD { _lightDir = V3 0 0 0
@@ -38,7 +38,7 @@ matteShading ambBrdf diffBrdf perLight sh = do
     ambientColor <- (w^.ambient.lightColor) nullLD sh
 
     let wo = -1 *^ sh^.shadeRay.direction
-        baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * ambientColor
+        baseL = (ambBrdf^.brdfRho) sh wo * ambientColor
         getL light = do
             ld <- (light^.lightDirection) sh
 
@@ -64,7 +64,7 @@ lightContrib diffBrdf light ld wo sh = do
         ndotwi = (sh^.normal) `dot` wi
 
     lColor <- (light^.lightColor) ld sh
-    return $ (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi *
+    return $ (diffBrdf^.brdfFunction) sh wo wi *
              lColor * (grey $ float2Double ndotwi)
 
 areaLightContrib :: BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color
@@ -76,8 +76,9 @@ areaLightContrib diffBrdf light ld wo sh = do
 
     lColor <- (light^.lightColor) ld sh
 
-    return $ (diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi *
+    let v =  (diffBrdf^.brdfFunction) sh wo wi *
              lColor *
              (grey $ float2Double gValue) *
              (grey $ float2Double ndotwi) /
              (grey $ float2Double pdfValue)
+    return v

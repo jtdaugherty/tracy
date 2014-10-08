@@ -104,5 +104,5 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets objec
                       , _tdWorldHitFuncs = hitFuncs
                       , _tdWorldShadowHitFuncs = shadowHitFuncs
                       }
-          in runReader ((tracer^.doTrace) ray) st
+          in runReader ((tracer^.doTrace) ray 0) st
   in colors

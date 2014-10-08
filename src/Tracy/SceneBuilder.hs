@@ -92,11 +92,13 @@ accelSchemeFromDesc GridScheme = Right gridScheme
 materialFromDesc :: MaterialDesc -> Either String Material
 materialFromDesc (Matte c) = Right $ matteFromColor c
 materialFromDesc (Phong c e) = Right $ phongFromColor c e
+materialFromDesc (Reflective c e cr kr) = Right $ reflective c e cr kr
 materialFromDesc (Emissive c e) = Right $ emissive c e
 
 tracerFromDesc :: TracerDesc -> Either String Tracer
 tracerFromDesc RayCastTracer = Right rayCastTracer
 tracerFromDesc AreaLightTracer = Right areaLightTracer
+tracerFromDesc WhittedTracer = Right whittedTracer
 
 cameraFromDesc :: CameraDesc -> Either String (Camera ThinLens)
 cameraFromDesc cd@(ThinLensCamera { }) =

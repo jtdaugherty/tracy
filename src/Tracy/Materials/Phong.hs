@@ -1,6 +1,7 @@
 module Tracy.Materials.Phong
   ( phongFromColor
   , phong
+  , reflective
   )
   where
 
@@ -26,10 +27,37 @@ phongFromColor c e = phong
          (lambertian (toUnitHemisphere jittered) c 0.65)
          (glossySpecular c e)
 
+reflective :: Color -> Float -> Color -> Float -> Material
+reflective c e cr kr =
+    let ambBrdf = lambertian (toUnitHemisphere jittered) c 0.25
+        diffBrdf = lambertian (toUnitHemisphere jittered) c 0.65
+        glossyBrdf = glossySpecular c e
+        reflBrdf = perfectSpecular cr kr
+    in Material { _doShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
+                , _doAreaShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
+                , _getLe = const cBlack
+                }
+
+reflectiveShading :: BRDF -> BRDF -> BRDF -> BRDF
+                  -> (BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
+                  -> Shade -> Tracer -> TraceM Color
+reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf perLight sh tracer = do
+    base <- phongShading ambBrdf diffBrdf glossyBrdf perLight sh tracer
+
+    let wo = (-1) *^ (sh^.shadeRay.direction)
+
+    (_, fr, wi) <- (reflBrdf^.brdfSampleF) sh wo
+
+    let reflected_ray = Ray { _origin = sh^.localHitPoint
+                            , _direction = wi
+                            }
+    traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
+    return $ base + (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi))
+
 phongShading :: BRDF -> BRDF -> BRDF
              -> (BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
-             -> Shade -> TraceM Color
-phongShading ambBrdf diffBrdf glossyBrdf perLight sh = do
+             -> Shade -> Tracer -> TraceM Color
+phongShading ambBrdf diffBrdf glossyBrdf perLight sh _ = do
     w <- view tdWorld
 
     let nullLD = LD { _lightDir = V3 0 0 0
@@ -39,7 +67,7 @@ phongShading ambBrdf diffBrdf glossyBrdf perLight sh = do
     ambientColor <- (w^.ambient.lightColor) nullLD sh
 
     let wo = -1 *^ sh^.shadeRay.direction
-        baseL = (ambBrdf^.brdfRho) (ambBrdf^.brdfData) sh wo * ambientColor
+        baseL = (ambBrdf^.brdfRho) sh wo * ambientColor
         getL light = do
             ld <- (light^.lightDirection) sh
             let wi = ld^.lightDir
@@ -64,8 +92,8 @@ lightContrib diffBrdf glossyBrdf light ld wo sh = do
         ndotwi = (sh^.normal) `dot` wi
 
     lColor <- (light^.lightColor) ld sh
-    return $ ((diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi +
-             (glossyBrdf^.brdfFunction) (glossyBrdf^.brdfData) sh wo wi) *
+    return $ ((diffBrdf^.brdfFunction) sh wo wi +
+             (glossyBrdf^.brdfFunction) sh wo wi) *
              lColor * (grey $ float2Double ndotwi)
 
 areaLightContrib :: BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color
@@ -77,8 +105,8 @@ areaLightContrib diffBrdf glossyBrdf light ld wo sh = do
 
     lColor <- (light^.lightColor) ld sh
 
-    return $ ((diffBrdf^.brdfFunction) (diffBrdf^.brdfData) sh wo wi +
-              (glossyBrdf^.brdfFunction) (glossyBrdf^.brdfData) sh wo wi) *
+    return $ ((diffBrdf^.brdfFunction) sh wo wi +
+              (glossyBrdf^.brdfFunction) sh wo wi) *
              lColor *
              (grey $ float2Double gValue) *
              (grey $ float2Double ndotwi) /

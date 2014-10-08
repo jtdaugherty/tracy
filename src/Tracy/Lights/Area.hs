@@ -10,6 +10,7 @@ import Data.Maybe
 import Linear
 
 import Tracy.Types
+import Tracy.Util
 
 areaLight :: Bool -> Object -> Light
 areaLight sh o =
@@ -55,5 +56,5 @@ areaLightInShadow ld r = do
 areaLightG :: LightDir -> Shade -> Float
 areaLightG ld sh =
     let ndotd = ((-1) *^ (ld^.lightNormal)) `dot` (ld^.lightDir)
-        d2 = (distance (ld^.lightSamplePoint) (sh^.localHitPoint)) ** 2
+        d2 = dSquared (ld^.lightSamplePoint) (sh^.localHitPoint)
     in ndotd / d2

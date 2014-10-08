@@ -17,8 +17,8 @@ emissive c ls =
              , _getLe = const $ grey (float2Double ls) * c
              }
 
-emissiveAreaShading :: Color -> Float -> Shade -> TraceM Color
-emissiveAreaShading c ls sh = do
+emissiveAreaShading :: Color -> Float -> Shade -> Tracer -> TraceM Color
+emissiveAreaShading c ls sh _ = do
     if ((-1) *^ (sh^.normal)) `dot` (sh^.shadeRay.direction) > 0 then
        return (grey (float2Double ls) * c) else
        return cBlack

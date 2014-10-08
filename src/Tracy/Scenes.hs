@@ -19,6 +19,7 @@ defaultVp =
               , _pixelSize = 1.0
               , _gamma = 1.0
               , _inverseGamma = 1.0
+              , _maxDepth = 5
               }
 
 defCamera :: CameraDesc
@@ -273,21 +274,36 @@ rectangles =
 
 areaLightScene :: SceneDesc
 areaLightScene =
-    let r1 = Rectangle (V3 10 0 0) (V3 100 0 0) (V3 0 110 0)     (Matte cBlue)
-        r2 = Rectangle (V3 (-120) 0 0) (V3 100 0 0) (V3 0 110 0) (Matte cGreen)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
+    let p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
 
-        a = Rectangle (V3 0 0 0) (V3 20 0 0) (V3 0 20 0) (Matte cWhite)
+        a = Rectangle (V3 0 0 0) (V3 50 0 0) (V3 0 50 0) (Matte cWhite)
 
-        i1 = Instances a [(translate (-100) 130 (-100) <> rotateX (pi/6), Just $ Emissive cRed 3)]
-        i2 = Instances a [(translate (-10) 130 (-100) <> rotateX (pi/4) , Just $ Emissive cGreen 3)]
-        i3 = Instances a [(translate 110 130 (-100) <> rotateX (pi/3)   , Just $ Emissive cBlue 3)]
+        i1 = Instances a [(translate (-100) 30 (-100) <> rotateX (pi/6), Just $ Emissive cRed 3)]
+        i2 = Instances a [(translate (-10) 30 (-100) <> rotateX (pi/4) , Just $ Emissive cGreen 3)]
+        i3 = Instances a [(translate 110 30 (-100) <> rotateX (pi/3)   , Just $ Emissive cBlue 3)]
 
         ls = [ Area True i1
              , Area True i2
              , Area True i3
              ]
-    in SceneDesc (worldOcc [Grid [r1, r2, i1, i2, i3], p] ls 1) NoScheme defCamera RayCastTracer
+    in SceneDesc (worldOcc [Grid [i1, i2, i3], p] ls 1) NoScheme defCamera AreaLightTracer
+
+reflScene :: SceneDesc
+reflScene =
+    let s1 = Sphere (V3 0 40 0) 40 (Reflective cRed 300 cWhite 0.8)
+        s2 = Sphere (V3 (-90) 40 0) 40 (Reflective cBlue 300 cWhite 0.8)
+        s3 = Sphere (V3 90 40 0) 40 (Reflective cYellow 300 cWhite 0.8)
+        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
+
+        r1 = Rectangle (V3 (-100) 0 0) (V3 200 0 0) (V3 0 100 0) (Matte cWhite)
+        i1 = Instances r1 [ (translate 0 150 150 <> rotateX (pi/(-2.5)), Just $ Emissive cWhite 3)
+                          ]
+        i2 = Instances r1 [ (translate 0 150 0 <> rotateX (pi/2.5), Just $ Emissive cWhite 3)
+                          ]
+        ls = [ Area True i1
+             , Area True i2
+             ]
+    in SceneDesc (worldOcc [Grid [s1, s2, s3, i1], p] ls 1) NoScheme defCamera AreaLightTracer
 
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
@@ -304,4 +320,5 @@ allScenes =
     , ("monkey",          loadMonkeyScene)
     , ("rectangles",      return rectangles)
     , ("area-light",      return areaLightScene)
+    , ("refl",            return reflScene)
     ]
