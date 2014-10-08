@@ -287,7 +287,7 @@ areaLightScene =
              , Area True i2
              , Area True i3
              ]
-    in SceneDesc (worldOcc [r1, r2, p, i1, i2, i3] ls 1) NoScheme defCamera RayCastTracer
+    in SceneDesc (worldOcc [Grid [r1, r2, i1, i2, i3], p] ls 1) NoScheme defCamera RayCastTracer
 
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
