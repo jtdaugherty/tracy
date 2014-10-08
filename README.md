@@ -52,3 +52,6 @@ Stanford Bunny mesh:
 
 Dragon mesh:
 ![demo4](/demo4.png)
+
+Area lights:
+![demo5](/demo5.png)
