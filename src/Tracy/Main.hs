@@ -39,6 +39,7 @@ render sceneName numFrames renderCfg s renderManager iChan dChan = do
                                (fromEnum $ w^.wdViewPlane.vres)
 
   writeChan dChan $ DNumFrames numFrames
+  writeChan dChan $ DSampleRoot $ renderCfg^.sampleRoot
   writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.hres)
                                (fromEnum $ w^.wdViewPlane.vres)
 

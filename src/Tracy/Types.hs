@@ -46,6 +46,7 @@ data InfoEvent =
 data DataEvent =
       DSceneName String
     | DNumFrames Int
+    | DSampleRoot Float
     | DFrameFinished (SV.Vector Colour)
     | DImageSize Int Int
     | DStarted

@@ -34,6 +34,7 @@ guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
   DSceneName sceneName <- readChan chan
   DNumFrames frames <- readChan chan
+  DSampleRoot root <- readChan chan
   DImageSize cols rows <- readChan chan
 
   ref <- newIORef $ MyState cols rows
@@ -68,9 +69,12 @@ guiHandler chan = do
         ev <- readChan chan
         case ev of
             DFrameFinished rs -> do
+                let frameSampleCount = truncate $ root * root
+
                 SV.unsafeWith rs $ \p ->
                     c_running_average
                       (fromIntegral numSamples)
+                      (fromIntegral frameSampleCount)
                       (fromIntegral $ 3 * rows * cols)
                       combinedArray
                       (castPtr p)
@@ -80,13 +84,13 @@ guiHandler chan = do
                     pokeElemOff imageArray i $ toColor3 val
 
                 writeIORef redrawRef True
-                work (numSamples + 1)
+                work (numSamples + frameSampleCount)
 
             _ -> work numSamples
 
   _ <- forkIO $ do
     DStarted <- readChan chan
-    work 0
+    work (0 :: Int)
     DFinished <- readChan chan
     DShutdown <- readChan chan
     return ()
@@ -135,4 +139,4 @@ toColor3 (Colour r g b) = GL.Color3 (toEnum $ fromEnum (r * 255.0))
                                     (toEnum $ fromEnum (b * 255.0))
 
 foreign import ccall unsafe "running_average"
-  c_running_average :: CInt -> CInt -> Ptr Double -> Ptr Double -> IO ()
+  c_running_average :: CDouble -> CDouble -> CInt -> Ptr Double -> Ptr Double -> IO ()

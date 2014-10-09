@@ -1,9 +1,9 @@
 
-void running_average(int cnt, int len, double * dst, double * src) {
+void running_average(double oldcnt, double newcnt, int len, double * dst, double * src) {
     int i;
 
     for (i = 0; i < len; i++) {
-        dst[i] = (dst[i] * cnt + src[i]) / (cnt + 1);
+        dst[i] = (dst[i] * oldcnt + src[i] * newcnt) / (oldcnt + newcnt);
     }
 }
 
