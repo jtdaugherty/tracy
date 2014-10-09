@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Types where
 
@@ -18,6 +18,8 @@ import System.Random.MWC
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.Ptr
+import Foreign.ForeignPtr
+import Data.ByteString.Internal
 
 type Color = Colour
 
@@ -339,11 +341,14 @@ instance Storable Colour where
 
 instance (Storable a, Serialize a) => Serialize (SV.Vector a) where
     get = do
-        l <- get
-        SV.replicateM l get
+        bs <- get
+        let (fp, off, len) = toForeignPtr bs
+        return $ SV.unsafeFromForeignPtr (castForeignPtr fp) off $ len `div` sizeOf (undefined :: a)
+
     put v = do
-        put $ SV.length v
-        SV.mapM_ put v
+        let (fp, off, len) = SV.unsafeToForeignPtr v
+            bs = fromForeignPtr (castForeignPtr fp) off $ len * sizeOf (undefined :: a)
+        put bs
 
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where
