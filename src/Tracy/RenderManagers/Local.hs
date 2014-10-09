@@ -26,14 +26,13 @@ localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
         scene = builtScene & sceneWorld .~ worldAccelShadows
         tracer = builtScene^.sceneTracer
 
-    -- Generate sample data for square and disk samplers
-    sSamplesVec <- V.generateM numSets $ const $ squareSampler rng (cfg^.sampleRoot)
-    dSamplesVec <- V.generateM numSets $ const $ diskSampler rng (cfg^.sampleRoot)
-
     let processRequests = do
           ev <- readChan jobReq
           case ev of
               RenderRequest -> do
+                  -- Generate sample data for square and disk samplers
+                  sSamplesVec <- V.generateM numSets $ const $ squareSampler rng (cfg^.sampleRoot)
+                  dSamplesVec <- V.generateM numSets $ const $ diskSampler rng (cfg^.sampleRoot)
                   ch <- renderChunk cfg rng scene tracer sSamplesVec dSamplesVec sSamplesVec
                   writeChan jobResp $ FrameFinished ch
                   processRequests
@@ -48,11 +47,11 @@ localRenderManager jobReq jobResp = do
     let waitForJob = do
           reqEv <- readChan jobReq
           case reqEv of
-              SetScene cfg sDesc seed -> do
+              SetScene cfg sDesc -> do
                   case sceneFromDesc sDesc of
                       Right s -> do
                           writeChan jobResp JobAck
-                          gen <- restore seed
+                          gen <- create
                           localSetSceneAndRender jobReq jobResp cfg s gen
                       Left e -> writeChan jobResp $ JobError e
                   waitForJob

@@ -55,11 +55,8 @@ render sceneName numFrames renderCfg s renderManager iChan dChan = do
   -- Start the renderer thread
   _ <- forkIO (renderManager reqChan respChan)
 
-  gen <- create
-  seed <- save gen
-
   -- Set the scene
-  writeChan reqChan $ SetScene renderCfg s seed
+  writeChan reqChan $ SetScene renderCfg s
 
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests

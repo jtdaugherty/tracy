@@ -55,7 +55,7 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc Seed
+      SetScene RenderConfig SceneDesc
     | RenderRequest
     | RenderFinished
     | Shutdown
@@ -366,10 +366,6 @@ instance Serialize JobRequest where
 instance Serialize JobResponse where
 instance Serialize RenderConfig where
 instance Serialize Transformation where
-
-instance Serialize Seed where
-    get = get >>= (return . toSeed . VU.fromList)
-    put = put . VU.toList . fromSeed
 
 instance Serialize MeshDesc where
     get = MeshDesc <$> (V.fromList <$> get) <*> get
