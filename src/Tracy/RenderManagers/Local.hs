@@ -5,7 +5,6 @@ module Tracy.RenderManagers.Local
 
 import Control.Concurrent.Chan
 import Control.Lens
-import Control.Monad
 import qualified Data.Vector as V
 import System.Random.MWC
 
