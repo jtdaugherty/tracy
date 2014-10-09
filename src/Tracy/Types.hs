@@ -343,11 +343,13 @@ instance (Storable a, Serialize a) => Serialize (SV.Vector a) where
     get = do
         bs <- get
         let (fp, off, len) = toForeignPtr bs
-        return $ SV.unsafeFromForeignPtr (castForeignPtr fp) off $ len `div` sizeOf (undefined :: a)
+            d = sizeOf (undefined :: a)
+        return $ SV.unsafeFromForeignPtr (castForeignPtr fp) (off `div` d) (len `div` d)
 
     put v = do
         let (fp, off, len) = SV.unsafeToForeignPtr v
-            bs = fromForeignPtr (castForeignPtr fp) off $ len * sizeOf (undefined :: a)
+            d = sizeOf (undefined :: a)
+            bs = fromForeignPtr (castForeignPtr fp) (off * d) (len * d)
         put bs
 
 instance Serialize SceneDesc where
