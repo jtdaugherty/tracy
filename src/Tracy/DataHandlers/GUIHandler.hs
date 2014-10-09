@@ -12,6 +12,8 @@ import Data.IORef
 import Foreign (Ptr, mallocArray, advancePtr, pokeArray)
 import Data.Colour
 import System.Exit
+import qualified Data.Vector.Storable as SV
+import Foreign.Marshal.Array (copyArray)
 
 import qualified Graphics.Rendering.OpenGL as GL
 import qualified Graphics.UI.GLUT as GLUT
@@ -20,7 +22,7 @@ import Graphics.UI.GLUT (($=))
 import Tracy.Types
 
 data MyState =
-    MyState { completed :: [(Int, [[Colour]])]
+    MyState { completed :: [(Int, SV.Vector Colour)]
             , windowWidth :: Int
             , windowHeight :: Int
             }
@@ -65,7 +67,11 @@ guiHandler chan = do
         -- Create a new pointer from imageArray with the appropriate chunk offset
         let offPtr = advancePtr imageArray $ start * cols
         -- Poke pixel data into the array at that position
-        pokeArray offPtr $ toColor3 <$> concat rs
+            converted = SV.map toColor3 rs
+
+        SV.unsafeWith converted $ \p -> do
+          copyArray offPtr p $ SV.length converted
+
         modifyIORef' ref $ \s -> s { completed = (ch, rs) : completed s }
         atomically $ writeTChan updateChan ()
 

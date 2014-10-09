@@ -7,12 +7,16 @@ import Control.Lens
 import Data.Serialize
 import Data.Time.Clock
 import Control.Monad.Reader
+import qualified Data.Vector.Storable as SV
 import qualified Data.Vector as V
 import GHC.Generics
 import Linear
 import Data.Colour
 import Data.Monoid
 import System.Random (StdGen)
+import Foreign.Storable
+import Foreign.C.Types
+import Foreign.Ptr
 
 type Color = Colour
 
@@ -40,7 +44,7 @@ data InfoEvent =
 data DataEvent =
       DSceneName String
     | DNumChunks Int
-    | DChunkFinished Int (Int, Int) [[Colour]]
+    | DChunkFinished Int (Int, Int) (SV.Vector Colour)
     | DImageSize Int Int
     | DStarted
     | DFinished
@@ -56,7 +60,7 @@ data JobRequest =
 
 data JobResponse =
       JobError String
-    | ChunkFinished Int (Int, Int) [[Colour]]
+    | ChunkFinished Int (Int, Int) (SV.Vector Colour)
     | JobAck
     deriving (Generic)
 
@@ -312,6 +316,34 @@ instance Serialize Colour where
 instance Serialize Colour8 where
     get = Colour8 <$> get <*> get <*> get
     put (Colour8 r g b) = put r >> put g >> put b
+
+instance Storable Colour where
+    sizeOf _ = sizeOf (undefined :: CDouble) * 3
+    alignment _ = alignment (undefined :: CDouble)
+
+    {-# INLINE peek #-}
+    peek p = do
+               r <- peekElemOff q 0
+               g <- peekElemOff q 1
+               b <- peekElemOff q 2
+               return (Colour r g b)
+      where
+        q = castPtr p
+    {-# INLINE poke #-}
+    poke p (Colour r g b) = do
+               pokeElemOff q 0 r
+               pokeElemOff q 1 g
+               pokeElemOff q 2 b
+      where
+        q = castPtr p
+
+instance (Storable a, Serialize a) => Serialize (SV.Vector a) where
+    get = do
+        l <- get
+        SV.replicateM l get
+    put v = do
+        put $ SV.length v
+        SV.mapM_ put v
 
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where

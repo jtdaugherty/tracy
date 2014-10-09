@@ -10,6 +10,7 @@ import Control.Parallel.Strategies
 import Control.DeepSeq
 import Data.Colour
 import qualified Data.Vector as V
+import qualified Data.Vector.Storable as SV
 import System.Random
 
 import Tracy.Types
@@ -24,7 +25,7 @@ renderChunk :: RenderConfig
             -> V.Vector [(Float, Float)]
             -> V.Vector [(Float, Float)]
             -> V.Vector [(Float, Float)]
-            -> IO [[Color]]
+            -> IO (SV.Vector Color)
 renderChunk cfg s (start, stop) tracer sSamples dSamples oSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
@@ -41,4 +42,4 @@ renderChunk cfg s (start, stop) tracer sSamples dSamples oSamples = do
   let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleIndices)
   r `deepseq` return ()
 
-  return r
+  return $ SV.fromList $ concat r

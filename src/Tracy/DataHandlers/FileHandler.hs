@@ -9,6 +9,7 @@ import Control.Concurrent.Chan
 import qualified Data.ByteString as B
 import Data.List
 import Codec.BMP
+import qualified Data.Vector.Storable as SV
 
 import Tracy.Types
 import Tracy.Util
@@ -28,7 +29,8 @@ fileHandler filename chan = do
   DFinished <- readChan chan
   DShutdown <- readChan chan
 
-  let imgBytes = B.concat $ B.concat <$> (getColorBytes <$>) <$> (concat $ snd <$> sort result)
+  let dat = SV.concat $ snd <$> sort result
+      imgBytes = B.concat $ (getColorBytes <$> (SV.toList dat))
       img = packRGBA32ToBMP (fromEnum rows) (fromEnum cols) imgBytes
 
   writeBMP filename img
