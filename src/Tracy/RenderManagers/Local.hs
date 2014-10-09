@@ -45,8 +45,7 @@ localSetSceneAndRender jobReq jobResp cfg builtScene gen = do
           case ev of
               RenderRequest chunkId (start, stop) -> do
                   ch <- renderChunk cfg scene (start, stop) tracer sSamplesVec dSamplesVec sSamplesVec
-                  let converted = (cdemote <$>) <$> ch
-                  writeChan jobResp $ ChunkFinished chunkId (start, stop) converted
+                  writeChan jobResp $ ChunkFinished chunkId (start, stop) ch
                   processRequests
               RenderFinished -> do
                   writeChan jobResp JobAck

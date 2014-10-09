@@ -56,7 +56,7 @@ data JobRequest =
 
 data JobResponse =
       JobError String
-    | ChunkFinished Int (Int, Int) [[Colour8]]
+    | ChunkFinished Int (Int, Int) [[Colour]]
     | JobAck
     deriving (Generic)
 

@@ -90,9 +90,8 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
                 t <- getCurrentTime
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
                                              (length chunks - (numFinished + 1))
-                    converted = (cpromote <$>) <$> rs
                 writeChan iChan $ IChunkFinished chunkId (length chunks) remainingTime
-                writeChan dChan $ DChunkFinished chunkId startStop converted
+                writeChan dChan $ DChunkFinished chunkId startStop rs
                 if numFinished + 1 == numChunks then
                    writeChan reqChan RenderFinished else
                    collector $ numFinished + 1
