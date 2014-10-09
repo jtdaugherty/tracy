@@ -9,6 +9,7 @@ import Control.Lens
 import Control.Monad.Reader
 import Data.Colour
 import qualified Data.Vector as V
+import qualified Data.Vector.Storable as SV
 import Linear
 import GHC.Float
 
@@ -63,7 +64,7 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets objec
       maxToOneExposure = grey (float2Double $ cam^.exposureTime)
       vp = w^.viewPlane
       row = toEnum theRow
-      colors = getCol <$> [0..vp^.hres-1]
+      colors = SV.generate (fromEnum $ vp^.hres) (getCol . toEnum)
       hitFuncs = w^..objects.folded.hit
       shadowHitFuncs = w^..objects.folded.shadow_hit
       getCol col =

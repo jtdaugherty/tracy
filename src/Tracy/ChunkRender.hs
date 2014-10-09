@@ -42,4 +42,4 @@ renderChunk cfg s (start, stop) tracer sSamples dSamples oSamples = do
   let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleIndices)
   r `deepseq` return ()
 
-  return $ SV.fromList $ concat r
+  return $ SV.concat r

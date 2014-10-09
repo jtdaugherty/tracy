@@ -189,7 +189,7 @@ type CameraRenderer a = Camera a
                       -> V.Vector [(Float, Float)]
                       -> V.Vector [(Float, Float)]
                       -> (Int, [Int])
-                      -> [Color]
+                      -> SV.Vector Color
 
 data Camera a =
     Camera { _cameraU :: V3 Float
