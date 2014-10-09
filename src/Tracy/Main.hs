@@ -1,10 +1,8 @@
 module Tracy.Main where
 
-import Control.Applicative
 import Control.Lens
 import Control.Concurrent
 import Data.Time.Clock
-import Data.Colour
 import System.Exit
 import System.Random (getStdGen)
 

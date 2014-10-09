@@ -3,11 +3,9 @@ module Tracy.RenderManagers.Local
   )
   where
 
-import Control.Applicative
 import Control.Concurrent.Chan
 import Control.Lens
 import Control.Monad
-import Data.Colour
 import qualified Data.Vector as V
 import System.Random (StdGen, setStdGen)
 
