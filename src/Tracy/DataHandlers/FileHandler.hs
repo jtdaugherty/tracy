@@ -18,7 +18,7 @@ fileHandler :: FilePath -> Chan DataEvent -> IO ()
 fileHandler filename chan = do
   DSceneName _ <- readChan chan
   DNumFrames frames <- readChan chan
-  DNumFrames root <- readChan chan
+  DSampleRoot root <- readChan chan
   DImageSize cols rows <- readChan chan
 
   DStarted <- readChan chan
