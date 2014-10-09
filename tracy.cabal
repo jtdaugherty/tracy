@@ -36,6 +36,9 @@ library
     old-locale,
     ply-loader >= 0.4
 
+  C-Sources:
+    cbits/average.c
+
   exposed-modules:
     Tracy.AccelSchemes
     Tracy.BRDF

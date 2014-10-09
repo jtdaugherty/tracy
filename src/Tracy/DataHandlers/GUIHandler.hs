@@ -1,3 +1,4 @@
+{-# LANGUAGE ForeignFunctionInterface #-}
 module Tracy.DataHandlers.GUIHandler
   ( guiHandler
   )
@@ -10,6 +11,9 @@ import Control.Concurrent (forkIO)
 import Control.Monad
 import Data.IORef
 import Foreign (Ptr, mallocArray, advancePtr, pokeArray)
+import Foreign.Storable
+import Foreign.C.Types
+import Foreign.Ptr
 import Data.Colour
 import System.Exit
 import qualified Data.Vector.Storable as SV
@@ -58,24 +62,31 @@ guiHandler chan = do
   GL.shadeModel $= GL.Flat
   GL.rowAlignment GL.Unpack $= 1
 
-  let work combined numSamples = do
+  combinedArray <- mallocArray (3 * rows * cols)
+
+  let work numSamples = do
         ev <- readChan chan
         case ev of
             DFrameFinished rs -> do
-                let combined' = SV.zipWith (\a b -> ((a * numSamples) + b) / (numSamples + 1)) combined rs
-                    converted = SV.map toColor3 combined'
+                SV.unsafeWith rs $ \p ->
+                    c_running_average
+                      (fromIntegral numSamples)
+                      (fromIntegral $ 3 * rows * cols)
+                      combinedArray
+                      (castPtr p)
 
-                SV.unsafeWith converted $ \p -> do
-                    copyArray imageArray p $ SV.length converted
+                forM_ [0..rows*cols-1] $ \i -> do
+                    val <- peekElemOff (castPtr combinedArray) i
+                    pokeElemOff imageArray i $ toColor3 val
 
                 writeIORef redrawRef True
-                work combined' (numSamples + 1)
+                work (numSamples + 1)
 
-            _ -> work combined numSamples
+            _ -> work numSamples
 
   _ <- forkIO $ do
     DStarted <- readChan chan
-    work (SV.replicate (rows * cols) 0) 0
+    work 0
     DFinished <- readChan chan
     DShutdown <- readChan chan
     return ()
@@ -122,3 +133,6 @@ toColor3 :: Colour -> GL.Color3 GL.GLubyte
 toColor3 (Colour r g b) = GL.Color3 (toEnum $ fromEnum (r * 255.0))
                                     (toEnum $ fromEnum (g * 255.0))
                                     (toEnum $ fromEnum (b * 255.0))
+
+foreign import ccall unsafe "running_average"
+  c_running_average :: CInt -> CInt -> Ptr Double -> Ptr Double -> IO ()
