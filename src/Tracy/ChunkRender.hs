@@ -11,7 +11,7 @@ import Control.DeepSeq
 import Data.Colour
 import qualified Data.Vector as V
 import qualified Data.Vector.Storable as SV
-import System.Random
+import System.Random.MWC
 
 import Tracy.Types
 
@@ -19,6 +19,7 @@ instance NFData Colour where
     rnf (Colour r g b) = r `seq` g `seq` b `seq` ()
 
 renderChunk :: RenderConfig
+            -> GenIO
             -> Scene ThinLens
             -> (Int, Int)
             -> Tracer
@@ -26,7 +27,7 @@ renderChunk :: RenderConfig
             -> V.Vector [(Float, Float)]
             -> V.Vector [(Float, Float)]
             -> IO (SV.Vector Color)
-renderChunk cfg s (start, stop) tracer sSamples dSamples oSamples = do
+renderChunk cfg rng s (start, stop) tracer sSamples dSamples oSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
       numSets = V.length sSamples
@@ -37,7 +38,7 @@ renderChunk cfg s (start, stop) tracer sSamples dSamples oSamples = do
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
   sampleIndices <- replicateM (stop - start + 1) $
                      replicateM numSets $
-                       randomRIO (0, numSets - 1)
+                       uniformR (0, numSets - 1) rng
 
   let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleIndices)
   r `deepseq` return ()

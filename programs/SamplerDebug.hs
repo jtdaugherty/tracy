@@ -9,6 +9,7 @@ import System.Exit
 import qualified Data.Map as M
 import Data.Colour
 import qualified Data.ByteString as B
+import System.Random.MWC
 
 import Tracy.Types
 import Tracy.Util
@@ -42,10 +43,12 @@ main = do
       blank = Colour 0 0 0
       hitColor = Colour 1 0 0
 
+  rng <- create
+
   forM_ samplers $ \(name, path, s, isDisk) -> do
          putStrLn $ "Sampling " ++ show name ++ " to " ++ path
 
-         vals <- s aaRoot
+         vals <- s rng aaRoot
 
          let offsetVals = if isDisk
                           then (mapped.both %~ ((*0.5). (+1.0))) vals

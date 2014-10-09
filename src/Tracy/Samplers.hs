@@ -11,23 +11,23 @@ module Tracy.Samplers
 
 import Control.Applicative
 import Control.Monad
-import Control.Monad.Random
+import System.Random.MWC
 import Linear
 
 import Tracy.Types
 
-getRandomUnit :: IO Float
-getRandomUnit = randomRIO (0, 1)
+getRandomUnit :: GenIO -> IO Float
+getRandomUnit = uniformR (0, 1)
 
 pureRandom :: Sampler (Float, Float)
-pureRandom root =
+pureRandom gen root =
     replicateM (fromEnum $ root * root) $ do
-      a <- getRandomUnit
-      b <- getRandomUnit
+      a <- getRandomUnit gen
+      b <- getRandomUnit gen
       return (a, b)
 
 regular :: Sampler (Float, Float)
-regular root = do
+regular _gen root = do
   let slice = 1.0 / root
       ss = [ ((i+0.5)*slice, (j+0.5)*slice) |
              i <- [0..root-1]
@@ -36,12 +36,12 @@ regular root = do
   return ss
 
 jittered :: Sampler (Float, Float)
-jittered root =do
+jittered gen root = do
   sampleArrs <- forM [0..root-1] $ \k ->
                 forM [0..root-1] $ \j ->
                     do
-                      a <- getRandomUnit
-                      b <- getRandomUnit
+                      a <- getRandomUnit gen
+                      b <- getRandomUnit gen
                       return ((k + a) / root, (j + b) / root)
 
   return $ concat sampleArrs
@@ -74,8 +74,8 @@ toHemi (x, y) =
     in V3 pu pv pw
 
 transSample :: (a -> b) -> Sampler a -> Sampler b
-transSample f s root = do
-  vs <- s root
+transSample f s gen root = do
+  vs <- s gen root
   return $ f <$> vs
 
 toUnitDisk :: Sampler (Float, Float) -> Sampler (Float, Float)

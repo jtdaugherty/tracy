@@ -9,11 +9,12 @@ import Data.Time.Clock
 import Control.Monad.Reader
 import qualified Data.Vector.Storable as SV
 import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as VU
 import GHC.Generics
 import Linear
 import Data.Colour
 import Data.Monoid
-import System.Random (StdGen)
+import System.Random.MWC
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.Ptr
@@ -52,7 +53,7 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc StdGen
+      SetScene RenderConfig SceneDesc Seed
     | RenderRequest Int (Int, Int)
     | RenderFinished
     | Shutdown
@@ -178,7 +179,7 @@ data BBox =
          }
          deriving (Show)
 
-type Sampler a = Float -> IO [a]
+type Sampler a = GenIO -> Float -> IO [a]
 
 type CameraRenderer a = Camera a
                       -> Int
@@ -359,9 +360,9 @@ instance Serialize JobResponse where
 instance Serialize RenderConfig where
 instance Serialize Transformation where
 
-instance Serialize StdGen where
-    get = get >>= (return . read)
-    put = put . show
+instance Serialize Seed where
+    get = get >>= (return . toSeed . VU.fromList)
+    put = put . VU.toList . fromSeed
 
 instance Serialize MeshDesc where
     get = MeshDesc <$> (V.fromList <$> get) <*> get

@@ -7,15 +7,15 @@ import Control.Concurrent.Chan
 import Control.Lens
 import Control.Monad
 import qualified Data.Vector as V
-import System.Random (StdGen, setStdGen)
+import System.Random.MWC
 
 import Tracy.Types
 import Tracy.SceneBuilder
 import Tracy.Samplers
 import Tracy.ChunkRender
 
-localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig -> Scene ThinLens -> StdGen -> IO ()
-localSetSceneAndRender jobReq jobResp cfg builtScene gen = do
+localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig -> Scene ThinLens -> GenIO -> IO ()
+localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
     let squareSampler = jittered
         diskSampler = builtScene^.sceneCamera.cameraData.lensSampler
         numSets = fromEnum $ builtScene^.sceneWorld.viewPlane.hres
@@ -27,13 +27,9 @@ localSetSceneAndRender jobReq jobResp cfg builtScene gen = do
         scene = builtScene & sceneWorld .~ worldAccelShadows
         tracer = builtScene^.sceneTracer
 
-    -- Set the global random number generator so we don't have bias in
-    -- our samples relative to other nodes
-    setStdGen gen
-
     -- Generate sample data for square and disk samplers
-    sSamples <- replicateM numSets $ squareSampler (cfg^.sampleRoot)
-    dSamples <- replicateM numSets $ diskSampler (cfg^.sampleRoot)
+    sSamples <- replicateM numSets $ squareSampler rng (cfg^.sampleRoot)
+    dSamples <- replicateM numSets $ diskSampler rng (cfg^.sampleRoot)
 
     let sSamplesVec = V.fromList sSamples
         dSamplesVec = V.fromList dSamples
@@ -42,7 +38,7 @@ localSetSceneAndRender jobReq jobResp cfg builtScene gen = do
           ev <- readChan jobReq
           case ev of
               RenderRequest chunkId (start, stop) -> do
-                  ch <- renderChunk cfg scene (start, stop) tracer sSamplesVec dSamplesVec sSamplesVec
+                  ch <- renderChunk cfg rng scene (start, stop) tracer sSamplesVec dSamplesVec sSamplesVec
                   writeChan jobResp $ ChunkFinished chunkId (start, stop) ch
                   processRequests
               RenderFinished -> do
@@ -56,10 +52,11 @@ localRenderManager jobReq jobResp = do
     let waitForJob = do
           reqEv <- readChan jobReq
           case reqEv of
-              SetScene cfg sDesc gen -> do
+              SetScene cfg sDesc seed -> do
                   case sceneFromDesc sDesc of
                       Right s -> do
                           writeChan jobResp JobAck
+                          gen <- restore seed
                           localSetSceneAndRender jobReq jobResp cfg s gen
                       Left e -> writeChan jobResp $ JobError e
                   waitForJob

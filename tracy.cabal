@@ -25,8 +25,7 @@ library
     time,
     mtl,
     distributive,
-    MonadRandom,
-    random,
+    mwc-random,
     deepseq,
     vector,
     parallel,
@@ -106,6 +105,5 @@ executable tracy-debug-samplers
     containers,
     bmp >= 1.2.4.1,
     bytestring,
-    mtl,
-    MonadRandom,
-    random
+    mwc-random,
+    mtl
