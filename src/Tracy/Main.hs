@@ -1,6 +1,7 @@
 module Tracy.Main where
 
 import Control.Lens
+import Numeric.Lens
 import Control.Concurrent
 import Data.Time.Clock
 import System.Exit
@@ -22,23 +23,9 @@ render :: String
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
-render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
+render sceneName numFrames renderCfg s renderManager iChan dChan = do
   let w = s^.sceneDescWorld
-      -- Number of pixel rows per chunk
-      rowsPerChunk = w^.wdViewPlane.vres / (toEnum requestedChunks)
-      -- Chunk a list up by a function that gives us the first chunk
-      chunk f xs = result : chunk f rest where (result, rest) = f xs
-      -- These are the rows we will render
-      rows = [0..(fromEnum $ w^.wdViewPlane.vres-1)]
-      -- Then we split up the rows into groups (chunks) based on the chunk size
-      chunks = filter (not . null) $ take (requestedChunks + 1) $
-                                     chunk (splitAt (fromEnum rowsPerChunk)) rows
-      numChunks = length chunks
-      -- For each chunk, construct a rendering request for the relevant row
-      -- range and chunk ID
-      requests = [ RenderRequest i (ch !! 0, ch !! (length ch - 1))
-                 | (i, ch) <- zip [1..] chunks
-                 ]
+      requests = replicate numFrames RenderRequest
 
   writeChan iChan $ ISceneName sceneName
   writeChan dChan $ DSceneName sceneName
@@ -47,12 +34,11 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
   writeChan iChan $ INumObjects $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
-  writeChan iChan $ INumRowsPerChunk $ fromEnum rowsPerChunk
-  writeChan iChan $ INumChunks $ length chunks
+  writeChan iChan $ INumFrames numFrames
   writeChan iChan $ IImageSize (fromEnum $ w^.wdViewPlane.hres)
                                (fromEnum $ w^.wdViewPlane.vres)
 
-  writeChan dChan $ DNumChunks $ length chunks
+  writeChan dChan $ DNumFrames numFrames
   writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.hres)
                                (fromEnum $ w^.wdViewPlane.vres)
 
@@ -85,13 +71,15 @@ render sceneName requestedChunks renderCfg s renderManager iChan dChan = do
                 putStrLn $ "Yikes! Error in render thread: " ++ msg
                 exitSuccess
             JobAck -> collector numFinished
-            ChunkFinished chunkId startStop rs -> do
+            FrameFinished rs -> do
                 t <- getCurrentTime
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
-                                             (length chunks - (numFinished + 1))
-                writeChan iChan $ IChunkFinished chunkId (length chunks) remainingTime
-                writeChan dChan $ DChunkFinished chunkId startStop rs
-                if numFinished + 1 == numChunks then
+                                             (numFrames - (numFinished + 1))
+
+                writeChan iChan $ IFrameFinished numFrames remainingTime
+                writeChan dChan $ DFrameFinished rs
+
+                if numFinished + 1 == numFrames then
                    writeChan reqChan RenderFinished else
                    collector $ numFinished + 1
 

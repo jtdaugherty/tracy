@@ -104,7 +104,7 @@ main = do
             Right val -> do
                 case val of
                     SetScene cfg _ _ -> putStrLn $ "Got scene setting, cfg: " ++ show cfg
-                    RenderRequest ch _ -> putStrLn $ "Got chunk request: " ++ show ch
+                    RenderRequest -> putStrLn $ "Got frame request"
                     RenderFinished -> putStrLn "Rendering finished"
                     Shutdown -> putStrLn "Shutdown"
 
@@ -114,5 +114,5 @@ main = do
 
                 case resp of
                     JobAck -> return ()
-                    ChunkFinished ch _ _ -> putStrLn $ "Finished chunk: " ++ show ch
+                    FrameFinished _ -> putStrLn $ "Finished frame"
                     JobError e -> putStrLn $ "Job error: " ++ e

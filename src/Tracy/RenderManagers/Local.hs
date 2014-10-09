@@ -33,9 +33,9 @@ localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
     let processRequests = do
           ev <- readChan jobReq
           case ev of
-              RenderRequest chunkId (start, stop) -> do
-                  ch <- renderChunk cfg rng scene (start, stop) tracer sSamplesVec dSamplesVec sSamplesVec
-                  writeChan jobResp $ ChunkFinished chunkId (start, stop) ch
+              RenderRequest -> do
+                  ch <- renderChunk cfg rng scene tracer sSamplesVec dSamplesVec sSamplesVec
+                  writeChan jobResp $ FrameFinished ch
                   processRequests
               RenderFinished -> do
                   writeChan jobResp JobAck

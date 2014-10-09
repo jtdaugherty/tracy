@@ -31,11 +31,10 @@ consoleHandler chan = do
             IShadows val -> output "Shadows" (if val then "yes" else "no")
             IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
             INumCPUs n -> outputS "Using CPUs" n
-            INumRowsPerChunk n -> outputS "Pixel rows per chunk" n
-            INumChunks n -> outputS "Chunks" n
+            INumFrames n -> outputS "Frames" n
             IStartTime t -> outputS "Start time" (formatTime defaultTimeLocale rfc822DateFormat t)
             IStarted -> return ()
-            IChunkFinished cId total t ->
+            IFrameFinished total t ->
                     let totalSecs = fromEnum t `div` 1000000000000
                         h = totalSecs `div` 3600
                         m = (totalSecs `mod` 3600) `div` 60
@@ -47,14 +46,7 @@ consoleHandler chan = do
                                           , show s
                                           , "s"
                                           ]
-                    in output "Finished chunk"
-                              (concat [ show cId
-                                      , "/"
-                                      , show total
-                                      , " ("
-                                      , totalStr
-                                      , " remaining)"
-                                      ])
+                    in output "Finished chunk" (concat [ totalStr , " remaining" ])
             IFinishTime t -> outputS "Finish time" t
             ITotalTime t -> outputS "Total time" t
             IFinished -> return ()

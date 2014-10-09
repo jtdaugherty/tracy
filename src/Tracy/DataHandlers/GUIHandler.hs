@@ -22,21 +22,20 @@ import Graphics.UI.GLUT (($=))
 import Tracy.Types
 
 data MyState =
-    MyState { completed :: [(Int, SV.Vector Colour)]
-            , windowWidth :: Int
+    MyState { windowWidth :: Int
             , windowHeight :: Int
             }
 
 guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
   DSceneName sceneName <- readChan chan
-  DNumChunks chunks <- readChan chan
+  DNumFrames frames <- readChan chan
   DImageSize cols rows <- readChan chan
 
-  ref <- newIORef $ MyState [] cols rows
-  imageArray <- mallocArray $ cols * rows
+  ref <- newIORef $ MyState cols rows
+  redrawRef <- newIORef False
 
-  updateChan <- atomically newTChan
+  imageArray <- mallocArray $ cols * rows
 
   _ <- GLUT.getArgsAndInitialize
   GLUT.initialDisplayMode $= [ GLUT.SingleBuffered, GLUT.RGBMode ]
@@ -49,32 +48,34 @@ guiHandler chan = do
   GLUT.keyboardMouseCallback $= Just handleKM
 
   let updateIntervalMs = 100
-      updater ch = do
-        checkForChanges ch
-        GLUT.addTimerCallback updateIntervalMs (updater ch)
+      updater = do
+        checkForChanges redrawRef
+        GLUT.addTimerCallback updateIntervalMs updater
 
-  GLUT.addTimerCallback updateIntervalMs (updater updateChan)
+  GLUT.addTimerCallback updateIntervalMs updater
 
   GL.clearColor $= GL.Color4 100 100 200 0
   GL.shadeModel $= GL.Flat
   GL.rowAlignment GL.Unpack $= 1
 
+  let work combined numSamples = do
+        ev <- readChan chan
+        case ev of
+            DFrameFinished rs -> do
+                let combined' = SV.zipWith (\a b -> ((a * numSamples) + b) / (numSamples + 1)) combined rs
+                    converted = SV.map toColor3 combined'
+
+                SV.unsafeWith converted $ \p -> do
+                    copyArray imageArray p $ SV.length converted
+
+                writeIORef redrawRef True
+                work combined' (numSamples + 1)
+
+            _ -> work combined numSamples
+
   _ <- forkIO $ do
     DStarted <- readChan chan
-
-    forM_ [1..chunks] $ \_ -> do
-        DChunkFinished ch (start, _) rs <- readChan chan
-        -- Create a new pointer from imageArray with the appropriate chunk offset
-        let offPtr = advancePtr imageArray $ start * cols
-        -- Poke pixel data into the array at that position
-            converted = SV.map toColor3 rs
-
-        SV.unsafeWith converted $ \p -> do
-          copyArray offPtr p $ SV.length converted
-
-        modifyIORef' ref $ \s -> s { completed = (ch, rs) : completed s }
-        atomically $ writeTChan updateChan ()
-
+    work (SV.replicate (rows * cols) 0) 0
     DFinished <- readChan chan
     DShutdown <- readChan chan
     return ()
@@ -83,12 +84,10 @@ guiHandler chan = do
 
   return ()
 
-checkForChanges :: TChan () -> IO ()
-checkForChanges ch = do
-    v <- atomically $ tryReadTChan ch
-    case v of
-        Nothing -> return ()
-        Just _ -> GLUT.postRedisplay Nothing
+checkForChanges :: IORef Bool -> IO ()
+checkForChanges ref = do
+    v <- atomicModifyIORef ref (\x -> (False, x))
+    when v $ GLUT.postRedisplay Nothing
 
 handleKM :: GLUT.KeyboardMouseCallback
 handleKM key _updown _mods _pos =

@@ -5,6 +5,7 @@ module Tracy.ChunkRender
   where
 
 import Control.Lens
+import Numeric.Lens
 import Control.Monad
 import Control.Parallel.Strategies
 import Control.DeepSeq
@@ -21,18 +22,19 @@ instance NFData Colour where
 renderChunk :: RenderConfig
             -> GenIO
             -> Scene ThinLens
-            -> (Int, Int)
             -> Tracer
             -> V.Vector [(Float, Float)]
             -> V.Vector [(Float, Float)]
             -> V.Vector [(Float, Float)]
             -> IO (SV.Vector Color)
-renderChunk cfg rng s (start, stop) tracer sSamples dSamples oSamples = do
+renderChunk cfg rng s tracer sSamples dSamples oSamples = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
       numSets = V.length sSamples
       renderer = cam^.cameraRenderWorld
       chunkRows = [start..stop]
+      start = 0
+      stop = s^.sceneWorld.viewPlane.vres.subtracting 1.from enum
       worker = renderer cam numSets cfg w tracer sSamples dSamples oSamples
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices

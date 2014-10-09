@@ -30,9 +30,8 @@ data InfoEvent =
     | INumObjects Int
     | IShadows Bool
     | INumCPUs Int
-    | INumChunks Int
-    | INumRowsPerChunk Int
-    | IChunkFinished Int Int NominalDiffTime
+    | INumFrames Int
+    | IFrameFinished Int NominalDiffTime
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
@@ -44,8 +43,8 @@ data InfoEvent =
 
 data DataEvent =
       DSceneName String
-    | DNumChunks Int
-    | DChunkFinished Int (Int, Int) (SV.Vector Colour)
+    | DNumFrames Int
+    | DFrameFinished (SV.Vector Colour)
     | DImageSize Int Int
     | DStarted
     | DFinished
@@ -54,14 +53,14 @@ data DataEvent =
 
 data JobRequest =
       SetScene RenderConfig SceneDesc Seed
-    | RenderRequest Int (Int, Int)
+    | RenderRequest
     | RenderFinished
     | Shutdown
     deriving (Generic, Show)
 
 data JobResponse =
       JobError String
-    | ChunkFinished Int (Int, Int) (SV.Vector Colour)
+    | FrameFinished (SV.Vector Colour)
     | JobAck
     deriving (Generic)
 

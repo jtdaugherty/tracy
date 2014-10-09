@@ -24,8 +24,8 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
                   send sock [] $ encode $ SetScene cfg s gen
                   _ <- receive sock
                   worker
-              RenderRequest chunkId (start, stop) -> do
-                  _ <- send sock [] $ encode $ RenderRequest chunkId (start, stop)
+              RenderRequest -> do
+                  _ <- send sock [] $ encode RenderRequest
                   reply <- receive sock
                   case decode reply of
                       Left e -> writeChan jobResp $ JobError e
@@ -60,11 +60,11 @@ networkRenderManager nodes iChan jobReq jobResp = do
                 SetScene cfg s gen -> do
                     sendToAll $ SetScene cfg s gen
                     chanReader
-                RenderRequest chunkId (start, stop) -> do
+                RenderRequest -> do
                     -- Find available (non-busy) node
                     nodeId <- readChan readyChan
                     -- Send the request to its channel
-                    writeChan (reqChans !! nodeId) $ RenderRequest chunkId (start, stop)
+                    writeChan (reqChans !! nodeId) RenderRequest
                     chanReader
                 RenderFinished -> do
                     sendToAll RenderFinished

@@ -17,21 +17,20 @@ import Tracy.Util
 fileHandler :: FilePath -> Chan DataEvent -> IO ()
 fileHandler filename chan = do
   DSceneName _ <- readChan chan
-  DNumChunks chunks <- readChan chan
+  DNumFrames frames <- readChan chan
   DImageSize cols rows <- readChan chan
 
   DStarted <- readChan chan
 
-  result <- forM [1..chunks] $ \_ -> do
-      DChunkFinished ch _ rs <- readChan chan
-      return (ch, rs)
+  result <- forM [1..frames] $ \_ -> do
+      DFrameFinished rs <- readChan chan
+      return rs
 
   DFinished <- readChan chan
   DShutdown <- readChan chan
 
-  let dat = SV.concat $ snd <$> sort result
+  let dat = last result
       imgBytes = B.concat $ (getColorBytes <$> (SV.toList dat))
       img = packRGBA32ToBMP (fromEnum rows) (fromEnum cols) imgBytes
 
   writeBMP filename img
-
