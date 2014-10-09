@@ -28,11 +28,8 @@ localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
         tracer = builtScene^.sceneTracer
 
     -- Generate sample data for square and disk samplers
-    sSamples <- replicateM numSets $ squareSampler rng (cfg^.sampleRoot)
-    dSamples <- replicateM numSets $ diskSampler rng (cfg^.sampleRoot)
-
-    let sSamplesVec = V.fromList sSamples
-        dSamplesVec = V.fromList dSamples
+    sSamplesVec <- V.generateM numSets $ const $ squareSampler rng (cfg^.sampleRoot)
+    dSamplesVec <- V.generateM numSets $ const $ diskSampler rng (cfg^.sampleRoot)
 
     let processRequests = do
           ev <- readChan jobReq
