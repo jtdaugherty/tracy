@@ -33,7 +33,7 @@ data InfoEvent =
     | IShadows Bool
     | INumCPUs Int
     | INumFrames Int
-    | IFrameFinished Int NominalDiffTime
+    | IFrameFinished Int Int NominalDiffTime
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime

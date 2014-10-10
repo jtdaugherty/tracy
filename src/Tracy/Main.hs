@@ -74,7 +74,7 @@ render sceneName numFrames renderCfg s renderManager iChan dChan = do
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
                                              (numFrames - (numFinished + 1))
 
-                writeChan iChan $ IFrameFinished numFrames remainingTime
+                writeChan iChan $ IFrameFinished (numFinished + 1) numFrames remainingTime
                 writeChan dChan $ DFrameFinished rs
 
                 if numFinished + 1 == numFrames then

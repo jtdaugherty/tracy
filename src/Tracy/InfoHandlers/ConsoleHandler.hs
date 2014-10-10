@@ -34,7 +34,7 @@ consoleHandler chan = do
             INumFrames n -> outputS "Frames" n
             IStartTime t -> outputS "Start time" (formatTime defaultTimeLocale rfc822DateFormat t)
             IStarted -> return ()
-            IFrameFinished total t ->
+            IFrameFinished finished total t ->
                     let totalSecs = fromEnum t `div` 1000000000000
                         h = totalSecs `div` 3600
                         m = (totalSecs `mod` 3600) `div` 60
@@ -46,7 +46,7 @@ consoleHandler chan = do
                                           , show s
                                           , "s"
                                           ]
-                    in output "Finished chunk" (concat [ totalStr , " remaining" ])
+                    in output "Finished frame" (concat [ show finished, "/", show total, ", ", totalStr , " remaining" ])
             IFinishTime t -> outputS "Finish time" t
             ITotalTime t -> outputS "Total time" t
             IFinished -> return ()
