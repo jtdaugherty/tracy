@@ -252,6 +252,7 @@ loadTableScene = do
         a = Rectangle (V3 (-2.5) 10 0) (V3 5 0 0) (V3 0 0 5) (Emissive (Colour 1 (250/255) (151/255)) 3)
         p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
         ls = [ Area True a $ Just 15000
+             , Environment True $ Emissive cBlue 1
              ]
     return $ SceneDesc (worldOcc [chairLeft, chairRight, tableObj, monkeyObj, torusObj, icoObj, sphereObj, a, p] ls 1) NoScheme
                  (defCamera & thinLensRadius .~ 0.0
