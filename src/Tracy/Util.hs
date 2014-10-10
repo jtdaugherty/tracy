@@ -34,11 +34,9 @@ defaultShade :: Shade
 defaultShade =
     Shade { _localHitPoint = error "no local hit point set on Shade"
           , _normal = error "no normal set on Shade"
-          , _hitPoint = error "no hit point set on Shade"
           , _material = error "no material set on Shade"
           , _shadeRay = Ray (V3 0 0 0) (V3 0 0 0)
           , _depth = 0
-          , _dir = V3 0 0 0
           }
 
 clamp :: (Ord a) => a -> a -> a -> a

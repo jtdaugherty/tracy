@@ -80,10 +80,8 @@ data Shade =
     Shade { _localHitPoint :: V3 Float
           , _normal :: V3 Float
           , _material :: Material
-          , _hitPoint :: V3 Float
           , _shadeRay :: Ray
           , _depth :: Int
-          , _dir :: V3 Float
           }
 
 data Ray =
