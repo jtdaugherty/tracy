@@ -20,6 +20,7 @@ Features:
  * Materials and shading:
    - Phong
    - Matte
+   - Perfect specular reflection
  * Object instancing
  * Object transformations
  * Global illumation:
@@ -32,7 +33,7 @@ Features:
    - Area lights (rectangles)
  * User interface:
    - Console output with status information
-   - Live GUI with in-progress rendering via GLUT
+   - Live GUI with progressive rendering
  * Engine:
    - Multi-core rendering via Haskell's `parMap` evaluation strategy
    - Multi-host rendering (run `tracy -d tcp://slave:9000` on the master,
