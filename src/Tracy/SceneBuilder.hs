@@ -91,9 +91,9 @@ accelSchemeFromDesc GridScheme = Right gridScheme
 
 materialFromDesc :: MaterialDesc -> Either String Material
 materialFromDesc (Matte c) = Right $ matteFromColor c
-materialFromDesc (Phong c e) = Right $ phongFromColor c e
-materialFromDesc (Reflective c e cr kr) = Right $ reflective c e cr kr
-materialFromDesc (GlossyReflective c e cr kr) = Right $ glossyReflective c e cr kr
+materialFromDesc (Phong c ks e) = Right $ phongFromColor c ks e
+materialFromDesc (Reflective c ks e cr kr) = Right $ reflective c ks e cr kr
+materialFromDesc (GlossyReflective c ks e cr kr er) = Right $ glossyReflective c ks e cr kr er
 materialFromDesc (Emissive c e) = Right $ emissive c e
 
 tracerFromDesc :: TracerDesc -> Either String Tracer

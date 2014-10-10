@@ -21,29 +21,29 @@ phong ambBrdf diffBrdf glossyBrdf =
              , _getLe = const cBlack
              }
 
-phongFromColor :: Color -> Float -> Material
-phongFromColor c e = phong
+phongFromColor :: Color -> Float -> Float -> Material
+phongFromColor c ks e = phong
          (lambertian c 0.25)
          (lambertian c 0.65)
-         (glossySpecular c e)
+         (glossySpecular c ks e)
 
-reflective :: Color -> Float -> Color -> Float -> Material
-reflective c e cr kr =
+reflective :: Color -> Float -> Float -> Color -> Float -> Material
+reflective c ks e cr kr =
     let ambBrdf = lambertian c 0.25
         diffBrdf = lambertian c 0.65
-        glossyBrdf = glossySpecular c e
+        glossyBrdf = glossySpecular c ks e
         reflBrdf = perfectSpecular cr kr
     in Material { _doShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
                 , _doAreaShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
                 , _getLe = const cBlack
                 }
 
-glossyReflective :: Color -> Float -> Color -> Float -> Material
-glossyReflective c e cr kr =
-    let ambBrdf = lambertian c 0.25
-        diffBrdf = lambertian c 0.25
-        glossyBrdf = glossySpecular c e
-        reflBrdf = glossySpecular cr kr
+glossyReflective :: Color -> Float -> Float -> Color -> Float -> Float -> Material
+glossyReflective c ks e cr kr er =
+    let ambBrdf = lambertian c 0
+        diffBrdf = lambertian c 0
+        glossyBrdf = glossySpecular c ks e
+        reflBrdf = glossySpecular cr kr er
     in Material { _doShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
                 , _doAreaShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
                 , _getLe = const cBlack

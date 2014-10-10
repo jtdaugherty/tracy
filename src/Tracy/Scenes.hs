@@ -53,21 +53,21 @@ worldOcc os ls ambStr = WorldDesc { _wdViewPlane = defaultVp
 
 oneSphere :: SceneDesc
 oneSphere =
-    let s = Sphere (V3 (-40) 0 0) 85.0 (Phong cRed 100)
+    let s = Sphere (V3 (-40) 0 0) 85.0 (Phong cRed 0.5 100)
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
     in SceneDesc (world [s] ls) NoScheme defCamera RayCastTracer
 
 instancedSpheres :: SceneDesc
 instancedSpheres =
-    let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 100)
+    let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 0.5 100)
         p = Plane (V3 0 (-100) 0) (V3 0 1 0) (Matte cWhite)
         ls = [ Point False 1 cWhite (V3 (-500) 500 500)
              ]
-        is = Instances s [ (translate (-50) 50 0     , Just $ Phong cBlue 50)
-                         , (translate (-50) (-50) 0  , Just $ Phong cWhite 50)
-                         , (translate 50 50 0        , Just $ Phong cRed 50)
-                         , (translate 50 (-50) 0     , Just $ Phong cGreen 50)
+        is = Instances s [ (translate (-50) 50 0     , Just $ Phong cBlue  0.5 50)
+                         , (translate (-50) (-50) 0  , Just $ Phong cWhite 0.5 50)
+                         , (translate 50 50 0        , Just $ Phong cRed   0.5 50)
+                         , (translate 50 (-50) 0     , Just $ Phong cGreen 0.5 50)
                          ]
     in SceneDesc (worldOcc [is, p] ls 1) NoScheme
          (defCamera & thinLensLookAt .~ (V3 0 0 0)
@@ -77,14 +77,14 @@ instancedSpheres =
 
 instancedSpheresGrid :: SceneDesc
 instancedSpheresGrid =
-    let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 100)
+    let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 0.5 100)
         p = Plane (V3 0 (-100) 0) (V3 0 1 0) (Matte cWhite)
         ls = [ Point False 1 cWhite (V3 (-500) 500 500)
              ]
-        g = Grid [ Instances s [ (translate (-50) 50 0     , Just $ Phong cBlue 50)
-                               , (translate (-50) (-50) 0  , Just $ Phong cWhite 50)
-                               , (translate 50 50 0        , Just $ Phong cRed 50)
-                               , (translate 50 (-50) 0     , Just $ Phong cGreen 50)
+        g = Grid [ Instances s [ (translate (-50) 50 0     , Just $ Phong cBlue  0.5 50)
+                               , (translate (-50) (-50) 0  , Just $ Phong cWhite 0.5 50)
+                               , (translate 50 50 0        , Just $ Phong cRed   0.5 50)
+                               , (translate 50 (-50) 0     , Just $ Phong cGreen 0.5 50)
                                ]
                  ]
     in SceneDesc (worldOcc [g, p] ls 1) NoScheme
@@ -169,7 +169,7 @@ sphereGrid =
                 , (100, (Phong cYellow))
                 , (150, (Phong cMagenta))
                 ]
-        ss y e r = [ Sphere (V3 xz y xz) r (mkMat e)
+        ss y e r = [ Sphere (V3 xz y xz) r (mkMat 0.5 e)
                    | (xz, mkMat) <- pairs
                    ]
     in spheres
@@ -214,7 +214,7 @@ loadCubeScene = do
 loadBunnyScene :: IO SceneDesc
 loadBunnyScene = do
     mDesc <- loadMesh "meshes/bunny.ply"
-    let cObj = Mesh mDesc $ Phong cWhite 100
+    let cObj = Mesh mDesc $ Phong cWhite 0.5 100
         p = Plane (V3 0 0 0.1) (V3 0 0 1) (Matte cGreen)
         ls = [ Point True 1 cWhite (V3 (-5) 5 5)
              , Point True 1 cWhite (V3 5 5 5)
@@ -235,7 +235,7 @@ loadBunnyScene = do
 loadDragonScene :: IO SceneDesc
 loadDragonScene = do
     mDesc <- loadMesh "meshes/dragon.ply"
-    let cObj = Mesh mDesc $ Phong cRed 50
+    let cObj = Mesh mDesc $ Phong cRed 0.5 50
         p = Plane (V3 0 0.002 0) (V3 0 1 0) (Matte cWhite)
         ls = [ Point True 1 cWhite (V3 0 2 0)
              ]
@@ -251,7 +251,7 @@ loadDragonScene = do
 loadMonkeyScene :: IO SceneDesc
 loadMonkeyScene = do
     mDesc <- loadMesh "meshes/monkey.ply"
-    let cObj = Mesh mDesc $ Phong cWhite 50
+    let cObj = Mesh mDesc $ Phong cWhite 0.5 50
         ls = [ Point True 1 cWhite (V3 (-10) 10 10)
              ]
     return $ SceneDesc (worldOcc [cObj] ls 1) NoScheme
@@ -265,8 +265,8 @@ loadMonkeyScene = do
 
 rectangles :: SceneDesc
 rectangles =
-    let r1 = Rectangle (V3 10 0 0) (V3 100 0 0) (V3 0 130 0)     (Phong cBlue  50)
-        r2 = Rectangle (V3 (-120) 0 0) (V3 100 0 0) (V3 0 110 0) (Phong cGreen 50)
+    let r1 = Rectangle (V3 10 0 0) (V3 100 0 0) (V3 0 130 0)     (Phong cBlue  0.5 50)
+        r2 = Rectangle (V3 (-120) 0 0) (V3 100 0 0) (V3 0 110 0) (Phong cGreen 0.5 50)
         p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
         ls = [ Point True 2 cWhite (V3 (-500) 500 500)
              ]

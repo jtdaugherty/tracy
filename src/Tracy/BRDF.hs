@@ -12,16 +12,16 @@ lambertian :: Color -> Float -> BRDF
 lambertian cd kd =
     BRDF (lambFunc cd kd) (lambSample cd kd) (lambRhoFunc cd kd)
 
-glossySpecular :: Color -> Float -> BRDF
-glossySpecular ks glossyExp =
-    BRDF (glossySpecularFunc ks glossyExp) (glossySpecularSampleF ks glossyExp) glossyRhoFunc
+glossySpecular :: Color -> Float -> Float -> BRDF
+glossySpecular c ks e =
+    BRDF (glossySpecularFunc c ks e) (glossySpecularSampleF c ks e) glossyRhoFunc
 
 perfectSpecular :: Color -> Float -> BRDF
 perfectSpecular c k =
     BRDF undefined (perfectSpecularSampleF c k) undefined
 
-glossySpecularSampleF :: Color -> Float -> Shade -> V3 Float -> TraceM (Float, Color, V3 Float)
-glossySpecularSampleF c k sh wo = do
+glossySpecularSampleF :: Color -> Float -> Float -> Shade -> V3 Float -> TraceM (Float, Color, V3 Float)
+glossySpecularSampleF c ks e sh wo = do
     let ndotwo = (sh^.normal) `dot` wo
         r = ((-1) *^ wo) + (2.0 * ndotwo *^ (sh^.normal))
         w = r
@@ -74,13 +74,13 @@ lambSample cd kd sh _ = do
 lambRhoFunc :: Color -> Float -> Shade -> V3 Float -> Color
 lambRhoFunc cd kd _ _ = grey (float2Double kd) * cd
 
-glossySpecularFunc :: Color -> Float -> Shade -> V3 Float -> V3 Float -> Color
-glossySpecularFunc ks glossyExp sh wi wo =
+glossySpecularFunc :: Color -> Float -> Float -> Shade -> V3 Float -> V3 Float -> Color
+glossySpecularFunc c ks e sh wi wo =
     let ndotwi = (sh^.normal) `dot` wi
         r = ((-1) *^ wi) + (2.0 * ndotwi *^ sh^.normal)
         rdotwo = r `dot` wo
     in if rdotwo > 0
-       then ks * (grey $ float2Double $ rdotwo ** glossyExp)
+       then c * (grey $ float2Double $ ks * (rdotwo ** e))
        else cBlack
 
 glossyRhoFunc :: Shade -> V3 Float -> Color
