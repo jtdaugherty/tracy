@@ -51,7 +51,7 @@ networkRenderManager nodes iChan jobReq jobResp = do
 
     -- Connect to all nodes
     forM_ (zip3 nodes reqChans [0..]) $ \(n, ch, i) -> do
-        forkIO $ networkNodeThread n iChan ch jobResp (writeChan readyChan i)
+        forkOS $ networkNodeThread n iChan ch jobResp (writeChan readyChan i)
 
     let sendToAll val = forM_ reqChans $ \ch -> writeChan ch val
         chanReader = do
