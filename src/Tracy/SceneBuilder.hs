@@ -79,10 +79,10 @@ lightFromDesc :: LightDesc -> Either String Light
 lightFromDesc (Ambient s c) = Right $ ambientLight s c
 lightFromDesc (AmbientOccluder c min_amt s) = Right $ ambientOccluder c min_amt s
 lightFromDesc (Point sh ls c loc) = Right $ pointLight sh ls c loc
-lightFromDesc (Area sh oDesc) =
+lightFromDesc (Area sh oDesc p) =
     case objectFromDesc oDesc of
       Left e -> Left e
-      Right [o] -> Right $ areaLight sh o
+      Right [o] -> Right $ areaLight sh o p
       Right _ -> Left "Could not create area light from multiple objects"
 
 accelSchemeFromDesc :: AccelSchemeDesc -> Either String AccelScheme

@@ -12,8 +12,8 @@ import Linear
 import Tracy.Types
 import Tracy.Util
 
-areaLight :: Bool -> Object -> Light
-areaLight sh o =
+areaLight :: Bool -> Object -> Maybe Float -> Light
+areaLight sh o power =
     let ali = case o^.areaLightImpl of
                 Nothing -> error "Objects used with area lights must provide an area light implementation"
                 Just v -> v
@@ -25,7 +25,9 @@ areaLight sh o =
                                 then areaLightInShadow
                                 else const $ const $ return False
              , _lightG = areaLightG
-             , _lightPDF = ali^.objectPDF
+             , _lightPDF = case power of
+                             Nothing -> ali^.objectPDF
+                             Just v -> const (1.0/v)
              }
 
 areaLightDir :: ObjectAreaLightImpl -> Shade -> TraceM LightDir

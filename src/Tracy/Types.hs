@@ -279,7 +279,7 @@ data LightDesc =
       Ambient Float Color
     | AmbientOccluder Color Color Float
     | Point Bool Float Color (V3 Float)
-    | Area Bool ObjectDesc
+    | Area Bool ObjectDesc (Maybe Float)
     deriving (Eq, Show, Generic)
 
 data MaterialDesc =
