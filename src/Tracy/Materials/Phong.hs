@@ -2,6 +2,7 @@ module Tracy.Materials.Phong
   ( phongFromColor
   , phong
   , reflective
+  , glossyReflective
   )
   where
 
@@ -36,6 +37,33 @@ reflective c e cr kr =
                 , _doAreaShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
                 , _getLe = const cBlack
                 }
+
+glossyReflective :: Color -> Float -> Color -> Float -> Material
+glossyReflective c e cr kr =
+    let ambBrdf = lambertian c 0.25
+        diffBrdf = lambertian c 0.25
+        glossyBrdf = glossySpecular c e
+        reflBrdf = glossySpecular cr kr
+    in Material { _doShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
+                , _doAreaShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
+                , _getLe = const cBlack
+                }
+
+glossyReflectiveShading :: BRDF -> BRDF -> BRDF -> BRDF
+                        -> (BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
+                        -> Shade -> Tracer -> TraceM Color
+glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf perLight sh tracer = do
+    base <- phongShading ambBrdf diffBrdf glossyBrdf perLight sh tracer
+
+    let wo = (-1) *^ (sh^.shadeRay.direction)
+
+    (pdf, fr, wi) <- (reflBrdf^.brdfSampleF) sh wo
+
+    let reflected_ray = Ray { _origin = sh^.localHitPoint
+                            , _direction = wi
+                            }
+    traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
+    return $ base + (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
 
 reflectiveShading :: BRDF -> BRDF -> BRDF -> BRDF
                   -> (BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
