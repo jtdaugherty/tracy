@@ -51,7 +51,7 @@ localRenderManager jobReq jobResp = do
                   case sceneFromDesc sDesc of
                       Right s -> do
                           writeChan jobResp JobAck
-                          gen <- create
+                          gen <- createSystemRandom
                           localSetSceneAndRender jobReq jobResp cfg s gen
                       Left e -> writeChan jobResp $ JobError e
                   waitForJob
