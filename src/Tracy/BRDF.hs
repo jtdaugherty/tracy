@@ -30,16 +30,16 @@ glossySpecularSampleF c ks e sh wo = do
 
     spFunc <- view tdHemiSampleExp
 
-    let sp = spFunc k
+    let sp = spFunc e
         wi1 = (sp^._x *^ u) + (sp^._y *^ v) + (sp^._z *^ w)
         wi2 = if (sh^.normal) `dot` wi1 < 0
               then ((-1) * (sp^._x) *^ u) - (sp^._y *^ v) + (sp^._z *^ w)
               else wi1
-        phong_lobe = (r `dot` wi2) ** k
+        phong_lobe = (r `dot` wi2) ** ks
         pdf = phong_lobe * ((sh^.normal) `dot` wi2)
 
     return ( pdf
-           , (grey $ (float2Double $ k * phong_lobe)) * c
+           , (grey $ (float2Double $ ks * phong_lobe)) * c
            , wi2
            )
 
