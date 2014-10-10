@@ -76,7 +76,7 @@ render sceneName numFrames renderCfg s renderManager iChan dChan = do
                 writeChan dChan $ DFrameFinished rs
 
                 if numFinished + 1 == numFrames then
-                   writeChan reqChan RenderFinished else
+                   writeChan reqChan RenderFinished >> writeChan reqChan Shutdown else
                    collector $ numFinished + 1
 
   collector 0
