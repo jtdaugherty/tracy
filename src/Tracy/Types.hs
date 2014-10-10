@@ -211,6 +211,7 @@ data ThinLens =
 
 data TraceData =
     TD { _tdHemiSample :: V3 Float
+       , _tdHemiSampleExp :: Float -> V3 Float
        , _tdDiskSample :: V2 Float
        , _tdSquareSample :: V2 Float
        , _tdObjectSurfaceSample :: V2 Float

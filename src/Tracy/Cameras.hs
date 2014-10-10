@@ -97,7 +97,8 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets objec
               ray = Ray { _origin = o
                         , _direction = d
                         }
-              st = TD { _tdHemiSample = toHemi (dx, dy)
+              st = TD { _tdHemiSample = toHemi 1 (dx, dy)
+                      , _tdHemiSampleExp = flip toHemi (dx, dy)
                       , _tdDiskSample = V2 dx dy
                       , _tdSquareSample = V2 sx sy
                       , _tdObjectSurfaceSample = V2 ox oy

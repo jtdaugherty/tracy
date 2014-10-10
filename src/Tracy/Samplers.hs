@@ -60,15 +60,15 @@ toDisk (x, y) =
         phi' = phi * (pi / 4.0)
     in (r * cos phi', r * sin phi')
 
-toHemi :: (Float, Float) -> V3 Float
-toHemi (x, y) =
+toHemi :: Float -> (Float, Float) -> V3 Float
+toHemi e (x, y) =
     let pu = sin_theta * cos_phi
         pv = sin_theta * sin_phi
         pw = cos_theta
 
         cos_phi = cos $ 2.0 * pi * x
         sin_phi = sin $ 2.0 * pi * x
-        cos_theta = (1.0 - y) ** (1.0 / (exp 1.0 + 1.0))
+        cos_theta = (1.0 - y) ** (1.0 / (exp e + 1.0))
         sin_theta = sqrt $ 1.0 - cos_theta * cos_theta
 
     in V3 pu pv pw
@@ -81,5 +81,5 @@ transSample f s gen root = do
 toUnitDisk :: Sampler (Float, Float) -> Sampler (Float, Float)
 toUnitDisk = transSample toDisk
 
-toUnitHemisphere :: Sampler (Float, Float) -> Sampler (V3 Float)
-toUnitHemisphere = transSample toHemi
+toUnitHemisphere :: Float -> Sampler (Float, Float) -> Sampler (V3 Float)
+toUnitHemisphere e = transSample (toHemi e)

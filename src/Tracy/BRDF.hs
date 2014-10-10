@@ -28,10 +28,12 @@ glossySpecularSampleF c k sh wo = do
         u = signorm $ V3 0.00424 1 0.00764 `cross` w
         v = u `cross` w
 
-    sp <- view tdHemiSample
-    let wi1 = (sp^._x *^ u) + (sp^._y *^ v) + (sp^._z *^ w)
+    spFunc <- view tdHemiSampleExp
+
+    let sp = spFunc k
+        wi1 = (sp^._x *^ u) + (sp^._y *^ v) + (sp^._z *^ w)
         wi2 = if (sh^.normal) `dot` wi1 < 0
-              then ((-1) * (sp^._x) *^ u) + (sp^._y *^ v) + (sp^._z *^ w)
+              then ((-1) * (sp^._x) *^ u) - (sp^._y *^ v) + (sp^._z *^ w)
               else wi1
         phong_lobe = (r `dot` wi2) ** k
         pdf = phong_lobe * ((sh^.normal) `dot` wi2)
