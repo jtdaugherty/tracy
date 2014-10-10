@@ -40,8 +40,8 @@ reflective c ks e cr kr =
 
 glossyReflective :: Color -> Float -> Float -> Color -> Float -> Float -> Material
 glossyReflective c ks e cr kr er =
-    let ambBrdf = lambertian c 0
-        diffBrdf = lambertian c 0
+    let ambBrdf = lambertian c 0.25
+        diffBrdf = lambertian c 0.25
         glossyBrdf = glossySpecular c ks e
         reflBrdf = glossySpecular cr kr er
     in Material { _doShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib

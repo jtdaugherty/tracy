@@ -291,7 +291,7 @@ areaLightScene =
 reflScene :: SceneDesc
 reflScene =
     let s = Sphere (V3 0 40 0) 40 (GlossyReflective cWhite 0 50 cWhite 0.9 50)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
+        p = Plane (V3 0 0 0) (V3 0 1 0) (GlossyReflective cWhite 0.5 10 cWhite 1 100)
 
         r1 = Rectangle (V3 (-100) 0 0) (V3 200 0 0) (V3 0 100 0) (Matte cWhite)
         ss = Instances s [ (translate (-90) 0 0,     Just $ GlossyReflective cBlue    0.5 10 cWhite 0.8 10)

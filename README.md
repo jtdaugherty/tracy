@@ -21,6 +21,7 @@ Features:
    - Phong
    - Matte
    - Perfect specular reflection
+   - Glossy specular reflection
  * Object instancing
  * Object transformations
  * Global illumation:
@@ -56,3 +57,6 @@ Dragon mesh:
 
 Area lights:
 ![demo5](/demo5.png)
+
+Perfect and glossy specular reflection:
+![demo6](/demo6.png)
