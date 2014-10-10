@@ -8,7 +8,6 @@ import Control.Applicative
 import Control.Monad
 import Control.Concurrent.Chan
 import qualified Data.ByteString as B
-import Data.List
 import Codec.BMP
 import qualified Data.Vector.Storable as SV
 
@@ -19,7 +18,7 @@ fileHandler :: FilePath -> Chan DataEvent -> IO ()
 fileHandler filename chan = do
   DSceneName _ <- readChan chan
   DNumFrames frames <- readChan chan
-  DSampleRoot root <- readChan chan
+  DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
 
   DStarted <- readChan chan

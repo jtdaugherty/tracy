@@ -1,11 +1,9 @@
 module Tracy.Main where
 
 import Control.Lens
-import Numeric.Lens
 import Control.Concurrent
 import Data.Time.Clock
 import System.Exit
-import System.Random.MWC
 
 import Tracy.Types
 

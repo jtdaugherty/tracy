@@ -9,7 +9,6 @@ import Data.Time.Clock
 import Control.Monad.Reader
 import qualified Data.Vector.Storable as SV
 import qualified Data.Vector as V
-import qualified Data.Vector.Unboxed as VU
 import GHC.Generics
 import Linear
 import Data.Colour

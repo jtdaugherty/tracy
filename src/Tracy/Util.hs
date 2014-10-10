@@ -19,7 +19,7 @@ import Linear
 import qualified Data.ByteString as B
 import qualified Data.Vector.Storable as SV
 
-import Foreign (Ptr, mallocArray, advancePtr, pokeArray)
+import Foreign (mallocArray)
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.Ptr

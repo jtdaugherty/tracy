@@ -3,20 +3,15 @@ module Tracy.DataHandlers.GUIHandler
   )
   where
 
-import Control.Applicative
 import Control.Concurrent.Chan
-import Control.Concurrent.STM
 import Control.Concurrent (forkIO)
 import Control.Monad
 import Data.IORef
-import Foreign (Ptr, mallocArray, advancePtr, pokeArray)
+import Foreign (mallocArray)
 import Foreign.Storable
-import Foreign.C.Types
 import Foreign.Ptr
 import Data.Colour
 import System.Exit
-import qualified Data.Vector.Storable as SV
-import Foreign.Marshal.Array (copyArray)
 
 import qualified Graphics.Rendering.OpenGL as GL
 import qualified Graphics.UI.GLUT as GLUT
@@ -34,8 +29,8 @@ data MyState =
 guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
   DSceneName sceneName <- readChan chan
-  DNumFrames frames <- readChan chan
-  DSampleRoot root <- readChan chan
+  DNumFrames _ <- readChan chan
+  DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
 
   ref <- newIORef $ MyState cols rows
