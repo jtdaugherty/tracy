@@ -232,6 +232,36 @@ loadBunnyScene = do
                             )
                  RayCastTracer
 
+loadTableScene :: IO SceneDesc
+loadTableScene = do
+    tableDesc <- loadMesh "meshes/table.ply"
+    monkeyDesc <- loadMesh "meshes/monkey2.ply"
+    icoDesc <- loadMesh "meshes/ico1.ply"
+    torusDesc <- loadMesh "meshes/torus.ply"
+    chairLDesc <- loadMesh "meshes/chairLeft.ply"
+    chairRDesc <- loadMesh "meshes/chairRight.ply"
+
+    let tableObj =  Mesh tableDesc  $ Phong (Colour (100.0/255.0) (73.0/255.0) 0) 0.5 100
+        monkeyObj = Mesh monkeyDesc $ GlossyReflective cCyan 0.7 10 cWhite 0.7 10
+        torusObj =  Mesh torusDesc  $ Reflective (Colour 1 0.7 0.7) 0.9 1000 cWhite 0.7
+        icoObj =   Mesh icoDesc     $ Matte cYellow
+        sphereObj = Sphere (V3 0.10225 4.449909 (-1.18322)) 0.811 $ Reflective (grey 0.3) 0.9 1000 cWhite 0.9
+        chairLeft = Mesh chairLDesc $ Phong (Colour 1 (79/255) 0) 1.0 100000
+        chairRight = Mesh chairRDesc $ Phong (Colour 1 (79/255) 0) 1.0 100000
+
+        a = Rectangle (V3 (-2.5) 10 0) (V3 5 0 0) (V3 0 0 5) (Emissive (Colour 1 (250/255) (151/255)) 3)
+        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
+        ls = [ Area True a $ Just 15000
+             ]
+    return $ SceneDesc (worldOcc [chairLeft, chairRight, tableObj, monkeyObj, torusObj, icoObj, sphereObj, a, p] ls 1) NoScheme
+                 (defCamera & thinLensRadius .~ 0.0
+                            & thinLensLookAt .~ (V3 0 3 0)
+                            & thinLensVpDist .~ 500
+                            & thinLensFpDist .~ 500
+                            & thinLensEye .~ (V3 0 5 3.5)
+                            )
+                 RayCastTracer
+
 loadDragonScene :: IO SceneDesc
 loadDragonScene = do
     mDesc <- loadMesh "meshes/dragon.ply"
@@ -324,6 +354,7 @@ allScenes =
     , ("blurry-spheres",  return blurrySpheres)
     , ("cube",            loadCubeScene)
     , ("bunny",           loadBunnyScene)
+    , ("table",           loadTableScene)
     , ("dragon",          loadDragonScene)
     , ("monkey",          loadMonkeyScene)
     , ("rectangles",      return rectangles)
