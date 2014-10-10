@@ -69,12 +69,9 @@ guiHandler chan = do
         ev <- readChan chan
         case ev of
             DFrameFinished rs -> do
-                let frameSampleCount = truncate $ root * root
-
                 SV.unsafeWith rs $ \p ->
                     c_running_average
                       (fromIntegral numSamples)
-                      (fromIntegral frameSampleCount)
                       (fromIntegral $ 3 * rows * cols)
                       combinedArray
                       (castPtr p)
@@ -84,7 +81,7 @@ guiHandler chan = do
                     pokeElemOff imageArray i $ toColor3 val
 
                 writeIORef redrawRef True
-                work (numSamples + frameSampleCount)
+                work (numSamples + 1)
 
             _ -> work numSamples
 
@@ -139,4 +136,4 @@ toColor3 (Colour r g b) = GL.Color3 (toEnum $ fromEnum (r * 255.0))
                                     (toEnum $ fromEnum (b * 255.0))
 
 foreign import ccall unsafe "running_average"
-  c_running_average :: CDouble -> CDouble -> CInt -> Ptr Double -> Ptr Double -> IO ()
+  c_running_average :: CDouble -> CInt -> Ptr Double -> Ptr Double -> IO ()
