@@ -1,4 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 module Tracy.DataHandlers.GUIHandler
   ( guiHandler
   )
@@ -24,6 +23,8 @@ import qualified Graphics.UI.GLUT as GLUT
 import Graphics.UI.GLUT (($=))
 
 import Tracy.Types
+import Tracy.Util
+import Tracy.DataHandlers.FileHandler
 
 data MyState =
     MyState { windowWidth :: Int
@@ -63,34 +64,30 @@ guiHandler chan = do
   GL.shadeModel $= GL.Flat
   GL.rowAlignment GL.Unpack $= 1
 
-  combinedArray <- mallocArray (3 * rows * cols)
+  combinedArray@(_, _, combinedPtr) <- createMergeBuffer rows cols
 
   let work numSamples = do
         ev <- readChan chan
         case ev of
             DFrameFinished rs -> do
-                SV.unsafeWith rs $ \p ->
-                    c_running_average
-                      (fromIntegral numSamples)
-                      (fromIntegral $ 3 * rows * cols)
-                      combinedArray
-                      (castPtr p)
+                mergeFrames numSamples combinedArray rs
 
                 forM_ [0..rows*cols-1] $ \i -> do
-                    val <- peekElemOff (castPtr combinedArray) i
+                    val <- peekElemOff (castPtr combinedPtr) i
                     pokeElemOff imageArray i $ toColor3 val
 
                 writeIORef redrawRef True
                 work (numSamples + 1)
 
+            DFinished -> return ()
+            DShutdown -> return ()
             _ -> work numSamples
 
   _ <- forkIO $ do
     DStarted <- readChan chan
     work (0 :: Int)
-    DFinished <- readChan chan
-    DShutdown <- readChan chan
-    return ()
+    vec <- vectorFromMergeBuffer combinedArray
+    writeImage vec rows cols (sceneName ++ ".bmp")
 
   GLUT.mainLoop
 
@@ -134,6 +131,3 @@ toColor3 :: Colour -> GL.Color3 GL.GLubyte
 toColor3 (Colour r g b) = GL.Color3 (toEnum $ fromEnum (r * 255.0))
                                     (toEnum $ fromEnum (g * 255.0))
                                     (toEnum $ fromEnum (b * 255.0))
-
-foreign import ccall unsafe "running_average"
-  c_running_average :: CDouble -> CInt -> Ptr Double -> Ptr Double -> IO ()

@@ -122,10 +122,6 @@ main = do
         let renderCfg = defaultRenderConfig & sampleRoot .~ (argSampleRoot preCfg)
                                             & forceShadows .~ (argForceShadows preCfg)
 
-            filename = toRender ++ ".bmp"
-
-        putStrLn $ "Rendering " ++ filename ++ " ..."
-
         iChan <- newChan
         dChan <- newChan
 
@@ -137,8 +133,7 @@ main = do
         _ <- forkIO $ render toRender (argWorkFrames preCfg) renderCfg sceneDesc manager iChan dChan
 
         case UseGUI `elem` os of
-            False -> fileHandler filename dChan
-            True -> do
-                dChan2 <- dupChan dChan
-                _ <- forkIO $ fileHandler filename dChan2
-                guiHandler dChan
+            False -> do
+                let filename = toRender ++ ".bmp"
+                fileHandler filename dChan
+            True -> guiHandler dChan

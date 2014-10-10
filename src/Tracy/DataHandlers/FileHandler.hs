@@ -1,5 +1,6 @@
 module Tracy.DataHandlers.FileHandler
   ( fileHandler
+  , writeImage
   )
   where
 
@@ -23,15 +24,21 @@ fileHandler filename chan = do
 
   DStarted <- readChan chan
 
-  result <- forM [1..frames] $ \_ -> do
+  merged <- createMergeBuffer rows cols
+
+  forM_ [0..frames-1] $ \frameNum -> do
       DFrameFinished rs <- readChan chan
-      return rs
+      mergeFrames frameNum merged rs
 
   DFinished <- readChan chan
   DShutdown <- readChan chan
 
-  let dat = last result
-      imgBytes = B.concat $ (getColorBytes <$> (SV.toList dat))
+  vec <- vectorFromMergeBuffer merged
+  writeImage vec rows cols filename
+
+writeImage :: SV.Vector Color -> Int -> Int -> FilePath -> IO ()
+writeImage dat rows cols filename = do
+  let imgBytes = B.concat $ (getColorBytes <$> (SV.toList dat))
       img = packRGBA32ToBMP (fromEnum rows) (fromEnum cols) imgBytes
 
   writeBMP filename img
