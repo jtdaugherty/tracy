@@ -148,7 +148,6 @@ data BRDF =
     BRDF { _brdfFunction :: Shade -> V3 Float -> V3 Float -> Color
          , _brdfSampleF :: Shade -> V3 Float -> TraceM (Float, Color, V3 Float)
          , _brdfRho ::  Shade -> V3 Float -> Color
-         , _brdfSampler :: Sampler (V3 Float)
          }
 
 data LightDir =

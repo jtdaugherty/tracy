@@ -12,7 +12,6 @@ import GHC.Float
 
 import Tracy.Types
 import Tracy.BRDF
-import Tracy.Samplers
 
 phong :: BRDF -> BRDF -> BRDF -> Material
 phong ambBrdf diffBrdf glossyBrdf =
@@ -23,14 +22,14 @@ phong ambBrdf diffBrdf glossyBrdf =
 
 phongFromColor :: Color -> Float -> Material
 phongFromColor c e = phong
-         (lambertian (toUnitHemisphere jittered) c 0.25)
-         (lambertian (toUnitHemisphere jittered) c 0.65)
+         (lambertian c 0.25)
+         (lambertian c 0.65)
          (glossySpecular c e)
 
 reflective :: Color -> Float -> Color -> Float -> Material
 reflective c e cr kr =
-    let ambBrdf = lambertian (toUnitHemisphere jittered) c 0.25
-        diffBrdf = lambertian (toUnitHemisphere jittered) c 0.65
+    let ambBrdf = lambertian c 0.25
+        diffBrdf = lambertian c 0.65
         glossyBrdf = glossySpecular c e
         reflBrdf = perfectSpecular cr kr
     in Material { _doShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib

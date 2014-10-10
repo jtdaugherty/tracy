@@ -8,17 +8,17 @@ import GHC.Float
 import Tracy.Types
 import Tracy.Constants
 
-lambertian :: Sampler (V3 Float) -> Color -> Float -> BRDF
-lambertian s cd kd =
-    BRDF (lambFunc cd kd) (lambSample cd kd) (lambRhoFunc cd kd) s
+lambertian :: Color -> Float -> BRDF
+lambertian cd kd =
+    BRDF (lambFunc cd kd) (lambSample cd kd) (lambRhoFunc cd kd)
 
 glossySpecular :: Color -> Float -> BRDF
 glossySpecular ks glossyExp =
-    BRDF (glossySpecularFunc ks glossyExp) (glossySpecularSampleF ks glossyExp) glossyRhoFunc undefined
+    BRDF (glossySpecularFunc ks glossyExp) (glossySpecularSampleF ks glossyExp) glossyRhoFunc
 
 perfectSpecular :: Color -> Float -> BRDF
 perfectSpecular c k =
-    BRDF undefined (perfectSpecularSampleF c k) undefined undefined
+    BRDF undefined (perfectSpecularSampleF c k) undefined
 
 glossySpecularSampleF :: Color -> Float -> Shade -> V3 Float -> TraceM (Float, Color, V3 Float)
 glossySpecularSampleF c k sh wo = do

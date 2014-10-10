@@ -11,12 +11,11 @@ import GHC.Float
 
 import Tracy.Types
 import Tracy.BRDF
-import Tracy.Samplers
 
 matteFromColor :: Color -> Material
 matteFromColor c = matte
-        (lambertian (toUnitHemisphere jittered) c 0.25)
-        (lambertian (toUnitHemisphere jittered) c 0.65)
+        (lambertian c 0.25)
+        (lambertian c 0.65)
 
 matte :: BRDF -> BRDF -> Material
 matte ambBrdf diffBrdf =
