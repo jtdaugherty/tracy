@@ -68,7 +68,7 @@ toHemi e (x, y) =
 
         cos_phi = cos $ 2.0 * pi * x
         sin_phi = sin $ 2.0 * pi * x
-        cos_theta = (1.0 - y) ** (1.0 / (exp e + 1.0))
+        cos_theta = (1.0 - y) ** (1.0 / (e + 1.0))
         sin_theta = sqrt $ 1.0 - cos_theta * cos_theta
 
     in V3 pu pv pw
