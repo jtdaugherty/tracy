@@ -25,6 +25,7 @@ library
     time,
     mtl,
     distributive,
+    vector-binary-instances,
     mwc-random,
     deepseq,
     vector,

@@ -19,6 +19,7 @@ import Foreign.C.Types
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Data.ByteString.Internal
+import Data.Vector.Cereal ()
 
 type Color = Colour
 
@@ -338,19 +339,6 @@ instance Storable Colour where
                pokeElemOff q 2 b
       where
         q = castPtr p
-
-instance (Storable a, Serialize a) => Serialize (SV.Vector a) where
-    get = do
-        bs <- get
-        let (fp, off, len) = toForeignPtr bs
-            d = sizeOf (undefined :: a)
-        return $ SV.unsafeFromForeignPtr (castForeignPtr fp) (off `div` d) (len `div` d)
-
-    put v = do
-        let (fp, off, len) = SV.unsafeToForeignPtr v
-            d = sizeOf (undefined :: a)
-            bs = fromForeignPtr (castForeignPtr fp) (off * d) (len * d)
-        put bs
 
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where
