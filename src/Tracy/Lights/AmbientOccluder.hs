@@ -19,8 +19,8 @@ ambientOccluder c min_amount ls =
 ambOccG :: LightDir -> Shade -> Float
 ambOccG = const $ const 1.0
 
-ambOccPDF :: Shade -> Float
-ambOccPDF = const 1.0
+ambOccPDF :: LightDir -> Shade -> Float
+ambOccPDF = const $ const 1.0
 
 ambOccUVW :: Shade -> (V3 Float, V3 Float, V3 Float)
 ambOccUVW sh =

@@ -19,8 +19,8 @@ pointLight sh ls c loc =
 ptG :: LightDir -> Shade -> Float
 ptG = const $ const 1.0
 
-ptPDF :: Shade -> Float
-ptPDF = const 1.0
+ptPDF :: LightDir -> Shade -> Float
+ptPDF = const $ const 1.0
 
 ptShadow :: V3 Float -> LightDir -> Ray -> TraceM Bool
 ptShadow loc _ld r = do

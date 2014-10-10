@@ -27,7 +27,7 @@ areaLight sh o power =
              , _lightG = areaLightG
              , _lightPDF = case power of
                              Nothing -> ali^.objectPDF
-                             Just v -> const (1.0/v)
+                             Just v -> const $ const (1.0/v)
              }
 
 areaLightDir :: ObjectAreaLightImpl -> Shade -> TraceM LightDir

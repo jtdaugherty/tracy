@@ -26,6 +26,7 @@ import Tracy.Objects.Instance
 import Tracy.Lights.Ambient
 import Tracy.Lights.AmbientOccluder
 import Tracy.Lights.Area
+import Tracy.Lights.Environment
 import Tracy.Lights.Point
 
 import Tracy.Tracers
@@ -79,6 +80,7 @@ lightFromDesc :: LightDesc -> Either String Light
 lightFromDesc (Ambient s c) = Right $ ambientLight s c
 lightFromDesc (AmbientOccluder c min_amt s) = Right $ ambientOccluder c min_amt s
 lightFromDesc (Point sh ls c loc) = Right $ pointLight sh ls c loc
+lightFromDesc (Environment sh m) = environmentLight sh <$> (materialFromDesc m)
 lightFromDesc (Area sh oDesc p) =
     case objectFromDesc oDesc of
       Left e -> Left e

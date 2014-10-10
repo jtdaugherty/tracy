@@ -16,8 +16,8 @@ ambientLight ls c =
 ambG :: LightDir -> Shade -> Float
 ambG = const $ const 1.0
 
-ambPDF :: Shade -> Float
-ambPDF = const 1.0
+ambPDF :: LightDir -> Shade -> Float
+ambPDF = const $ const 1.0
 
 ambDir :: Shade -> TraceM LightDir
 ambDir = const $ return $ LD { _lightDir = V3 0 0 0

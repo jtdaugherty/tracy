@@ -57,8 +57,8 @@ rectSurfaceSample rect = do
 rectGetNormal :: Rect -> V3 Float -> V3 Float
 rectGetNormal rect = const $ rectNormal rect
 
-rectPDF :: Rect -> Shade -> Float
-rectPDF rect = const $ rectInvArea rect
+rectPDF :: Rect -> LightDir -> Shade -> Float
+rectPDF rect = const $ const $ rectInvArea rect
 
 rectBoundingBox :: Rect -> BBox
 rectBoundingBox rect = BBox v0 v1

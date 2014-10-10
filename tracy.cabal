@@ -60,6 +60,7 @@ library
     Tracy.Lights.Ambient
     Tracy.Lights.AmbientOccluder
     Tracy.Lights.Area
+    Tracy.Lights.Environment
     Tracy.Lights.Point
     Tracy.Materials.Emissive
     Tracy.Materials.Matte

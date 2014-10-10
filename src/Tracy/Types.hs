@@ -93,7 +93,7 @@ data Ray =
 data ObjectAreaLightImpl =
     ObjectALI { _objectSurfaceSample :: TraceM (V3 Float)
               , _objectGetNormal :: V3 Float -> V3 Float
-              , _objectPDF :: Shade -> Float
+              , _objectPDF :: LightDir -> Shade -> Float
               }
 
 data Object =
@@ -162,7 +162,7 @@ data Light =
           , _lightColor :: LightDir -> Shade -> TraceM Color
           , _inLightShadow :: LightDir -> Ray -> TraceM Bool
           , _lightG :: LightDir -> Shade -> Float
-          , _lightPDF :: Shade -> Float
+          , _lightPDF :: LightDir -> Shade -> Float
           }
 
 data Material =
@@ -280,6 +280,7 @@ data LightDesc =
     | AmbientOccluder Color Color Float
     | Point Bool Float Color (V3 Float)
     | Area Bool ObjectDesc (Maybe Float)
+    | Environment Bool MaterialDesc
     deriving (Eq, Show, Generic)
 
 data MaterialDesc =

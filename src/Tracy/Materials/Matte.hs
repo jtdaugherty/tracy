@@ -71,7 +71,7 @@ areaLightContrib diffBrdf light ld wo sh = do
     let wi = ld^.lightDir
         ndotwi = (sh^.normal) `dot` wi
         gValue = (light^.lightG) ld sh
-        pdfValue = (light^.lightPDF) sh
+        pdfValue = (light^.lightPDF) ld sh
 
     lColor <- (light^.lightColor) ld sh
 
