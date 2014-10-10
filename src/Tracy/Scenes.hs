@@ -293,7 +293,7 @@ reflScene =
     let s1 = Sphere (V3 0 40 0) 40 (Reflective cRed 300 cWhite 0.8)
         s2 = Sphere (V3 (-90) 40 0) 40 (Reflective cBlue 300 cWhite 0.8)
         s3 = Sphere (V3 90 40 0) 40 (Reflective cYellow 300 cWhite 0.8)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
+        p = Plane (V3 0 0 0) (V3 0 1 0) (Reflective cGreen 10 cWhite 0.2)
 
         r1 = Rectangle (V3 (-100) 0 0) (V3 200 0 0) (V3 0 100 0) (Matte cWhite)
         i1 = Instances r1 [ (translate 0 150 150 <> rotateX (pi/(-2.5)), Just $ Emissive cWhite 3)
