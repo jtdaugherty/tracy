@@ -3,6 +3,7 @@ module Tracy.Transformations
   , scale
   , scaleUni
   , rotateX
+  , rotateZ
   ) where
 
 import Data.Distributive
@@ -42,12 +43,23 @@ scale x y z =
       r3' = V4 0 0 (1/z) 0
 
 rotateX :: Float -> Transformation
-rotateX a = Trans (rot a, distribute $ rot a)
+rotateX a = Trans (rotX a, distribute $ rotX a)
 
-rot :: Float -> V4 (V4 Float)
-rot a = V4 r1 r2 r3 r4
+rotateZ :: Float -> Transformation
+rotateZ a = Trans (rotZ a, distribute $ rotZ a)
+
+rotX :: Float -> V4 (V4 Float)
+rotX a = V4 r1 r2 r3 r4
   where
     r1 = V4 1 0 0 0
     r2 = V4 0 (cos a) (-1 * sin a) 0
     r3 = V4 0 (sin a) (cos a) 0
+    r4 = V4 0 0 0 1
+
+rotZ :: Float -> V4 (V4 Float)
+rotZ a = V4 r1 r2 r3 r4
+  where
+    r1 = V4 (cos a) (-1 * sin a) 0 0
+    r2 = V4 (sin a) (cos a) 0 0
+    r3 = V4 0 0 1 0
     r4 = V4 0 0 0 1
