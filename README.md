@@ -31,7 +31,8 @@ Features:
  * Light source types:
    - Ambient
    - Point (with hard shadows)
-   - Area lights (rectangles)
+   - Area lights (supported geometry: rectangles)
+   - Environment lights
  * User interface:
    - Console output with status information
    - Live GUI with progressive rendering
