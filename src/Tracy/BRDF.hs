@@ -14,11 +14,32 @@ lambertian s cd kd =
 
 glossySpecular :: Color -> Float -> BRDF
 glossySpecular ks glossyExp =
-    BRDF (glossySpecularFunc ks glossyExp) undefined glossyRhoFunc undefined
+    BRDF (glossySpecularFunc ks glossyExp) (glossySpecularSampleF ks glossyExp) glossyRhoFunc undefined
 
 perfectSpecular :: Color -> Float -> BRDF
 perfectSpecular c k =
     BRDF undefined (perfectSpecularSampleF c k) undefined undefined
+
+glossySpecularSampleF :: Color -> Float -> Shade -> V3 Float -> TraceM (Float, Color, V3 Float)
+glossySpecularSampleF c k sh wo = do
+    let ndotwo = (sh^.normal) `dot` wo
+        r = ((-1) *^ wo) + (2.0 * ndotwo *^ (sh^.normal))
+        w = r
+        u = signorm $ V3 0.00424 1 0.00764 `cross` w
+        v = u `cross` w
+
+    sp <- view tdHemiSample
+    let wi1 = (sp^._x *^ u) + (sp^._y *^ v) + (sp^._z *^ w)
+        wi2 = if (sh^.normal) `dot` wi1 < 0
+              then ((-1) * (sp^._x) *^ u) + (sp^._y *^ v) + (sp^._z *^ w)
+              else wi1
+        phong_lobe = (r `dot` wi2) ** k
+        pdf = phong_lobe * ((sh^.normal) `dot` wi2)
+
+    return ( pdf
+           , (grey $ (float2Double $ k * phong_lobe)) * c
+           , wi2
+           )
 
 perfectSpecularSampleF :: Color -> Float -> Shade -> V3 Float -> TraceM (Float, Color, V3 Float)
 perfectSpecularSampleF c k sh wo = do
