@@ -282,28 +282,36 @@ areaLightScene =
         i2 = Instances a [(translate (-10) 30 (-100) <> rotateX (pi/4) , Just $ Emissive cGreen 3)]
         i3 = Instances a [(translate 110 30 (-100) <> rotateX (pi/3)   , Just $ Emissive cBlue 3)]
 
-        ls = [ Area True i1
-             , Area True i2
-             , Area True i3
+        ls = [ Area True i1 Nothing
+             , Area True i2 Nothing
+             , Area True i3 Nothing
              ]
     in SceneDesc (worldOcc [Grid [i1, i2, i3], p] ls 1) NoScheme defCamera AreaLightTracer
 
 reflScene :: SceneDesc
 reflScene =
-    let s1 = Sphere (V3 0 40 0) 40 (Reflective cRed 300 cWhite 0.8)
-        s2 = Sphere (V3 (-90) 40 0) 40 (Reflective cBlue 300 cWhite 0.8)
-        s3 = Sphere (V3 90 40 0) 40 (Reflective cYellow 300 cWhite 0.8)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Reflective cGreen 10 cWhite 0.2)
+    let s = Sphere (V3 0 40 0) 40 (GlossyReflective cWhite 0 50 cWhite 0.9 50)
+        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
 
         r1 = Rectangle (V3 (-100) 0 0) (V3 200 0 0) (V3 0 100 0) (Matte cWhite)
-        i1 = Instances r1 [ (translate 0 150 150 <> rotateX (pi/(-2.5)), Just $ Emissive cWhite 3)
+        ss = Instances s [ (translate (-90) 0 0,     Just $ GlossyReflective cBlue    0.5 10 cWhite 0.8 10)
+                         , (translate 0 0 0,         Just $ GlossyReflective cWhite   0.8 50 cWhite 0.9 500)
+                         , (translate 90 0 0,        Just $ GlossyReflective cYellow  1 500 cWhite 0.8 100000)
+                         , (translate (-90) 0 90,    Just $ GlossyReflective cRed     0.5 10 cWhite 0.8 10)
+                         , (translate 0 0 90,        Just $ GlossyReflective cGreen   0.8 50 cWhite 0.9 500)
+                         , (translate 90 0 90,       Just $ GlossyReflective cMagenta 1 500 cWhite 0.8 100000)
+                         , (translate (-90) 0 (-90), Just $ GlossyReflective cYellow  0.5 10 cWhite 0.9 10)
+                         , (translate 0 0 (-90),     Just $ GlossyReflective cBlack   0.8 50 cWhite 0.9 500)
+                         , (translate 90 0 (-90),    Just $ GlossyReflective cCyan    1 500 cWhite 0.9 100000)
+                         ]
+        i1 = Instances r1 [ (translate 0 300 0 <> rotateX (pi/(2.5)), Just $ Emissive cWhite 3)
                           ]
-        i2 = Instances r1 [ (translate 0 150 0 <> rotateX (pi/2.5), Just $ Emissive cWhite 3)
-                          ]
-        ls = [ Area True i1
-             , Area True i2
+        ls = [ Area True i1 $ Just 200000
              ]
-    in SceneDesc (worldOcc [Grid [s1, s2, s3, i1], p] ls 1) NoScheme defCamera AreaLightTracer
+    in SceneDesc (worldOcc [Grid [ss, i1], p] ls 1) NoScheme
+                 (defCamera & thinLensEye .~ (V3 200 250 250)
+                 )
+                 AreaLightTracer
 
 allScenes :: [(String, IO SceneDesc)]
 allScenes =
