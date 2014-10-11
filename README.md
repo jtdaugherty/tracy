@@ -61,3 +61,6 @@ Area lights:
 
 Perfect and glossy specular reflection:
 ![demo6](/demo6.png)
+
+Table and chairs:
+![demo7](/demo7.png)
