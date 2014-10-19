@@ -57,6 +57,7 @@ single v = (:[]) <$> v
 
 objectFromDesc :: ObjectDesc -> Either String [Object]
 objectFromDesc (Sphere c r m) = single $ sphere c r <$> materialFromDesc m
+objectFromDesc (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc m
 objectFromDesc (Rectangle p0 a b m) = single $ rectangle p0 a b <$> materialFromDesc m
 objectFromDesc (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc m
 objectFromDesc (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc m

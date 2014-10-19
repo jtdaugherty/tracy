@@ -1,5 +1,6 @@
 module Tracy.Objects.Sphere
   ( sphere
+  , concaveSphere
   )
   where
 
@@ -16,6 +17,15 @@ sphere :: V3 Float -> Float -> Material -> Object
 sphere p rad m =
     Object { _objectMaterial = m
            , _hit = hitSphere p rad m
+           , _shadow_hit = shadowHitSphere p rad
+           , _bounding_box = Just $ sphereBBox p rad
+           , _areaLightImpl = Nothing
+           }
+
+concaveSphere :: V3 Float -> Float -> Material -> Object
+concaveSphere p rad m =
+    Object { _objectMaterial = m
+           , _hit = \r -> (\(sh, f) -> (sh & normal .~ (sh^.normal ^* (-1)), f)) <$> hitSphere p rad m r
            , _shadow_hit = shadowHitSphere p rad
            , _bounding_box = Just $ sphereBBox p rad
            , _areaLightImpl = Nothing
