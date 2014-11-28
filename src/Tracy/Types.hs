@@ -17,8 +17,6 @@ import System.Random.MWC
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.Ptr
-import Foreign.ForeignPtr
-import Data.ByteString.Internal
 import Data.Vector.Cereal ()
 
 type Color = Colour
