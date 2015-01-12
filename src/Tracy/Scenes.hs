@@ -192,7 +192,7 @@ blurrySpheres =
              ]
     in SceneDesc (worldOcc sphereGrid ls 1 & wdWorldShadows .~ False)
                  GridScheme
-                 (defCamera & thinLensRadius .~ 10.0
+                 (defCamera & thinLensRadius .~ (FloatVal 10.0)
                             & thinLensLookAt .~ (V3 0 30 0)
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
