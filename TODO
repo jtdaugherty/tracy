@@ -6,15 +6,11 @@
   * Procedural
   * Image-based
 
-- Area lights
-
-- Reflection
-
 - Refraction
 
-- Global illumination technique(s)
+- Animation
 
-- Progressive rendering
+- Global illumination technique(s)
 
 - Load scenes from disk
   * GUI: keystroke to trigger a reload scenes from disk and re-render
@@ -23,4 +19,3 @@
 - Mesh rendering features
   * Vertex colors & interpolation? Affect material shading & properties?
   * Consider triangulation for faces with 4 vertices
-  * Smooth shading
