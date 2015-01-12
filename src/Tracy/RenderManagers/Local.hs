@@ -34,7 +34,7 @@ localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
                   sSamplesVec <- V.generateM numSets $ const $ squareSampler rng (cfg^.sampleRoot)
                   dSamplesVec <- V.generateM numSets $ const $ diskSampler rng (cfg^.sampleRoot)
                   ch <- renderChunk cfg rng scene tracer sSamplesVec dSamplesVec sSamplesVec
-                  writeChan jobResp $ FrameFinished ch
+                  writeChan jobResp $ BatchFinished ch
                   processRequests
               RenderFinished -> do
                   writeChan jobResp JobAck

@@ -30,8 +30,8 @@ data InfoEvent =
     | INumObjects Int
     | IShadows Bool
     | INumCPUs Int
-    | INumFrames Int
-    | IFrameFinished Int Int NominalDiffTime
+    | INumBatches Int
+    | IBatchFinished Int Int NominalDiffTime
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
@@ -43,9 +43,9 @@ data InfoEvent =
 
 data DataEvent =
       DSceneName String
-    | DNumFrames Int
+    | DNumBatches Int
     | DSampleRoot Float
-    | DFrameFinished (SV.Vector Colour)
+    | DBatchFinished (SV.Vector Colour)
     | DImageSize Int Int
     | DStarted
     | DFinished
@@ -61,7 +61,7 @@ data JobRequest =
 
 data JobResponse =
       JobError String
-    | FrameFinished (SV.Vector Colour)
+    | BatchFinished (SV.Vector Colour)
     | JobAck
     deriving (Generic)
 

@@ -8,7 +8,7 @@ module Tracy.Util
   , dSquared
 
   , createMergeBuffer
-  , mergeFrames
+  , mergeBatches
   , vectorFromMergeBuffer
   ) where
 
@@ -66,8 +66,8 @@ createMergeBuffer rows cols = do
     p <- mallocArray (3 * rows * cols)
     return (rows, cols, p)
 
-mergeFrames :: Int -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
-mergeFrames numSamples (rows, cols, merged) newData =
+mergeBatches :: Int -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
+mergeBatches numSamples (rows, cols, merged) newData =
     SV.unsafeWith newData $ \p ->
         c_running_average
           (fromIntegral numSamples)

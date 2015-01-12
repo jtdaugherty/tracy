@@ -24,7 +24,7 @@ data Arg = Help
          | NoShadows
          | Shadows
          | CPUs String
-         | Frames String
+         | Batches String
          | UseGUI
          | RenderNode String
            deriving (Eq, Show)
@@ -33,7 +33,7 @@ data PreConfig =
     PreConfig { argSampleRoot :: Float
               , argAccelScheme :: Maybe AccelScheme
               , argCpuCount :: Int
-              , argWorkFrames :: Int
+              , argWorkBatches :: Int
               , argForceShadows :: Maybe Bool
               , argRenderNodes :: [String]
               }
@@ -44,7 +44,7 @@ defaultPreConfig = do
     return $ PreConfig { argSampleRoot = 4
                        , argAccelScheme = Nothing
                        , argCpuCount = n
-                       , argWorkFrames = 10
+                       , argWorkBatches = 10
                        , argForceShadows = Nothing
                        , argRenderNodes = []
                        }
@@ -58,7 +58,7 @@ mkOpts = do
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
              ("Number of CPUs to use (max: " ++ show maxc ++ ")")
-           , Option "b" ["batches"] (ReqArg Frames "COUNT")
+           , Option "b" ["batches"] (ReqArg Batches "COUNT")
              ("Number of sample batches per frame")
            , Option "g" ["gui"] (NoArg UseGUI)
              ("Present a graphical interface during rendering")
@@ -73,9 +73,9 @@ updateConfig c (SampleRoot s) = return $ c { argSampleRoot = read s }
 updateConfig c NoShadows = return $ c { argForceShadows = Just True }
 updateConfig c Shadows = return $ c { argForceShadows = Just False }
 updateConfig c (RenderNode n) = return $ c { argRenderNodes = n : argRenderNodes c }
-updateConfig c (Frames s) =
+updateConfig c (Batches s) =
     case reads s of
-        [(cnt, _)] -> return $ c { argWorkFrames = cnt }
+        [(cnt, _)] -> return $ c { argWorkBatches = cnt }
         _ -> usage >> exitFailure
 updateConfig c (CPUs s) = do
     case reads s of
@@ -130,7 +130,7 @@ main = do
                       else networkRenderManager (argRenderNodes preCfg) iChan
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender (argWorkFrames preCfg) renderCfg sceneDesc manager iChan dChan
+        _ <- forkIO $ render toRender (argWorkBatches preCfg) renderCfg sceneDesc manager iChan dChan
 
         case UseGUI `elem` os of
             False -> do

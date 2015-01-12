@@ -21,9 +21,9 @@ render :: String
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
-render sceneName numFrames renderCfg s renderManager iChan dChan = do
+render sceneName numBatches renderCfg s renderManager iChan dChan = do
   let w = s^.sceneDescWorld
-      requests = replicate numFrames RenderRequest
+      requests = replicate numBatches RenderRequest
 
   writeChan iChan $ ISceneName sceneName
   writeChan dChan $ DSceneName sceneName
@@ -32,11 +32,11 @@ render sceneName numFrames renderCfg s renderManager iChan dChan = do
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
   writeChan iChan $ INumObjects $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
-  writeChan iChan $ INumFrames numFrames
+  writeChan iChan $ INumBatches numBatches
   writeChan iChan $ IImageSize (fromEnum $ w^.wdViewPlane.hres)
                                (fromEnum $ w^.wdViewPlane.vres)
 
-  writeChan dChan $ DNumFrames numFrames
+  writeChan dChan $ DNumBatches numBatches
   writeChan dChan $ DSampleRoot $ renderCfg^.sampleRoot
   writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.hres)
                                (fromEnum $ w^.wdViewPlane.vres)
@@ -67,15 +67,15 @@ render sceneName numFrames renderCfg s renderManager iChan dChan = do
                 putStrLn $ "Yikes! Error in render thread: " ++ msg
                 exitSuccess
             JobAck -> collector numFinished
-            FrameFinished rs -> do
+            BatchFinished rs -> do
                 t <- getCurrentTime
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
-                                             (numFrames - (numFinished + 1))
+                                             (numBatches - (numFinished + 1))
 
-                writeChan iChan $ IFrameFinished (numFinished + 1) numFrames remainingTime
-                writeChan dChan $ DFrameFinished rs
+                writeChan iChan $ IBatchFinished (numFinished + 1) numBatches remainingTime
+                writeChan dChan $ DBatchFinished rs
 
-                if numFinished + 1 == numFrames then
+                if numFinished + 1 == numBatches then
                    writeChan reqChan RenderFinished >> writeChan reqChan Shutdown else
                    collector $ numFinished + 1
 

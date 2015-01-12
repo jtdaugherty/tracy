@@ -17,7 +17,7 @@ import Tracy.Util
 fileHandler :: FilePath -> Chan DataEvent -> IO ()
 fileHandler filename chan = do
   DSceneName _ <- readChan chan
-  DNumFrames frames <- readChan chan
+  DNumBatches batches <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
 
@@ -25,9 +25,9 @@ fileHandler filename chan = do
 
   merged <- createMergeBuffer rows cols
 
-  forM_ [0..frames-1] $ \frameNum -> do
-      DFrameFinished rs <- readChan chan
-      mergeFrames frameNum merged rs
+  forM_ [0..batches-1] $ \batchNum -> do
+      DBatchFinished rs <- readChan chan
+      mergeBatches batchNum merged rs
 
   DFinished <- readChan chan
   DShutdown <- readChan chan

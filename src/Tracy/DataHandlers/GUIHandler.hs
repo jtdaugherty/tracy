@@ -29,7 +29,7 @@ data MyState =
 guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
   DSceneName sceneName <- readChan chan
-  DNumFrames _ <- readChan chan
+  DNumBatches _ <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
 
@@ -64,8 +64,8 @@ guiHandler chan = do
   let work numSamples = do
         ev <- readChan chan
         case ev of
-            DFrameFinished rs -> do
-                mergeFrames numSamples combinedArray rs
+            DBatchFinished rs -> do
+                mergeBatches numSamples combinedArray rs
 
                 forM_ [0..rows*cols-1] $ \i -> do
                     val <- peekElemOff (castPtr combinedPtr) i
