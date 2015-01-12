@@ -68,9 +68,14 @@ data JobResponse =
     deriving (Generic)
 
 data AnimV3 =
-      Val (V3 Float)
-    | Lerp (Int, Int) (V3 Float, V3 Float)
-    | LerpRotY (Int, Int) (V3 Float) Float
+      V3Val (V3 Float)
+    | V3Lerp (Int, Int) (V3 Float, V3 Float)
+    | V3LerpRotY (Int, Int) (V3 Float) Float
+    deriving (Generic, Eq, Show)
+
+data AnimFloat =
+      FloatVal Float
+    | FloatLerp (Int, Int) (Float, Float)
     deriving (Generic, Eq, Show)
 
 class Interp a where
@@ -313,7 +318,7 @@ data CameraDesc =
                    , _thinLensZ :: Float
                    , _thinLensVpDist :: Float
                    , _thinLensFpDist :: Float
-                   , _thinLensRadius :: Float
+                   , _thinLensRadius :: AnimFloat
                    }
     deriving (Eq, Show, Generic)
 
@@ -367,6 +372,7 @@ instance Serialize JobResponse where
 instance Serialize RenderConfig where
 instance Serialize Transformation where
 instance Serialize AnimV3 where
+instance Serialize AnimFloat where
 
 instance Serialize MeshDesc where
     get = MeshDesc <$> (V.fromList <$> get) <*> get

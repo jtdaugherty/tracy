@@ -24,14 +24,14 @@ defaultVp =
 
 defCamera :: CameraDesc
 defCamera =
-    ThinLensCamera (Val $ V3 0 100 300)
+    ThinLensCamera (V3Val $ V3 0 100 300)
                    (V3 0 0 0)
                    (V3 0 1 0)
                    1.0
                    1.0
                    500 -- vpDist
                    300 -- fpDist
-                   0
+                   (FloatVal 0)
 
 world :: [ObjectDesc] -> [LightDesc] -> WorldDesc
 world os ls = WorldDesc { _wdViewPlane = defaultVp
@@ -71,7 +71,7 @@ instancedSpheres =
                          ]
     in SceneDesc (worldOcc [is, p] ls 1) NoScheme
          (defCamera & thinLensLookAt .~ (V3 0 0 0)
-                    & thinLensEye    .~ (Val $ V3 0 0 200)
+                    & thinLensEye    .~ (V3Val $ V3 0 0 200)
                     )
          RayCastTracer
 
@@ -89,7 +89,7 @@ instancedSpheresGrid =
                  ]
     in SceneDesc (worldOcc [g, p] ls 1) NoScheme
          (defCamera & thinLensLookAt .~ (V3 0 0 0)
-                    & thinLensEye    .~ (Val $ V3 0 0 200)
+                    & thinLensEye    .~ (V3Val $ V3 0 0 200)
                     )
          RayCastTracer
 
@@ -107,7 +107,7 @@ objectDemo =
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
     in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] ls 3) NoScheme
-         (defCamera & thinLensEye .~ (LerpRotY (1, 100) (V3 0 100 300) (2 * pi))
+         (defCamera & thinLensEye .~ (V3LerpRotY (1, 100) (V3 0 100 300) (2 * pi))
          )
          RayCastTracer
 
@@ -196,7 +196,7 @@ blurrySpheres =
                             & thinLensLookAt .~ (V3 0 30 0)
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
-                            & thinLensEye    .~ (Val $ V3 0 50 300))
+                            & thinLensEye    .~ (V3Val $ V3 0 50 300))
                  RayCastTracer
 
 loadCubeScene :: IO SceneDesc
@@ -206,11 +206,11 @@ loadCubeScene = do
         ls = [ Point True 1 cWhite (V3 (-10) 10 10)
              ]
     return $ SceneDesc (world [cObj] ls) NoScheme
-                 (defCamera & thinLensRadius .~ 0.0
+                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
                             & thinLensLookAt .~ (V3 0 0 0)
                             & thinLensVpDist .~ 200
                             & thinLensFpDist .~ 200
-                            & thinLensEye    .~ (Val $ V3 2.1 2.1 3)
+                            & thinLensEye    .~ (V3Val $ V3 2.1 2.1 3)
                             )
                  RayCastTracer
 
@@ -226,12 +226,12 @@ loadBunnyScene = do
              , Point True 1 cWhite (V3 5 0 2)
              ]
     return $ SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ 0.0
+                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
                             & thinLensLookAt .~ (V3 0 0 2)
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300
                             & thinLensUp     .~ (V3 0 0 1)
-                            & thinLensEye    .~ (Val $ V3 (-6) (-3) 3)
+                            & thinLensEye    .~ (V3Val $ V3 (-6) (-3) 3)
                             )
                  RayCastTracer
 
@@ -258,11 +258,11 @@ loadTableScene = do
              , Environment True $ Emissive cBlue 1
              ]
     return $ SceneDesc (worldOcc [chairLeft, chairRight, tableObj, monkeyObj, torusObj, icoObj, sphereObj, a, p] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ 0.0
+                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
                             & thinLensLookAt .~ (V3 0 3 0)
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
-                            & thinLensEye .~ (Val $ V3 0 5 3.5)
+                            & thinLensEye .~ (V3Val $ V3 0 5 3.5)
                             )
                  RayCastTracer
 
@@ -274,11 +274,11 @@ loadDragonScene = do
         ls = [ Point True 1 cWhite (V3 0 2 0)
              ]
     return $ SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ 0.0
+                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
                             & thinLensLookAt .~ (V3 0 0.15 0)
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300
-                            & thinLensEye    .~ (Val $ V3 (-0.1) 0.1 0.2)
+                            & thinLensEye    .~ (V3Val $ V3 (-0.1) 0.1 0.2)
                             )
                  RayCastTracer
 
@@ -289,11 +289,11 @@ loadMonkeyScene = do
         ls = [ Point True 1 cWhite (V3 (-10) 10 10)
              ]
     return $ SceneDesc (worldOcc [cObj] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ 0.0
+                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
                             & thinLensLookAt .~ (V3 0 0 0)
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300
-                            & thinLensEye    .~ (Val $ V3 0 0 4)
+                            & thinLensEye    .~ (V3Val $ V3 0 0 4)
                             )
                  RayCastTracer
 
@@ -343,7 +343,7 @@ reflScene =
         ls = [ Area True i1 $ Just 200000
              ]
     in SceneDesc (worldOcc [Grid [ss, i1], p] ls 1) NoScheme
-                 (defCamera & thinLensEye .~ (LerpRotY (1, 100) (V3 200 250 250) (2 * pi))
+                 (defCamera & thinLensEye .~ (V3LerpRotY (1, 100) (V3 200 250 250) (2 * pi))
                  )
                  AreaLightTracer
 
