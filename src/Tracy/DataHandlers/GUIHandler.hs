@@ -29,6 +29,7 @@ data MyState =
 guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
   DSceneName sceneName <- readChan chan
+  DFrameNum frameNum <- readChan chan
   DNumBatches _ <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
@@ -82,7 +83,7 @@ guiHandler chan = do
     DStarted <- readChan chan
     work (0 :: Int)
     vec <- vectorFromMergeBuffer combinedArray
-    writeImage vec rows cols (sceneName ++ ".bmp")
+    writeImage vec rows cols (buildFilename sceneName frameNum)
 
   GLUT.mainLoop
 

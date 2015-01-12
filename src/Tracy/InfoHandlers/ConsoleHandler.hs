@@ -23,6 +23,7 @@ consoleHandler chan = do
         ev <- readChan chan
         case ev of
             ISceneName n -> output "Scene name" n
+            IFrameNum n -> output "Frame number" (show n)
             ISampleRoot root -> output "Sampler root" ((show root) ++ " (" ++ (show $ root ** 2) ++ " samples per pixel)")
             IAccelScheme name -> output "Acceleration method" (show name)
             INumObjects n -> outputS "Objects" n

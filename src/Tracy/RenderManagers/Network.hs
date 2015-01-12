@@ -20,8 +20,8 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
       let worker = do
             ev <- readChan jobReq
             case ev of
-                SetScene cfg s -> do
-                    send sock [] $ encode $ SetScene cfg s
+                SetScene cfg s fn -> do
+                    send sock [] $ encode $ SetScene cfg s fn
                     _ <- receive sock
                     worker
                 RenderRequest -> do
@@ -57,8 +57,8 @@ networkRenderManager nodes iChan jobReq jobResp = do
         chanReader = do
             req <- readChan jobReq
             case req of
-                SetScene cfg s -> do
-                    sendToAll $ SetScene cfg s
+                SetScene cfg s fn -> do
+                    sendToAll $ SetScene cfg s fn
                     chanReader
                 RenderRequest -> do
                     -- Find available (non-busy) node

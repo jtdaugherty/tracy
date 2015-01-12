@@ -139,10 +139,10 @@ main = do
                       else networkRenderManager (argRenderNodes preCfg) iChan
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender (argWorkBatches preCfg) renderCfg sceneDesc manager iChan dChan
+        _ <- forkIO $ render toRender (argWorkBatches preCfg) renderCfg sceneDesc (argFrameNum preCfg) manager iChan dChan
 
         case UseGUI `elem` os of
             False -> do
-                let filename = toRender ++ ".bmp"
+                let filename = buildFilename toRender (argFrameNum preCfg)
                 fileHandler filename dChan
             True -> guiHandler dChan

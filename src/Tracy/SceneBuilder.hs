@@ -33,8 +33,8 @@ import Tracy.Tracers
 import Tracy.AccelSchemes
 import Tracy.Samplers
 
-sceneFromDesc :: SceneDesc -> Either String (Scene ThinLens)
-sceneFromDesc sd =
+sceneFromDesc :: SceneDesc -> Int -> Either String (Scene ThinLens)
+sceneFromDesc sd fn =
     Scene <$> (worldFromDesc       $ sd^.sceneDescWorld)
           <*> (accelSchemeFromDesc $ sd^.sceneDescAccelScheme)
           <*> (cameraFromDesc      $ sd^.sceneDescCamera)

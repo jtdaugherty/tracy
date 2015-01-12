@@ -23,6 +23,7 @@ type Color = Colour
 
 data InfoEvent =
       ISampleRoot Float
+    | IFrameNum Int
     | IConnected String
     | IConnecting String
     | ISceneName String
@@ -44,6 +45,7 @@ data InfoEvent =
 data DataEvent =
       DSceneName String
     | DNumBatches Int
+    | DFrameNum Int
     | DSampleRoot Float
     | DBatchFinished (SV.Vector Colour)
     | DImageSize Int Int
@@ -53,7 +55,7 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc
+      SetScene RenderConfig SceneDesc Int
     | RenderRequest
     | RenderFinished
     | Shutdown

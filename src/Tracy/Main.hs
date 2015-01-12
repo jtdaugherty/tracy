@@ -17,18 +17,23 @@ render :: String
        -> Int
        -> RenderConfig
        -> SceneDesc
+       -> Int
        -> (Chan JobRequest -> Chan JobResponse -> IO ())
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
-render sceneName numBatches renderCfg s renderManager iChan dChan = do
+render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   let w = s^.sceneDescWorld
       requests = replicate numBatches RenderRequest
 
   writeChan iChan $ ISceneName sceneName
+  writeChan iChan $ IFrameNum frameNum
+
   writeChan dChan $ DSceneName sceneName
+  writeChan dChan $ DFrameNum frameNum
 
   writeChan iChan $ ISampleRoot $ renderCfg^.sampleRoot
+  writeChan iChan $ IFrameNum frameNum
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
   writeChan iChan $ INumObjects $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
@@ -54,7 +59,7 @@ render sceneName numBatches renderCfg s renderManager iChan dChan = do
   _ <- forkIO (renderManager reqChan respChan)
 
   -- Set the scene
-  writeChan reqChan $ SetScene renderCfg s
+  writeChan reqChan $ SetScene renderCfg s frameNum
 
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests

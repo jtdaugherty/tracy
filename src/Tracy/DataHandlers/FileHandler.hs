@@ -1,6 +1,7 @@
 module Tracy.DataHandlers.FileHandler
   ( fileHandler
   , writeImage
+  , buildFilename
   )
   where
 
@@ -14,9 +15,13 @@ import qualified Data.Vector.Storable as SV
 import Tracy.Types
 import Tracy.Util
 
+buildFilename :: String -> Int -> FilePath
+buildFilename sn fn = sn ++ "-" ++ show fn ++ ".bmp"
+
 fileHandler :: FilePath -> Chan DataEvent -> IO ()
 fileHandler filename chan = do
   DSceneName _ <- readChan chan
+  DFrameNum _ <- readChan chan
   DNumBatches batches <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
