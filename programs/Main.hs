@@ -27,6 +27,7 @@ data Arg = Help
          | Batches String
          | UseGUI
          | RenderNode String
+         | FrameNum String
            deriving (Eq, Show)
 
 data PreConfig =
@@ -34,6 +35,7 @@ data PreConfig =
               , argAccelScheme :: Maybe AccelScheme
               , argCpuCount :: Int
               , argWorkBatches :: Int
+              , argFrameNum :: Int
               , argForceShadows :: Maybe Bool
               , argRenderNodes :: [String]
               }
@@ -47,6 +49,7 @@ defaultPreConfig = do
                        , argWorkBatches = 10
                        , argForceShadows = Nothing
                        , argRenderNodes = []
+                       , argFrameNum = 1
                        }
 
 mkOpts :: IO [OptDescr Arg]
@@ -64,6 +67,8 @@ mkOpts = do
              ("Present a graphical interface during rendering")
            , Option "d" ["distribute"] (ReqArg RenderNode "NODE")
              ("Render the job in parallel on this node (specify once for each node)")
+           , Option "f" ["frame"] (ReqArg FrameNum "NUM")
+             ("The animation sequence frame number to render")
            ]
 
 updateConfig :: PreConfig -> Arg -> IO PreConfig
@@ -73,6 +78,10 @@ updateConfig c (SampleRoot s) = return $ c { argSampleRoot = read s }
 updateConfig c NoShadows = return $ c { argForceShadows = Just True }
 updateConfig c Shadows = return $ c { argForceShadows = Just False }
 updateConfig c (RenderNode n) = return $ c { argRenderNodes = n : argRenderNodes c }
+updateConfig c (FrameNum s) =
+    case reads s of
+        [(f, _)] -> return $ c { argFrameNum = f }
+        _ -> usage >> exitFailure
 updateConfig c (Batches s) =
     case reads s of
         [(cnt, _)] -> return $ c { argWorkBatches = cnt }
