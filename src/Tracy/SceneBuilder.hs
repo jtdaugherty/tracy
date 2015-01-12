@@ -29,6 +29,7 @@ import Tracy.Lights.Area
 import Tracy.Lights.Environment
 import Tracy.Lights.Point
 
+import Tracy.Anim
 import Tracy.Tracers
 import Tracy.AccelSchemes
 import Tracy.Samplers
@@ -105,8 +106,8 @@ tracerFromDesc AreaLightTracer = Right areaLightTracer
 tracerFromDesc WhittedTracer = Right whittedTracer
 
 cameraFromDesc :: Int -> CameraDesc -> Either String (Camera ThinLens)
-cameraFromDesc _ cd@(ThinLensCamera { }) =
-    Right $ thinLensCamera (cd^.thinLensEye)
+cameraFromDesc fn cd@(ThinLensCamera { }) =
+    Right $ thinLensCamera (animV3 fn $ cd^.thinLensEye)
                            (cd^.thinLensLookAt)
                            (cd^.thinLensUp)
                            (cd^.thinLensExposure)

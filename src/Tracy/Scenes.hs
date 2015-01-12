@@ -24,7 +24,7 @@ defaultVp =
 
 defCamera :: CameraDesc
 defCamera =
-    ThinLensCamera (V3 0 100 300)
+    ThinLensCamera (Val $ V3 0 100 300)
                    (V3 0 0 0)
                    (V3 0 1 0)
                    1.0
@@ -71,7 +71,7 @@ instancedSpheres =
                          ]
     in SceneDesc (worldOcc [is, p] ls 1) NoScheme
          (defCamera & thinLensLookAt .~ (V3 0 0 0)
-                    & thinLensEye    .~ (V3 0 0 200)
+                    & thinLensEye    .~ (Val $ V3 0 0 200)
                     )
          RayCastTracer
 
@@ -89,7 +89,7 @@ instancedSpheresGrid =
                  ]
     in SceneDesc (worldOcc [g, p] ls 1) NoScheme
          (defCamera & thinLensLookAt .~ (V3 0 0 0)
-                    & thinLensEye    .~ (V3 0 0 200)
+                    & thinLensEye    .~ (Val $ V3 0 0 200)
                     )
          RayCastTracer
 
@@ -106,7 +106,10 @@ objectDemo =
         t1 = Triangle (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (Matte cWhite)
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
-    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] ls 3) NoScheme defCamera RayCastTracer
+    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] ls 3) NoScheme
+         (defCamera & thinLensEye .~ (LerpRotY (1, 100) (V3 0 100 300) (2 * pi))
+         )
+         RayCastTracer
 
 objectDemoNoPoint :: SceneDesc
 objectDemoNoPoint =
@@ -193,7 +196,7 @@ blurrySpheres =
                             & thinLensLookAt .~ (V3 0 30 0)
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
-                            & thinLensEye    .~ (V3 0 50 300))
+                            & thinLensEye    .~ (Val $ V3 0 50 300))
                  RayCastTracer
 
 loadCubeScene :: IO SceneDesc
@@ -207,7 +210,7 @@ loadCubeScene = do
                             & thinLensLookAt .~ (V3 0 0 0)
                             & thinLensVpDist .~ 200
                             & thinLensFpDist .~ 200
-                            & thinLensEye    .~ (V3 2.1 2.1 3)
+                            & thinLensEye    .~ (Val $ V3 2.1 2.1 3)
                             )
                  RayCastTracer
 
@@ -228,7 +231,7 @@ loadBunnyScene = do
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300
                             & thinLensUp     .~ (V3 0 0 1)
-                            & thinLensEye    .~ (V3 (-6) (-3) 3)
+                            & thinLensEye    .~ (Val $ V3 (-6) (-3) 3)
                             )
                  RayCastTracer
 
@@ -259,7 +262,7 @@ loadTableScene = do
                             & thinLensLookAt .~ (V3 0 3 0)
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
-                            & thinLensEye .~ (V3 0 5 3.5)
+                            & thinLensEye .~ (Val $ V3 0 5 3.5)
                             )
                  RayCastTracer
 
@@ -275,7 +278,7 @@ loadDragonScene = do
                             & thinLensLookAt .~ (V3 0 0.15 0)
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300
-                            & thinLensEye    .~ (V3 (-0.1) 0.1 0.2)
+                            & thinLensEye    .~ (Val $ V3 (-0.1) 0.1 0.2)
                             )
                  RayCastTracer
 
@@ -290,7 +293,7 @@ loadMonkeyScene = do
                             & thinLensLookAt .~ (V3 0 0 0)
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300
-                            & thinLensEye    .~ (V3 0 0 4)
+                            & thinLensEye    .~ (Val $ V3 0 0 4)
                             )
                  RayCastTracer
 
@@ -340,7 +343,7 @@ reflScene =
         ls = [ Area True i1 $ Just 200000
              ]
     in SceneDesc (worldOcc [Grid [ss, i1], p] ls 1) NoScheme
-                 (defCamera & thinLensEye .~ (V3 200 250 250)
+                 (defCamera & thinLensEye .~ (LerpRotY (1, 100) (V3 200 250 250) (2 * pi))
                  )
                  AreaLightTracer
 

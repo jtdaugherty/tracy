@@ -3,6 +3,7 @@ module Tracy.Transformations
   , scale
   , scaleUni
   , rotateX
+  , rotateY
   , rotateZ
   ) where
 
@@ -45,6 +46,9 @@ scale x y z =
 rotateX :: Float -> Transformation
 rotateX a = Trans (rotX a, distribute $ rotX a)
 
+rotateY :: Float -> Transformation
+rotateY a = Trans (rotY a, distribute $ rotY a)
+
 rotateZ :: Float -> Transformation
 rotateZ a = Trans (rotZ a, distribute $ rotZ a)
 
@@ -54,6 +58,14 @@ rotX a = V4 r1 r2 r3 r4
     r1 = V4 1 0 0 0
     r2 = V4 0 (cos a) (-1 * sin a) 0
     r3 = V4 0 (sin a) (cos a) 0
+    r4 = V4 0 0 0 1
+
+rotY :: Float -> V4 (V4 Float)
+rotY a = V4 r1 r2 r3 r4
+  where
+    r1 = V4 (cos a) 0 (sin a) 0
+    r2 = V4 0 1 0 0
+    r3 = V4 (-1 * sin a) 0 (cos a) 0
     r4 = V4 0 0 0 1
 
 rotZ :: Float -> V4 (V4 Float)

@@ -67,6 +67,18 @@ data JobResponse =
     | JobAck
     deriving (Generic)
 
+data AnimV3 =
+      Val (V3 Float)
+    | Lerp (Int, Int) (V3 Float, V3 Float)
+    | LerpRotY (Int, Int) (V3 Float) Float
+    deriving (Generic, Eq, Show)
+
+class Interp a where
+    interp :: Float -> a -> a
+
+instance Interp (V3 Float) where
+    interp p v = p *^ v
+
 -- A transformation is a pair of (forward transformation matrix, inverse
 -- transformation matrix).  Note the Monoid instance for this type.
 data Transformation = Trans (M44 Float, M44 Float)
@@ -294,7 +306,7 @@ data MaterialDesc =
     deriving (Eq, Show, Generic)
 
 data CameraDesc =
-    ThinLensCamera { _thinLensEye :: V3 Float
+    ThinLensCamera { _thinLensEye :: AnimV3
                    , _thinLensLookAt :: V3 Float
                    , _thinLensUp :: V3 Float
                    , _thinLensExposure :: Float
@@ -354,6 +366,7 @@ instance Serialize JobRequest where
 instance Serialize JobResponse where
 instance Serialize RenderConfig where
 instance Serialize Transformation where
+instance Serialize AnimV3 where
 
 instance Serialize MeshDesc where
     get = MeshDesc <$> (V.fromList <$> get) <*> get

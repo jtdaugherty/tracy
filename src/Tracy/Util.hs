@@ -6,6 +6,8 @@ module Tracy.Util
   , defaultShade
   , clamp
   , dSquared
+  , toV3
+  , toV4
 
   , createMergeBuffer
   , mergeBatches
@@ -81,3 +83,9 @@ vectorFromMergeBuffer (rows, cols, merged) =
 
 foreign import ccall unsafe "running_average"
   c_running_average :: CDouble -> CInt -> Ptr Double -> Ptr Double -> IO ()
+
+toV4 :: (Num a) => V3 a -> V4 a
+toV4 v = V4 (v^._x) (v^._y) (v^._z) 0
+
+toV3 :: V4 a -> V3 a
+toV3 v = V3 (v^._x) (v^._y) (v^._z)

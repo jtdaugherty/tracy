@@ -42,6 +42,7 @@ library
 
   exposed-modules:
     Tracy.AccelSchemes
+    Tracy.Anim
     Tracy.BRDF
     Tracy.BoundingBox
     Tracy.Cameras

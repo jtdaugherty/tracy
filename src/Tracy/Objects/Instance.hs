@@ -8,6 +8,7 @@ import Control.Lens
 import Linear
 
 import Tracy.Types
+import Tracy.Util
 
 inst :: Transformation -> Maybe Material -> Object -> Object
 inst trans newMat o =
@@ -64,12 +65,6 @@ m !*. v = toV3 $ m !* v'
 
 instShadowHit :: M44 Float -> Material -> Object -> Ray -> Maybe Float
 instShadowHit matrix mat o r = snd <$> instHit matrix mat o r
-
-toV4 :: (Num a) => V3 a -> V4 a
-toV4 v = V4 (v^._x) (v^._y) (v^._z) 0
-
-toV3 :: V4 a -> V3 a
-toV3 v = V3 (v^._x) (v^._y) (v^._z)
 
 instHit :: M44 Float -> Material -> Object -> Ray -> Maybe (Shade, Float)
 instHit matrix mat o r =
