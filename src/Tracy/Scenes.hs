@@ -343,7 +343,7 @@ reflScene =
         ls = [ Area True i1 $ Just 200000
              ]
     in SceneDesc (worldOcc [Grid [ss, i1], p] ls 1) NoScheme
-                 (defCamera & thinLensEye .~ (V3LerpRotY (1, 100) (V3 200 250 250) (2 * pi))
+                 (defCamera & thinLensEye .~ (V3LerpRotY (1, 200) (V3 200 250 250) (2 * pi))
                  )
                  AreaLightTracer
 
