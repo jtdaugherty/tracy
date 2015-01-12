@@ -53,13 +53,13 @@ mkOpts :: IO [OptDescr Arg]
 mkOpts = do
     maxc <- getNumProcessors
     return [ Option "h" ["help"] (NoArg Help) "This help output"
-           , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "AA sample root"
+           , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "ROOT^2 samples per batch"
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
              ("Number of CPUs to use (max: " ++ show maxc ++ ")")
-           , Option "f" ["frames"] (ReqArg Frames "COUNT")
-             ("Number of frames to render")
+           , Option "b" ["batches"] (ReqArg Frames "COUNT")
+             ("Number of sample batches per frame")
            , Option "g" ["gui"] (NoArg UseGUI)
              ("Present a graphical interface during rendering")
            , Option "d" ["distribute"] (ReqArg RenderNode "NODE")
