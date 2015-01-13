@@ -1,4 +1,4 @@
-{-# LANGUAGE ParallelListComp #-}
+{-# LANGUAGE ParallelListComp, BangPatterns #-}
 module Tracy.Objects.Grid where
 
 import Tracy.Types
@@ -99,7 +99,7 @@ data St = St { txNext :: Float
              deriving Show
 
 hitGrid :: (Int, Int, Int) -> BBox -> M.Map (Int, Int, Int) Object -> Ray -> Maybe (Shade, Float)
-hitGrid (nx, ny, nz) bbox m ray =
+hitGrid (nx, ny, nz) !bbox m ray =
     if t0 > t1
        then Nothing
        else let st = St tx_next ty_next tz_next iix iiy iiz

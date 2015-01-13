@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures, BangPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Types where
 
@@ -103,8 +103,8 @@ data Shade =
           }
 
 data Ray =
-    Ray { _origin :: V3 Float
-        , _direction :: V3 Float
+    Ray { _origin :: !(V3 Float)
+        , _direction :: !(V3 Float)
         }
     deriving (Show)
 
@@ -190,8 +190,8 @@ data Material =
              }
 
 data BBox =
-    BBox { _bboxP0 :: V3 Float
-         , _bboxP1 :: V3 Float
+    BBox { _bboxP0 :: !(V3 Float)
+         , _bboxP1 :: !(V3 Float)
          }
          deriving (Show)
 
