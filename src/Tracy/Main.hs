@@ -33,7 +33,6 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   writeChan dChan $ DFrameNum frameNum
 
   writeChan iChan $ ISampleRoot $ renderCfg^.sampleRoot
-  writeChan iChan $ IFrameNum frameNum
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
   writeChan iChan $ INumObjects $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
