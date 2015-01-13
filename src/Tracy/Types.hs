@@ -78,12 +78,6 @@ data AnimFloat =
     | FloatLerp (Int, Int) (Float, Float)
     deriving (Generic, Eq, Show)
 
-class Interp a where
-    interp :: Float -> a -> a
-
-instance Interp (V3 Float) where
-    interp p v = p *^ v
-
 -- A transformation is a pair of (forward transformation matrix, inverse
 -- transformation matrix).  Note the Monoid instance for this type.
 data Transformation = Trans (M44 Float, M44 Float)
