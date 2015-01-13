@@ -81,16 +81,17 @@ reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf perLight sh tracer = do
     traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
     return $ base + (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi))
 
+nullLD :: LightDir
+nullLD = LD { _lightDir = V3 0 0 0
+            , _lightSamplePoint = V3 0 0 0
+            , _lightNormal = V3 0 0 0
+            }
+
 phongShading :: BRDF -> BRDF -> BRDF
              -> (BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
              -> Shade -> Tracer -> TraceM Color
 phongShading ambBrdf diffBrdf glossyBrdf perLight sh _ = do
     w <- view tdWorld
-
-    let nullLD = LD { _lightDir = V3 0 0 0
-                    , _lightSamplePoint = V3 0 0 0
-                    , _lightNormal = V3 0 0 0
-                    }
     ambientColor <- (w^.ambient.lightColor) nullLD sh
 
     let wo = -1 *^ sh^.shadeRay.direction
