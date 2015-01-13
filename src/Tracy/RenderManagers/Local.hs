@@ -33,7 +33,8 @@ localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
                   -- Generate sample data for square and disk samplers
                   sSamplesVec <- V.generateM numSets $ const $ squareSampler rng (cfg^.sampleRoot)
                   dSamplesVec <- V.generateM numSets $ const $ diskSampler rng (cfg^.sampleRoot)
-                  ch <- renderChunk cfg rng scene tracer sSamplesVec dSamplesVec sSamplesVec
+                  oSamplesVec <- V.generateM numSets $ const $ squareSampler rng (cfg^.sampleRoot)
+                  ch <- renderChunk cfg rng scene tracer sSamplesVec dSamplesVec oSamplesVec
                   writeChan jobResp $ BatchFinished ch
                   processRequests
               RenderFinished -> do
