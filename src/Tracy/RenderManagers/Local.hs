@@ -17,7 +17,7 @@ localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig ->
 localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
     let squareSampler = jittered
         diskSampler = builtScene^.sceneCamera.cameraData.lensSampler
-        numSets = fromEnum $ builtScene^.sceneWorld.viewPlane.hres
+        theNumSets = fromEnum $ builtScene^.sceneWorld.viewPlane.hres
         aScheme = builtScene^.sceneAccelScheme
         worldAccel = (aScheme^.schemeApply) (builtScene^.sceneWorld)
         worldAccelShadows = case cfg^.forceShadows of
@@ -31,10 +31,13 @@ localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
           case ev of
               RenderRequest -> do
                   -- Generate sample data for square and disk samplers
-                  sSamplesVec <- V.generateM numSets $ const $ squareSampler rng (cfg^.sampleRoot)
-                  dSamplesVec <- V.generateM numSets $ const $ diskSampler rng (cfg^.sampleRoot)
-                  oSamplesVec <- V.generateM numSets $ const $ squareSampler rng (cfg^.sampleRoot)
-                  ch <- renderChunk cfg rng scene tracer sSamplesVec dSamplesVec oSamplesVec
+                  sSamplesVec <- V.generateM theNumSets $ const $ squareSampler rng (cfg^.sampleRoot)
+                  dSamplesVec <- V.generateM theNumSets $ const $ diskSampler rng (cfg^.sampleRoot)
+                  oSamplesVec <- V.generateM theNumSets $ const $ squareSampler rng (cfg^.sampleRoot)
+
+                  let sampleData = SampleData theNumSets sSamplesVec dSamplesVec oSamplesVec
+
+                  ch <- renderChunk cfg rng scene tracer sampleData
                   writeChan jobResp $ BatchFinished ch
                   processRequests
               RenderFinished -> do

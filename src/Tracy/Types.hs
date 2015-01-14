@@ -191,14 +191,18 @@ data BBox =
 
 type Sampler a = GenIO -> Float -> IO [a]
 
+data SampleData =
+    SampleData { _numSets :: Int
+               , _squareSampleSets :: V.Vector [(Float, Float)]
+               , _diskSampleSets :: V.Vector [(Float, Float)]
+               , _objectSampleSets :: V.Vector [(Float, Float)]
+               }
+
 type CameraRenderer a = Camera a
-                      -> Int
                       -> RenderConfig
                       -> World
                       -> Tracer
-                      -> V.Vector [(Float, Float)]
-                      -> V.Vector [(Float, Float)]
-                      -> V.Vector [(Float, Float)]
+                      -> SampleData
                       -> (Int, [Int])
                       -> SV.Vector Color
 
@@ -390,6 +394,7 @@ makeLenses ''Tracer
 makeLenses ''TraceData
 makeLenses ''LightDir
 makeLenses ''ObjectAreaLightImpl
+makeLenses ''SampleData
 
 makeLenses ''SceneDesc
 makeLenses ''WorldDesc

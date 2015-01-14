@@ -23,24 +23,21 @@ renderChunk :: RenderConfig
             -> GenIO
             -> Scene ThinLens
             -> Tracer
-            -> V.Vector [(Float, Float)]
-            -> V.Vector [(Float, Float)]
-            -> V.Vector [(Float, Float)]
+            -> SampleData
             -> IO (SV.Vector Color)
-renderChunk cfg rng s tracer sSamples dSamples oSamples = do
+renderChunk cfg rng s tracer sampleData = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
-      numSets = V.length sSamples
       renderer = cam^.cameraRenderWorld
       chunkRows = [start..stop]
       start = 0
       stop = s^.sceneWorld.viewPlane.vres.subtracting 1.from enum
-      worker = renderer cam numSets cfg w tracer sSamples dSamples oSamples
+      worker = renderer cam cfg w tracer sampleData
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
   sampleIndices <- replicateM (stop - start + 1) $
-                     replicateM numSets $
-                       uniformR (0, numSets - 1) rng
+                     replicateM (sampleData^.numSets) $
+                       uniformR (0, sampleData^.numSets - 1) rng
 
   let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleIndices)
   r `deepseq` return ()

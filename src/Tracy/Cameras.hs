@@ -57,7 +57,7 @@ maxToOne (Colour r g b) = Colour r' g' b'
                      else (r, g, b)
 
 thinLensRender :: CameraRenderer ThinLens
-thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets objectSampleSets (theRow, sampleIndices) =
+thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
   let root = config^.sampleRoot
       newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
       maxToOneDenom = grey (float2Double $ root * root)
@@ -68,10 +68,10 @@ thinLensRender cam numSets config w tracer squareSampleSets diskSampleSets objec
       hitFuncs = w^..objects.folded.hit
       shadowHitFuncs = w^..objects.folded.shadow_hit
       getCol col =
-          let squareSampleSet = squareSampleSets V.! sampleIndex
-              diskSampleSet = diskSampleSets V.! sampleIndex
-              objectSampleSet = objectSampleSets V.! sampleIndex
-              sampleIndex = sampleIndices !! ((fromEnum col) `mod` numSets)
+          let squareSampleSet = (sampleData^.squareSampleSets) V.! sampleIndex
+              diskSampleSet = (sampleData^.diskSampleSets) V.! sampleIndex
+              objectSampleSet = (sampleData^.objectSampleSets) V.! sampleIndex
+              sampleIndex = sampleIndices !! ((fromEnum col) `mod` sampleData^.numSets)
 
           in maxToOne ((sum (results col squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
               maxToOneExposure)
