@@ -18,6 +18,7 @@ library
     AC-Colour >= 1.1.6,
     lens,
     containers,
+    array,
     linear,
     bmp >= 1.2.4.1,
     GLUT,

@@ -6,11 +6,15 @@ module Tracy.Samplers
   , toUnitDisk
   , toUnitHemisphere
   , pureRandom
+  , multiJittered
+  , multiJitteredInitial
   )
   where
 
 import Control.Applicative
 import Control.Monad
+import Data.Array.IO
+import Data.List (transpose)
 import System.Random.MWC
 import Linear
 
@@ -45,6 +49,56 @@ jittered gen root = do
                       return ((k + a) / root, (j + b) / root)
 
   return $ concat sampleArrs
+
+multiJitteredBase :: GenIO -> Float -> IO [[(Float, Float)]]
+multiJitteredBase gen root = do
+  sampleArrs <- forM (zip [0..root-1] [root-1,root-2..0]) $ \(bigRow, littleCol) ->
+                forM (zip [0..root-1] [root-1,root-2..0]) $ \(bigCol, littleRow) ->
+                    do
+                      a <- getRandomUnit gen
+                      b <- getRandomUnit gen
+                      return ( (bigRow/root) + (littleRow + a) / (root^2)
+                             , (bigCol/root) + (littleCol + b) / (root^2)
+                             )
+
+  return sampleArrs
+
+multiJitteredInitial :: Sampler (Float, Float)
+multiJitteredInitial gen root = concat <$> multiJitteredBase gen root
+
+shuffle :: GenIO -> [a] -> IO [a]
+shuffle gen xs = do
+        ar <- newArray n xs
+        forM [1..n] $ \i -> do
+            j <- uniformR (i,n) gen
+            vi <- readArray ar i
+            vj <- readArray ar j
+            writeArray ar j vi
+            return vj
+  where
+    n = length xs
+    newArray :: Int -> [a] -> IO (IOArray Int a)
+    newArray n xs =  newListArray (1,n) xs
+
+shuffleX :: GenIO -> Float -> [(Float, Float)] -> IO [(Float, Float)]
+shuffleX gen root vals = do
+    idxs <- shuffle gen [0..length vals - 1]
+    return [ (fst $ vals !! idx, vy) | (idx, (vx, vy)) <- zip idxs vals ]
+
+shuffleY :: GenIO -> Float -> [(Float, Float)] -> IO [(Float, Float)]
+shuffleY gen root vals = do
+    idxs <- shuffle gen [0..length vals - 1]
+    return [ (vx, snd $ vals !! idx) | (idx, (vx, vy)) <- zip idxs vals ]
+
+multiJittered :: Sampler (Float, Float)
+multiJittered gen root = do
+  samples <- multiJitteredBase gen root
+
+  -- For each row in the list, shuffle the value
+  yShuffled <- forM samples (shuffleY gen root)
+  xShuffled <- forM (transpose yShuffled) (shuffleX gen root)
+
+  return $ concat $ transpose xShuffled
 
 toDisk :: (Float, Float) -> (Float, Float)
 toDisk (x, y) =

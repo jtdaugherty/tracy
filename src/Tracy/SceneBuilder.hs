@@ -115,4 +115,4 @@ cameraFromDesc fn cd@(ThinLensCamera { }) =
                            (cd^.thinLensVpDist)
                            (cd^.thinLensFpDist)
                            (animFloat fn $ cd^.thinLensRadius)
-                           (toUnitDisk jittered)
+                           (toUnitDisk multiJittered)

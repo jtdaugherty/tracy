@@ -15,7 +15,7 @@ import Tracy.ChunkRender
 
 localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig -> Scene ThinLens -> GenIO -> IO ()
 localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
-    let squareSampler = jittered
+    let squareSampler = multiJittered
         diskSampler = builtScene^.sceneCamera.cameraData.lensSampler
         theNumSets = fromEnum $ builtScene^.sceneWorld.viewPlane.hres
         aScheme = builtScene^.sceneAccelScheme

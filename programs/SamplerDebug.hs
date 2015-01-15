@@ -25,6 +25,8 @@ usage = do
 samplers :: [(String, FilePath, Sampler (Float, Float), Bool)]
 samplers = [ ("regular", "regular.bmp", regular, False)
            , ("jittered", "jittered.bmp", jittered, False)
+           , ("multiJittered", "multi_jittered.bmp", multiJittered, False)
+           , ("multiJitteredInitial", "multi_jittered_initial.bmp", multiJitteredInitial, False)
            , ("pureRandom", "pure_random.bmp", pureRandom, False)
            , ("regular/disk", "regular_disk.bmp", toUnitDisk regular, True)
            , ("jittered/disk", "jittered_disk.bmp", toUnitDisk jittered, True)
