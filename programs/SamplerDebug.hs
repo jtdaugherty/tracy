@@ -30,6 +30,7 @@ samplers = [ ("regular", "regular.bmp", regular, False)
            , ("pureRandom", "pure_random.bmp", pureRandom, False)
            , ("regular/disk", "regular_disk.bmp", toUnitDisk regular, True)
            , ("jittered/disk", "jittered_disk.bmp", toUnitDisk jittered, True)
+           , ("multiJittered/disk", "multi_jittered_disk.bmp", toUnitDisk multiJittered, True)
            , ("pureRandom/disk", "pure_random_disk.bmp", toUnitDisk pureRandom, True)
            ]
 
