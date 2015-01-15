@@ -80,25 +80,24 @@ shuffle gen xs = do
     newArray :: Int -> [a] -> IO (IOArray Int a)
     newArray n xs =  newListArray (1,n) xs
 
-shuffleX :: GenIO -> Float -> [(Float, Float)] -> IO [(Float, Float)]
-shuffleX gen root vals = do
-    idxs <- shuffle gen [0..length vals - 1]
-    return [ (fst $ vals !! idx, vy) | (idx, (vx, vy)) <- zip idxs vals ]
-
 shuffleY :: GenIO -> Float -> [(Float, Float)] -> IO [(Float, Float)]
 shuffleY gen root vals = do
     idxs <- shuffle gen [0..length vals - 1]
-    return [ (vx, snd $ vals !! idx) | (idx, (vx, vy)) <- zip idxs vals ]
+    return [ (fst $ vals !! idx, vx) | (idx, (vy, vx)) <- zip idxs vals ]
+
+shuffleX :: GenIO -> Float -> [(Float, Float)] -> IO [(Float, Float)]
+shuffleX gen root vals = do
+    idxs <- shuffle gen [0..length vals - 1]
+    return [ (vy, snd $ vals !! idx) | (idx, (vy, vx)) <- zip idxs vals ]
 
 multiJittered :: Sampler (Float, Float)
 multiJittered gen root = do
   samples <- multiJitteredBase gen root
 
-  -- For each row in the list, shuffle the value
   yShuffled <- forM samples (shuffleY gen root)
-  xShuffled <- forM (transpose yShuffled) (shuffleX gen root)
+  xShuffled <- transpose <$> forM (transpose yShuffled) (shuffleX gen root)
 
-  return $ concat $ transpose xShuffled
+  return $ concat xShuffled
 
 toDisk :: (Float, Float) -> (Float, Float)
 toDisk (x, y) =
