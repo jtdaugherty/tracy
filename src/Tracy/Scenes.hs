@@ -19,7 +19,7 @@ defaultVp =
               , _pixelSize = 1.0
               , _gamma = 1.0
               , _inverseGamma = 1.0
-              , _maxDepth = 5
+              , _maxDepth = 3
               }
 
 defCamera :: CameraDesc
