@@ -253,7 +253,7 @@ loadTableScene = do
         chairRight = Mesh chairRDesc $ Phong (Colour 1 (79/255) 0) 1.0 100000
 
         a = Rectangle (V3 (-2.5) 10 0) (V3 5 0 0) (V3 0 0 5) (Emissive (Colour 1 (250/255) (151/255)) 3)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cWhite)
+        p = Rectangle (V3 (-5) 0 (-5)) (V3 0 0 20) (V3 10 0 0) (Matte cWhite)
         ls = [ Area True a $ Just 15000
              , Environment True $ Emissive cBlue 1
              ]
