@@ -52,13 +52,14 @@ jittered gen root = do
 
 multiJitteredBase :: GenIO -> Float -> IO [[(Float, Float)]]
 multiJitteredBase gen root = do
+  let r2 = root * root
   sampleArrs <- forM (zip [0..root-1] [root-1,root-2..0]) $ \(bigRow, littleCol) ->
                 forM (zip [0..root-1] [root-1,root-2..0]) $ \(bigCol, littleRow) ->
                     do
                       a <- getRandomUnit gen
                       b <- getRandomUnit gen
-                      return ( (bigRow/root) + (littleRow + a) / (root^2)
-                             , (bigCol/root) + (littleCol + b) / (root^2)
+                      return ( (bigRow/root) + (littleRow + a) / r2
+                             , (bigCol/root) + (littleCol + b) / r2
                              )
 
   return sampleArrs
