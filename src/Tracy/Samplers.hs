@@ -16,7 +16,7 @@ import Control.Monad
 import Data.Array.IO
 import Data.List (transpose)
 import System.Random.MWC
-import Linear
+import Linear hiding (transpose)
 
 import Tracy.Types
 
