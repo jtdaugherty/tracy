@@ -36,6 +36,9 @@ Features:
  * User interface:
    - Console output with status information
    - Live GUI with progressive rendering
+ * Animation:
+   - Supports linear interpolation of float values, rotational
+     interpolation of vectors for some object fields
  * Engine:
    - Multi-core rendering via Haskell's `parMap` evaluation strategy
    - Multi-host rendering (run `tracy -d tcp://slave:9000` on the master,
