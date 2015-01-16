@@ -1,40 +1,39 @@
-- Sampling implementations
-  * N-rooks
-  * Hammersley
+- General
+  * which samplers get used for which things should be configurable
+    (need a sampler description type)
+  * get rid of "batches", re-implement progressive rendering so that
+    samples from within a batch get delivered as they are finished.
+    E.g., instead of delivering 64 samples in 4 batches of r^2 = 16
+    samples per batch, deliver them one at a time at r^2 = 64 samples
 
-- Textures
-  * Procedural
-  * Image-based
+- Performance
+  * write hitGrid in C
 
-- Refraction
+- Sampling
+  * Update multi-jittered sampling to use correlation in X- and Y-axis
+    shuffling as per Pixar paper
+
+- Effects
+  * Refraction
+  * Textures
+    * Procedural
+    * Image-based
+  * Global illumination technique(s)
+  * Mesh rendering features
+    * Vertex colors & interpolation? Affect material shading &
+      properties?
+    * Consider triangulation for faces with 4 vertices
 
 - Animation
-  * type Anim a = Int -> a take frame number to generate next value
-  * building blocks for building value animations need to be implemented (lerp,
-    say)
-  * SceneDesc: instead of taking constants everywhere, take Anims everywhere
-  * Building scenes from descriptions: scene builder takes frame number,
-    generates next values while constructing scene
-  * Nothing about underlying scene implementation needs to change since all
-    value generation happens in the scene build process
-  * Command line: take frame number
-  * GUI: show only current frame for now, work out how to deal with multiple
-    frames later
-  * network: communicate current frame number (send this with the SetScene
-    command so as to be part of the initial scene data)
-  * file handler: make frame part of file number
-  * terminology: what we call "frame" now becomes "batch", sample root becomes
-    "number of samples per batch", number of frames becomes "number of sample
-    batches per frame"
-  * system still only emits one frame (batches * samples per batch), shell loop
-    can generate a set of frames for stitching via other software
+  * replace specific animation functions with a type class? (Keep the
+    concrete types, but instead of calling the type-specific animation
+    function wherever the value is used, call a generic one)
+  * animate more things, add more animated value types
+  * GUI: show only current frame for now, work out how to deal with
+    multiple frames later
 
-- Global illumination technique(s)
-
-- Load scenes from disk
+- Scene storage format
   * GUI: keystroke to trigger a reload scenes from disk and re-render
   * COLLADA (or at least a subset of it)
-
-- Mesh rendering features
-  * Vertex colors & interpolation? Affect material shading & properties?
-  * Consider triangulation for faces with 4 vertices
+  * Or XML-based format (anything would be nicer than recompiling every
+    time)
