@@ -20,8 +20,13 @@ import Linear hiding (transpose)
 
 import Tracy.Types
 
+offset :: Float
+offset = 2 ** (-33)
+
 getRandomUnit :: GenIO -> IO Float
-getRandomUnit = uniformR (0, 1)
+getRandomUnit gen = do
+    v <- uniformR (0, 1) gen
+    return $ v - offset
 
 pureRandom :: Sampler (Float, Float)
 pureRandom gen root =
