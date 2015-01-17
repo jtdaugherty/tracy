@@ -5,6 +5,7 @@ module Tracy.Objects.Instance
 
 import Control.Applicative
 import Control.Lens
+import Data.Distributive
 import Linear
 
 import Tracy.Types
@@ -75,7 +76,7 @@ instHit matrix mat o r =
     in case (o^.hit) inv_ray of
         Nothing -> Nothing
         Just (sh, tval) ->
-            Just ( sh & normal .~ (signorm $ toV3 $ matrix !* (toV4 $ sh^.normal))
+            Just ( sh & normal .~ (signorm $ toV3 $ (distribute matrix) !* (toV4 $ sh^.normal))
                       & material .~ mat
                       & localHitPoint .~ r^.origin + tval *^ r^.direction
                  , tval
