@@ -53,11 +53,13 @@ _hitSphere p rad ray =
 
         t1 = (-b - e) / denom
         t2 = (-b + e) / denom
-    in if t1 > epsilon
-       then Just t1
-       else if t2 > epsilon
-            then Just t2
-            else Nothing
+    in if disc < 0
+       then Nothing
+       else if t1 > epsilon
+            then Just t1
+            else if t2 > epsilon
+                 then Just t2
+                 else Nothing
 
 hitSphere :: V3 Float -> Float -> Material -> Ray
           -> Maybe (Shade, Float)
