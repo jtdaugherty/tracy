@@ -10,7 +10,6 @@ import Control.Monad
 import Control.Parallel.Strategies
 import Control.DeepSeq
 import Data.Colour
-import qualified Data.Vector as V
 import qualified Data.Vector.Storable as SV
 import System.Random.MWC
 

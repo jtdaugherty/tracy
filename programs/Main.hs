@@ -60,15 +60,15 @@ mkOpts = do
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
-             ("Number of CPUs to use (max: " ++ show maxc ++ ")")
+             ("Use COUNT CPUs for rendering in parallel (default, max: " ++ show maxc ++ ")")
            , Option "b" ["batches"] (ReqArg Batches "COUNT")
-             ("Number of sample batches per frame")
+             ("Render COUNT batches of samples per frame")
            , Option "g" ["gui"] (NoArg UseGUI)
-             ("Present a graphical interface during rendering")
+             ("Show the rendering in a GUI as it completes")
            , Option "d" ["distribute"] (ReqArg RenderNode "NODE")
-             ("Render the job in parallel on this node (specify once for each node)")
+             ("Render batches on NODE (specify once for each node)")
            , Option "f" ["frame"] (ReqArg FrameNum "NUM")
-             ("The animation sequence frame number to render")
+             ("Render animation sequence frame number NUM")
            ]
 
 updateConfig :: PreConfig -> Arg -> IO PreConfig

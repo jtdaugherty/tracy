@@ -16,7 +16,7 @@ import Control.Monad
 import Data.Array.IO
 import Data.List (transpose)
 import System.Random.MWC
-import Linear
+import Linear hiding (transpose)
 
 import Tracy.Types
 
@@ -52,13 +52,14 @@ jittered gen root = do
 
 multiJitteredBase :: GenIO -> Float -> IO [[(Float, Float)]]
 multiJitteredBase gen root = do
+  let r2 = root * root
   sampleArrs <- forM (zip [0..root-1] [root-1,root-2..0]) $ \(bigRow, littleCol) ->
                 forM (zip [0..root-1] [root-1,root-2..0]) $ \(bigCol, littleRow) ->
                     do
                       a <- getRandomUnit gen
                       b <- getRandomUnit gen
-                      return ( (bigRow/root) + (littleRow + a) / (root^2)
-                             , (bigCol/root) + (littleCol + b) / (root^2)
+                      return ( (bigRow/root) + (littleRow + a) / r2
+                             , (bigCol/root) + (littleCol + b) / r2
                              )
 
   return sampleArrs
@@ -68,7 +69,8 @@ multiJitteredInitial gen root = concat <$> multiJitteredBase gen root
 
 shuffle :: GenIO -> [a] -> IO [a]
 shuffle gen xs = do
-        ar <- newArray n xs
+        let n = length xs
+        ar <- mkNewArray n xs
         forM [1..n] $ \i -> do
             j <- uniformR (i,n) gen
             vi <- readArray ar i
@@ -76,26 +78,25 @@ shuffle gen xs = do
             writeArray ar j vi
             return vj
   where
-    n = length xs
-    newArray :: Int -> [a] -> IO (IOArray Int a)
-    newArray n xs =  newListArray (1,n) xs
+    mkNewArray :: Int -> [a] -> IO (IOArray Int a)
+    mkNewArray n as = newListArray (1,n) as
 
-shuffleY :: GenIO -> Float -> [(Float, Float)] -> IO [(Float, Float)]
-shuffleY gen root vals = do
+shuffleY :: GenIO -> [(Float, Float)] -> IO [(Float, Float)]
+shuffleY gen vals = do
     idxs <- shuffle gen [0..length vals - 1]
-    return [ (fst $ vals !! idx, vx) | (idx, (vy, vx)) <- zip idxs vals ]
+    return [ (fst $ vals !! idx, vx) | (idx, (_, vx)) <- zip idxs vals ]
 
-shuffleX :: GenIO -> Float -> [(Float, Float)] -> IO [(Float, Float)]
-shuffleX gen root vals = do
+shuffleX :: GenIO -> [(Float, Float)] -> IO [(Float, Float)]
+shuffleX gen vals = do
     idxs <- shuffle gen [0..length vals - 1]
-    return [ (vy, snd $ vals !! idx) | (idx, (vy, vx)) <- zip idxs vals ]
+    return [ (vy, snd $ vals !! idx) | (idx, (vy, _)) <- zip idxs vals ]
 
 multiJittered :: Sampler (Float, Float)
 multiJittered gen root = do
   samples <- multiJitteredBase gen root
 
-  yShuffled <- forM samples (shuffleY gen root)
-  xShuffled <- transpose <$> forM (transpose yShuffled) (shuffleX gen root)
+  yShuffled <- forM samples (shuffleY gen)
+  xShuffled <- transpose <$> forM (transpose yShuffled) (shuffleX gen)
 
   return $ concat xShuffled
 
