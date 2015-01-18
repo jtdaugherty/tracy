@@ -10,8 +10,10 @@
   * write hitGrid in C
 
 - Sampling
-  * Update multi-jittered sampling to use correlation in X- and Y-axis
-    shuffling as per Pixar paper
+  * Make sampler-debug more useful (e.g. take side length options,
+    optionally emit sample values)
+  * Make more samplers configurable rather than hard-coding in the
+    rendering setup process
 
 - Effects
   * Refraction
