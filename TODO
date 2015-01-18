@@ -5,6 +5,7 @@
     samples from within a batch get delivered as they are finished.
     E.g., instead of delivering 64 samples in 4 batches of r^2 = 16
     samples per batch, deliver them one at a time at r^2 = 64 samples
+  * Support rendering frame sequences on multiple hosts
 
 - Performance
   * write hitGrid in C
