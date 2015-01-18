@@ -327,7 +327,6 @@ reflScene =
     let s = Sphere (V3 0 40 0) 40 (GlossyReflective cWhite 0 50 cWhite 0.9 50)
         p = Plane (V3 0 0 0) (V3 0 1 0) (GlossyReflective cWhite 0.5 10 cWhite 1 100)
 
-        r1 = Rectangle (V3 (-100) 0 0) (V3 200 0 0) (V3 0 100 0) (Matte cWhite)
         ss = Instances s [ (translate (-90) 0 0,     Just $ GlossyReflective cBlue    0.5 10 cWhite 0.8 10)
                          , (translate 0 0 0,         Just $ GlossyReflective cWhite   0.8 50 cWhite 0.9 500)
                          , (translate 90 0 0,        Just $ GlossyReflective cYellow  1 500 cWhite 0.8 100000)
@@ -338,11 +337,10 @@ reflScene =
                          , (translate 0 0 (-90),     Just $ GlossyReflective cBlack   0.8 50 cWhite 0.9 500)
                          , (translate 90 0 (-90),    Just $ GlossyReflective cCyan    1 500 cWhite 0.9 100000)
                          ]
-        i1 = Instances r1 [ (translate 0 300 0 <> rotateX (pi/(2.5)), Just $ Emissive cWhite 3)
-                          ]
-        ls = [ Area True i1 $ Just 200000
+        r1 = Rectangle (V3 (-100) 300 0) (V3 200 0 0) (V3 0.0 30.901697 95.10565) (Emissive cWhite 3)
+        ls = [ Area True r1 $ Just 200000
              ]
-    in SceneDesc (worldOcc [Grid [ss, i1], p] ls 1) NoScheme
+    in SceneDesc (worldOcc [Grid [ss, r2], p] ls 1) NoScheme
                  (defCamera & thinLensEye .~ (V3LerpRotY (1, 200) (V3 200 250 250) (2 * pi))
                  )
                  AreaLightTracer
