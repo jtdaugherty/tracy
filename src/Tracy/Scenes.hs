@@ -107,7 +107,11 @@ objectDemo =
         ls = [ Point True 1 cWhite (V3 (-500) 500 500)
              ]
     in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] ls 3) NoScheme
-         (defCamera & thinLensEye .~ (V3LerpRotY (1, 100) (V3 0 100 300) (2 * pi))
+         (defCamera & thinLensEye .~ (V3LerpRotY (1, 200) (V3 0 100 300) (2 * pi))
+                    & thinLensVpDist .~ 590
+                    & thinLensFpDist .~ 300
+                    & thinLensRadius .~ (FloatVal 5)
+                    & thinLensLookAt .~ (V3 0 0 0)
          )
          RayCastTracer
 
