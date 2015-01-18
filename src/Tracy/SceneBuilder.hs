@@ -6,6 +6,7 @@ module Tracy.SceneBuilder
 import Control.Applicative
 import Control.Lens ((^.))
 import Data.Traversable (sequenceA)
+import Linear (V3)
 
 import Tracy.Types
 import Tracy.Cameras
@@ -105,14 +106,25 @@ tracerFromDesc RayCastTracer = Right rayCastTracer
 tracerFromDesc AreaLightTracer = Right areaLightTracer
 tracerFromDesc WhittedTracer = Right whittedTracer
 
+v2SamplerFromDesc :: V2SamplerDesc -> Either String (Sampler (Float, Float))
+v2SamplerFromDesc Regular = Right regular
+v2SamplerFromDesc PureRandom = Right pureRandom
+v2SamplerFromDesc Jittered = Right jittered
+v2SamplerFromDesc MultiJittered = Right multiJittered
+v2SamplerFromDesc CorrelatedMultiJittered = Right correlatedMultiJittered
+v2SamplerFromDesc (UnitDisk sd) = transSample toDisk <$> v2SamplerFromDesc sd
+
+v3SamplerFromDesc :: V3SamplerDesc -> Either String (Sampler (V3 Float))
+v3SamplerFromDesc (UnitHemi e sd) = transSample (toHemi e) <$> v2SamplerFromDesc sd
+
 cameraFromDesc :: Int -> CameraDesc -> Either String (Camera ThinLens)
 cameraFromDesc fn cd@(ThinLensCamera { }) =
-    Right $ thinLensCamera (animV3 fn $ cd^.thinLensEye)
-                           (cd^.thinLensLookAt)
-                           (cd^.thinLensUp)
-                           (cd^.thinLensExposure)
-                           (cd^.thinLensZ)
-                           (cd^.thinLensVpDist)
-                           (cd^.thinLensFpDist)
-                           (animFloat fn $ cd^.thinLensRadius)
-                           (toUnitDisk correlatedMultiJittered)
+    thinLensCamera (animV3 fn $ cd^.thinLensEye)
+                   (cd^.thinLensLookAt)
+                   (cd^.thinLensUp)
+                   (cd^.thinLensExposure)
+                   (cd^.thinLensZ)
+                   (cd^.thinLensVpDist)
+                   (cd^.thinLensFpDist)
+                   (animFloat fn $ cd^.thinLensRadius)
+                   <$> (v2SamplerFromDesc $ cd^.thinLensSampler)

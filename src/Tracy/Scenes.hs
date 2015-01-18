@@ -32,6 +32,7 @@ defCamera =
                    500 -- vpDist
                    300 -- fpDist
                    (FloatVal 0)
+                   (UnitDisk CorrelatedMultiJittered)
 
 world :: [ObjectDesc] -> [LightDesc] -> WorldDesc
 world os ls = WorldDesc { _wdViewPlane = defaultVp

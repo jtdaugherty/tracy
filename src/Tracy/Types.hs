@@ -225,6 +225,17 @@ data ThinLens =
              , _lensSampler :: Sampler (Float, Float)
              }
 
+data V2SamplerDesc = Regular
+                   | PureRandom
+                   | Jittered
+                   | MultiJittered
+                   | CorrelatedMultiJittered
+                   | UnitDisk V2SamplerDesc
+                     deriving (Show, Eq, Generic)
+
+data V3SamplerDesc = UnitHemi Float V2SamplerDesc
+                     deriving (Show, Eq, Generic)
+
 data TraceData =
     TD { _tdHemiSample :: V3 Float
        , _tdHemiSampleExp :: Float -> V3 Float
@@ -317,6 +328,7 @@ data CameraDesc =
                    , _thinLensVpDist :: Float
                    , _thinLensFpDist :: Float
                    , _thinLensRadius :: AnimFloat
+                   , _thinLensSampler :: V2SamplerDesc
                    }
     deriving (Eq, Show, Generic)
 
@@ -358,6 +370,8 @@ instance Storable Colour where
 
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where
+instance Serialize V2SamplerDesc where
+instance Serialize V3SamplerDesc where
 instance Serialize CameraDesc where
 instance Serialize ObjectDesc where
 instance Serialize LightDesc where
