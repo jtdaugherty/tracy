@@ -1,6 +1,4 @@
 - General
-  * which samplers get used for which things should be configurable
-    (need a sampler description type)
   * get rid of "batches", re-implement progressive rendering so that
     samples from within a batch get delivered as they are finished.
     E.g., instead of delivering 64 samples in 4 batches of r^2 = 16
@@ -9,6 +7,7 @@
 
 - Performance
   * write hitGrid in C
+  * Implement bounding volume hierarchy support
 
 - Sampling
   * Make sampler-debug more useful (e.g. take side length options,
