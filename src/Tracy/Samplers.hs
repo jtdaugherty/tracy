@@ -87,30 +87,26 @@ shuffle gen xs = do
     mkNewArray :: Int -> [a] -> IO (IOArray Int a)
     mkNewArray n as = newListArray (1,n) as
 
-shuffleY :: GenIO -> Maybe [Int] -> [(Float, Float)] -> IO ([(Float, Float)], [Int])
+shuffleY :: GenIO -> Maybe [Int] -> [(Float, Float)] -> IO [(Float, Float)]
 shuffleY gen mIdxs vals = do
     idxs <- case mIdxs of
               Nothing -> shuffle gen [0..length vals - 1]
               Just is -> return is
-    return ( [ (fst $ vals !! idx, vx) | (idx, (_, vx)) <- zip idxs vals ]
-           , idxs
-           )
+    return [ (fst $ vals !! idx, vx) | (idx, (_, vx)) <- zip idxs vals ]
 
-shuffleX :: GenIO -> Maybe [Int] -> [(Float, Float)] -> IO ([(Float, Float)], [Int])
+shuffleX :: GenIO -> Maybe [Int] -> [(Float, Float)] -> IO [(Float, Float)]
 shuffleX gen mIdxs vals = do
     idxs <- case mIdxs of
               Nothing -> shuffle gen [0..length vals - 1]
               Just is -> return is
-    return ( [ (vy, snd $ vals !! idx) | (idx, (vy, _)) <- zip idxs vals ]
-           , idxs
-           )
+    return [ (vy, snd $ vals !! idx) | (idx, (vy, _)) <- zip idxs vals ]
 
 multiJittered :: Sampler (Float, Float)
 multiJittered gen root = do
   samples <- multiJitteredBase gen root
 
-  yShuffled <- forM samples ((fst <$>) . shuffleY gen Nothing)
-  xShuffled <- transpose <$> forM (transpose yShuffled) ((fst <$>) . shuffleX gen Nothing)
+  yShuffled <- forM samples (shuffleY gen Nothing)
+  xShuffled <- transpose <$> forM (transpose yShuffled) (shuffleX gen Nothing)
 
   return $ concat xShuffled
 
@@ -118,9 +114,11 @@ correlatedMultiJittered :: Sampler (Float, Float)
 correlatedMultiJittered gen root = do
   samples <- multiJitteredBase gen root
 
-  result <- forM samples (shuffleY gen Nothing)
-  let (yShuffled, idxs) = (fst <$> result, snd <$> result)
-  xShuffled <- transpose <$> forM (zip (transpose yShuffled) idxs) (\(r, is) -> fst <$> shuffleX gen (Just is) r)
+  xIdxs <- shuffle gen [0..(round root)-1]
+  yIdxs <- shuffle gen [0..(round root)-1]
+
+  yShuffled <- forM samples (shuffleY gen (Just yIdxs))
+  xShuffled <- transpose <$> forM (transpose yShuffled) (shuffleX gen (Just xIdxs))
 
   return $ concat xShuffled
 
