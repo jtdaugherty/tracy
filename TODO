@@ -27,9 +27,6 @@
     * Consider triangulation for faces with 4 vertices
 
 - Animation
-  * replace specific animation functions with a type class? (Keep the
-    concrete types, but instead of calling the type-specific animation
-    function wherever the value is used, call a generic one)
   * animate more things, add more animated value types
   * GUI: show only current frame for now, work out how to deal with
     multiple frames later

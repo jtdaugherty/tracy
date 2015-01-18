@@ -1,14 +1,18 @@
-module Tracy.Anim
-  ( animV3
-  , animFloat
-  )
-  where
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
+module Tracy.Anim () where
 
 import Linear
 
 import Tracy.Types
 import Tracy.Util
 import Tracy.Transformations
+
+instance Anim AnimV3 (V3 Float) where
+    animate = animV3
+
+instance Anim AnimFloat Float where
+    animate = animFloat
 
 animV3 :: Int -> AnimV3 -> V3 Float
 animV3 _ (V3Val v) = v

@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures, BangPatterns #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures, BangPatterns, MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Types where
 
@@ -66,6 +66,9 @@ data JobResponse =
     | BatchFinished (SV.Vector Colour)
     | JobAck
     deriving (Generic)
+
+class Anim a b where
+    animate :: Int -> a -> b
 
 data AnimV3 =
       V3Val (V3 Float)

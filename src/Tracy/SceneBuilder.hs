@@ -30,7 +30,7 @@ import Tracy.Lights.Area
 import Tracy.Lights.Environment
 import Tracy.Lights.Point
 
-import Tracy.Anim
+import Tracy.Anim ()
 import Tracy.Tracers
 import Tracy.AccelSchemes
 import Tracy.Samplers
@@ -119,12 +119,12 @@ v3SamplerFromDesc (UnitHemi e sd) = (toUnitHemi e <$>) <$> v2SamplerFromDesc sd
 
 cameraFromDesc :: Int -> CameraDesc -> Either String (Camera ThinLens)
 cameraFromDesc fn cd@(ThinLensCamera { }) =
-    thinLensCamera (animV3 fn $ cd^.thinLensEye)
+    thinLensCamera (animate fn $ cd^.thinLensEye)
                    (cd^.thinLensLookAt)
                    (cd^.thinLensUp)
                    (cd^.thinLensExposure)
                    (cd^.thinLensZ)
                    (cd^.thinLensVpDist)
                    (cd^.thinLensFpDist)
-                   (animFloat fn $ cd^.thinLensRadius)
+                   (animate fn $ cd^.thinLensRadius)
                    <$> (v2SamplerFromDesc $ cd^.thinLensSampler)
