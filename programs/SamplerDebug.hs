@@ -47,7 +47,7 @@ main = do
 
   let sideLen = 200.0
       blank = Colour 0 0 0
-      hitColor = Colour 1 0 0
+      hitColor = Colour 0 1 0
 
   rng <- create
 
