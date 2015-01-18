@@ -4,7 +4,6 @@ module Tracy.Cameras
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Control.Monad.Reader
 import Data.Colour
@@ -15,7 +14,7 @@ import GHC.Float
 
 import Tracy.Types
 import Tracy.Util (max3)
-import Tracy.Samplers (toHemi)
+import Tracy.Samplers (toUnitHemi)
 
 camera :: V3 Float -> V3 Float -> V3 Float -> Float -> Float
        -> a
@@ -98,8 +97,8 @@ thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
               ray = Ray { _origin = o
                         , _direction = d
                         }
-              st = TD { _tdHemiSample = toHemi 1 (sx, sy)
-                      , _tdHemiSampleExp = flip toHemi (sx, sy)
+              st = TD { _tdHemiSample = toUnitHemi 1 (sx, sy)
+                      , _tdHemiSampleExp = flip toUnitHemi (sx, sy)
                       , _tdDiskSample = V2 dx dy
                       , _tdSquareSample = V2 sx sy
                       , _tdObjectSurfaceSample = V2 ox oy

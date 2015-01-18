@@ -1,15 +1,13 @@
 module Tracy.Samplers
   ( regular
   , jittered
-  , toDisk
-  , toHemi
   , toUnitDisk
-  , toUnitHemisphere
+  , toUnitHemi
   , pureRandom
   , multiJittered
   , correlatedMultiJittered
   , multiJitteredInitial
-  , transSample
+  , runSampler
   )
   where
 
@@ -26,20 +24,23 @@ import Tracy.Types
 offset :: Float
 offset = 2 ** (-33)
 
+runSampler :: Sampler a -> GenIO -> Float -> IO (V.Vector a)
+runSampler (Sampler f) gen root = f gen root
+
 getRandomUnit :: GenIO -> IO Float
 getRandomUnit gen = do
     v <- uniformR (0, 1) gen
     return $ v - offset
 
 pureRandom :: Sampler (Float, Float)
-pureRandom gen root =
+pureRandom = Sampler $ \gen root ->
     V.replicateM (fromEnum $ root * root) $ do
       a <- getRandomUnit gen
       b <- getRandomUnit gen
       return (a, b)
 
 regular :: Sampler (Float, Float)
-regular _gen root = do
+regular = Sampler $ \_ root -> do
   let slice = 1.0 / root
       ss = [ ((i+0.5)*slice, (j+0.5)*slice) |
              i <- [0..root-1]
@@ -48,7 +49,7 @@ regular _gen root = do
   return $ V.fromList ss
 
 jittered :: Sampler (Float, Float)
-jittered gen root = do
+jittered = Sampler $ \gen root -> do
   sampleArrs <- forM [0..root-1] $ \k ->
                 forM [0..root-1] $ \j ->
                     do
@@ -73,7 +74,8 @@ multiJitteredBase gen root = do
   return sampleArrs
 
 multiJitteredInitial :: Sampler (Float, Float)
-multiJitteredInitial gen root = V.fromList <$> concat <$> multiJitteredBase gen root
+multiJitteredInitial = Sampler $ \gen root -> V.fromList <$>
+                       concat <$> multiJitteredBase gen root
 
 shuffle :: GenIO -> [a] -> IO [a]
 shuffle gen xs = do
@@ -104,7 +106,7 @@ shuffleX gen mIdxs vals = do
     return [ (vy, snd $ vals !! idx) | (idx, (vy, _)) <- zip idxs vals ]
 
 multiJittered :: Sampler (Float, Float)
-multiJittered gen root = do
+multiJittered = Sampler $ \gen root -> do
   samples <- multiJitteredBase gen root
 
   yShuffled <- forM samples (shuffleY gen Nothing)
@@ -113,7 +115,7 @@ multiJittered gen root = do
   return $ V.fromList $ concat xShuffled
 
 correlatedMultiJittered :: Sampler (Float, Float)
-correlatedMultiJittered gen root = do
+correlatedMultiJittered = Sampler $ \gen root -> do
   samples <- multiJitteredBase gen root
 
   xIdxs <- shuffle gen [0..(round root)-1]
@@ -124,8 +126,8 @@ correlatedMultiJittered gen root = do
 
   return $ V.fromList $ concat xShuffled
 
-toDisk :: (Float, Float) -> (Float, Float)
-toDisk (x, y) =
+toUnitDisk :: (Float, Float) -> (Float, Float)
+toUnitDisk (x, y) =
     let spx = 2.0 * x - 1.0
         spy = 2.0 * y - 1.0
         (r, phi) = if spx > -spy
@@ -138,8 +140,8 @@ toDisk (x, y) =
         phi' = phi * (pi / 4.0)
     in (r * cos phi', r * sin phi')
 
-toHemi :: Float -> (Float, Float) -> V3 Float
-toHemi e (x, y) =
+toUnitHemi :: Float -> (Float, Float) -> V3 Float
+toUnitHemi e (x, y) =
     let pu = sin_theta * cos_phi
         pv = sin_theta * sin_phi
         pw = cos_theta
@@ -150,14 +152,3 @@ toHemi e (x, y) =
         sin_theta = sqrt $ 1.0 - cos_theta * cos_theta
 
     in V3 pu pv pw
-
-transSample :: (a -> b) -> Sampler a -> Sampler b
-transSample f s gen root = do
-  vs <- s gen root
-  return $ f <$> vs
-
-toUnitDisk :: Sampler (Float, Float) -> Sampler (Float, Float)
-toUnitDisk = transSample toDisk
-
-toUnitHemisphere :: Float -> Sampler (Float, Float) -> Sampler (V3 Float)
-toUnitHemisphere e = transSample (toHemi e)

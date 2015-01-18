@@ -31,9 +31,9 @@ localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
           case ev of
               RenderRequest -> do
                   -- Generate sample data for square and disk samplers
-                  sSamplesVec <- V.generateM theNumSets $ const $ squareSampler rng (cfg^.sampleRoot)
-                  dSamplesVec <- V.generateM theNumSets $ const $ diskSampler rng (cfg^.sampleRoot)
-                  oSamplesVec <- V.generateM theNumSets $ const $ squareSampler rng (cfg^.sampleRoot)
+                  sSamplesVec <- V.generateM theNumSets $ const $ runSampler squareSampler rng (cfg^.sampleRoot)
+                  dSamplesVec <- V.generateM theNumSets $ const $ runSampler diskSampler rng (cfg^.sampleRoot)
+                  oSamplesVec <- V.generateM theNumSets $ const $ runSampler squareSampler rng (cfg^.sampleRoot)
 
                   let sampleData = SampleData theNumSets sSamplesVec dSamplesVec oSamplesVec
 

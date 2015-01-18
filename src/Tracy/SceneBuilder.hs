@@ -112,10 +112,10 @@ v2SamplerFromDesc PureRandom = Right pureRandom
 v2SamplerFromDesc Jittered = Right jittered
 v2SamplerFromDesc MultiJittered = Right multiJittered
 v2SamplerFromDesc CorrelatedMultiJittered = Right correlatedMultiJittered
-v2SamplerFromDesc (UnitDisk sd) = transSample toDisk <$> v2SamplerFromDesc sd
+v2SamplerFromDesc (UnitDisk sd) = (toUnitDisk <$>) <$> v2SamplerFromDesc sd
 
 v3SamplerFromDesc :: V3SamplerDesc -> Either String (Sampler (V3 Float))
-v3SamplerFromDesc (UnitHemi e sd) = transSample (toHemi e) <$> v2SamplerFromDesc sd
+v3SamplerFromDesc (UnitHemi e sd) = (toUnitHemi e <$>) <$> v2SamplerFromDesc sd
 
 cameraFromDesc :: Int -> CameraDesc -> Either String (Camera ThinLens)
 cameraFromDesc fn cd@(ThinLensCamera { }) =

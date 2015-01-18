@@ -189,7 +189,14 @@ data BBox =
          }
          deriving (Show)
 
-type Sampler a = GenIO -> Float -> IO (V.Vector a)
+data Sampler a = Sampler (GenIO -> Float -> IO (V.Vector a))
+
+instance Functor Sampler where
+    fmap f (Sampler g) = Sampler g'
+      where
+      g' gen root = do
+          vs <- g gen root
+          return $ f <$> vs
 
 data SampleData =
     SampleData { _numSets :: Int
