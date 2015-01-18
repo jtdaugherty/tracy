@@ -9,6 +9,7 @@ module Tracy.Samplers
   , multiJittered
   , correlatedMultiJittered
   , multiJitteredInitial
+  , transSample
   )
   where
 
