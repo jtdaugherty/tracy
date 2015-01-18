@@ -26,11 +26,13 @@ samplers :: [(String, FilePath, Sampler (Float, Float), Bool)]
 samplers = [ ("regular", "regular.bmp", regular, False)
            , ("jittered", "jittered.bmp", jittered, False)
            , ("multiJittered", "multi_jittered.bmp", multiJittered, False)
+           , ("correlatedMultiJittered", "cor_multi_jittered.bmp", correlatedMultiJittered, False)
            , ("multiJitteredInitial", "multi_jittered_initial.bmp", multiJitteredInitial, False)
            , ("pureRandom", "pure_random.bmp", pureRandom, False)
            , ("regular/disk", "regular_disk.bmp", toUnitDisk regular, True)
            , ("jittered/disk", "jittered_disk.bmp", toUnitDisk jittered, True)
            , ("multiJittered/disk", "multi_jittered_disk.bmp", toUnitDisk multiJittered, True)
+           , ("correlatedMultiJittered/disk", "cor_multi_jittered_disk.bmp", toUnitDisk correlatedMultiJittered, True)
            , ("pureRandom/disk", "pure_random_disk.bmp", toUnitDisk pureRandom, True)
            ]
 
