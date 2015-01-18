@@ -10,6 +10,7 @@ import qualified Data.Map as M
 import Data.Colour
 import qualified Data.ByteString as B
 import System.Random.MWC
+import qualified Data.Vector as V
 
 import Tracy.Types
 import Tracy.Util
@@ -56,21 +57,21 @@ main = do
          vals <- s rng aaRoot
 
          let offsetVals = if isDisk
-                          then (mapped.both %~ ((*0.5). (+1.0))) vals
+                          then (both %~ ((*0.5). (+1.0))) <$> vals
                           else vals
 
-             newVals = (mapped.both %~ (fromEnum . (*sideLen))) offsetVals
-             m = M.fromList $ zip newVals $ repeat True
+             newVals = (both %~ (fromEnum . (*sideLen))) <$> offsetVals
+             m = M.fromList $ zip (V.toList newVals) (repeat True)
              img = [ if M.lookup (x, y) m == Just True then hitColor else blank
                      | x <- [0..(fromEnum sideLen)]
                      , y <- [0..(fromEnum sideLen)]
                    ]
 
          putStrLn "  Before conversion:"
-         forM_ vals $ \v -> putStrLn $ "    " ++ show v
+         V.forM_ vals $ \v -> putStrLn $ "    " ++ show v
 
          putStrLn "  After conversion:"
-         forM_ newVals $ \v -> putStrLn $ "    " ++ show v
+         V.forM_ newVals $ \v -> putStrLn $ "    " ++ show v
 
          writeBMP path $ packRGBA32ToBMP
                       (fromEnum $ sideLen + 1)

@@ -112,5 +112,6 @@ executable tracy-debug-samplers
     containers,
     bmp >= 1.2.4.1,
     bytestring,
+    vector,
     mwc-random,
     mtl

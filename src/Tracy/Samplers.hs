@@ -19,6 +19,7 @@ import Data.Array.IO
 import Data.List (transpose)
 import System.Random.MWC
 import Linear hiding (transpose)
+import qualified Data.Vector as V
 
 import Tracy.Types
 
@@ -32,7 +33,7 @@ getRandomUnit gen = do
 
 pureRandom :: Sampler (Float, Float)
 pureRandom gen root =
-    replicateM (fromEnum $ root * root) $ do
+    V.replicateM (fromEnum $ root * root) $ do
       a <- getRandomUnit gen
       b <- getRandomUnit gen
       return (a, b)
@@ -44,7 +45,7 @@ regular _gen root = do
              i <- [0..root-1]
            , j <- [0..root-1]
            ]
-  return ss
+  return $ V.fromList ss
 
 jittered :: Sampler (Float, Float)
 jittered gen root = do
@@ -55,7 +56,7 @@ jittered gen root = do
                       b <- getRandomUnit gen
                       return ((k + a) / root, (j + b) / root)
 
-  return $ concat sampleArrs
+  return $ V.fromList $ concat sampleArrs
 
 multiJitteredBase :: GenIO -> Float -> IO [[(Float, Float)]]
 multiJitteredBase gen root = do
@@ -72,7 +73,7 @@ multiJitteredBase gen root = do
   return sampleArrs
 
 multiJitteredInitial :: Sampler (Float, Float)
-multiJitteredInitial gen root = concat <$> multiJitteredBase gen root
+multiJitteredInitial gen root = V.fromList <$> concat <$> multiJitteredBase gen root
 
 shuffle :: GenIO -> [a] -> IO [a]
 shuffle gen xs = do
@@ -109,7 +110,7 @@ multiJittered gen root = do
   yShuffled <- forM samples (shuffleY gen Nothing)
   xShuffled <- transpose <$> forM (transpose yShuffled) (shuffleX gen Nothing)
 
-  return $ concat xShuffled
+  return $ V.fromList $ concat xShuffled
 
 correlatedMultiJittered :: Sampler (Float, Float)
 correlatedMultiJittered gen root = do
@@ -121,7 +122,7 @@ correlatedMultiJittered gen root = do
   yShuffled <- forM samples (shuffleY gen (Just yIdxs))
   xShuffled <- transpose <$> forM (transpose yShuffled) (shuffleX gen (Just xIdxs))
 
-  return $ concat xShuffled
+  return $ V.fromList $ concat xShuffled
 
 toDisk :: (Float, Float) -> (Float, Float)
 toDisk (x, y) =

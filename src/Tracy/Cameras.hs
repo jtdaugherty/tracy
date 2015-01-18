@@ -73,11 +73,12 @@ thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
               objectSampleSet = (sampleData^.objectSampleSets) V.! sampleIndex
               sampleIndex = sampleIndices !! ((fromEnum col) `mod` sampleData^.numSets)
 
-          in maxToOne ((sum (results col squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
+          in maxToOne ((V.sum (results col squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
               maxToOneExposure)
 
+      results :: Float -> V.Vector (Float, Float) -> V.Vector (Float, Float) -> V.Vector (Float, Float) -> V.Vector Color
       results col pixelSamples diskSamples objectSamples =
-          result col <$> (zip3 pixelSamples diskSamples objectSamples)
+          V.map (result col) (V.zip3 pixelSamples diskSamples objectSamples)
 
       result col ((sx, sy), (dx, dy), (ox, oy)) =
           let x = newPixSize * (col - (0.5 * vp^.hres) + sx)

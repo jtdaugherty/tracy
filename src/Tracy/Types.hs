@@ -189,13 +189,13 @@ data BBox =
          }
          deriving (Show)
 
-type Sampler a = GenIO -> Float -> IO [a]
+type Sampler a = GenIO -> Float -> IO (V.Vector a)
 
 data SampleData =
     SampleData { _numSets :: Int
-               , _squareSampleSets :: V.Vector [(Float, Float)]
-               , _diskSampleSets :: V.Vector [(Float, Float)]
-               , _objectSampleSets :: V.Vector [(Float, Float)]
+               , _squareSampleSets :: V.Vector (V.Vector (Float, Float))
+               , _diskSampleSets :: V.Vector (V.Vector (Float, Float))
+               , _objectSampleSets :: V.Vector (V.Vector (Float, Float))
                }
 
 type CameraRenderer a = Camera a
