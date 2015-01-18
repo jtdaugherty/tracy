@@ -12,6 +12,7 @@ import Control.DeepSeq
 import Data.Colour
 import qualified Data.Vector.Storable as SV
 import System.Random.MWC
+import qualified Data.Vector as V
 
 import Tracy.Types
 
@@ -35,7 +36,7 @@ renderChunk cfg rng s tracer sampleData = do
 
   -- Zip up chunkRows values with sets of randomly-generated sample set indices
   sampleIndices <- replicateM (stop - start + 1) $
-                     replicateM (sampleData^.numSets) $
+                     V.replicateM (sampleData^.numSets) $
                        uniformR (0, sampleData^.numSets - 1) rng
 
   let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleIndices)

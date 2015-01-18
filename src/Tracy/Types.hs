@@ -213,7 +213,7 @@ type CameraRenderer a = Camera a
                       -> World
                       -> Tracer
                       -> SampleData
-                      -> (Int, [Int])
+                      -> (Int, V.Vector Int)
                       -> SV.Vector Color
 
 data Camera a =

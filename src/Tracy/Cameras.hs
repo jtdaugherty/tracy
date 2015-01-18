@@ -70,7 +70,7 @@ thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
           let squareSampleSet = (sampleData^.squareSampleSets) V.! sampleIndex
               diskSampleSet = (sampleData^.diskSampleSets) V.! sampleIndex
               objectSampleSet = (sampleData^.objectSampleSets) V.! sampleIndex
-              sampleIndex = sampleIndices !! ((fromEnum col) `mod` sampleData^.numSets)
+              sampleIndex = sampleIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
 
           in maxToOne ((V.sum (results col squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
               maxToOneExposure)
