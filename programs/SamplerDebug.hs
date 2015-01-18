@@ -67,12 +67,6 @@ main = do
                      , y <- [0..(fromEnum sideLen)]
                    ]
 
-         putStrLn "  Before conversion:"
-         V.forM_ vals $ \v -> putStrLn $ "    " ++ show v
-
-         putStrLn "  After conversion:"
-         V.forM_ newVals $ \v -> putStrLn $ "    " ++ show v
-
          writeBMP path $ packRGBA32ToBMP
                       (fromEnum $ sideLen + 1)
                       (fromEnum $ sideLen + 1) $
