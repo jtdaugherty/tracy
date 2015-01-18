@@ -53,7 +53,8 @@ areaLightInShadow ld r = do
     hitFuncs <- view tdWorldShadowHitFuncs
     let ts = (ld^.lightSamplePoint - r^.origin) `dot` (r^.direction)
         results = hitFuncs <*> pure r
-    return $ (not . null) $ filter (< ts) $ catMaybes results
+    let vs = filter (< ts - 0.01) $ catMaybes results
+    return $ not $ null vs
 
 areaLightG :: LightDir -> Shade -> Float
 areaLightG ld sh =
