@@ -20,16 +20,20 @@ inst trans newMat o =
               , _hit = instHit tInverse theMaterial o
               , _shadow_hit = instShadowHit tInverse theMaterial o
               , _bounding_box = bbox
-              , _areaLightImpl = transLightImpl tForward <$> (o^.areaLightImpl)
+              , _areaLightImpl = transLightImpl trans <$> (o^.areaLightImpl)
               }
 
-transLightImpl :: M44 Float -> ObjectAreaLightImpl -> ObjectAreaLightImpl
-transLightImpl tForward ali =
+transLightImpl :: Transformation -> ObjectAreaLightImpl -> ObjectAreaLightImpl
+transLightImpl (Trans (tForward, tInverse)) ali =
     ObjectALI { _objectSurfaceSample = do
                   s <- ali^.objectSurfaceSample
                   return $ tForward !*. s
               , _objectGetNormal = \sh ->
-                  signorm $ toV3 $ tForward !* (toV4 $ (ali^.objectGetNormal) sh)
+                  -- XXX need to verify that this is supposed to be the
+                  -- transpose of the inverse rather than the forward
+                  -- transformation
+                  signorm $ toV3 $ (distribute tInverse) !*
+                    (toV4 $ (ali^.objectGetNormal) sh)
               , _objectPDF = ali^.objectPDF
               }
 
