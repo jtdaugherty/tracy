@@ -1,0 +1,19 @@
+ply
+format ascii 1.0
+comment Created by Blender 2.72 (sub 0) - www.blender.org, source file: 'table.blend'
+element vertex 4
+property float x
+property float y
+property float z
+property float nx
+property float ny
+property float nz
+element face 2
+property list uchar uint vertex_indices
+end_header
+-8.410525 9.593850 -5.388840 -0.000001 0.000000 1.000000
+-8.410525 -0.267121 -5.388840 -0.000001 0.000000 1.000000
+8.634561 -0.267122 -5.388831 -0.000001 0.000000 1.000000
+8.634561 9.593849 -5.388831 -0.000001 0.000000 1.000000
+3 0 1 2
+3 3 0 2

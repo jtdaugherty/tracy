@@ -249,6 +249,13 @@ loadTableScene = do
     chairLDesc <- loadMesh "meshes/chairLeft.ply"
     chairRDesc <- loadMesh "meshes/chairRight.ply"
 
+    planeBottomDesc <- loadMesh "meshes/plane_bottom.ply"
+    planeTopDesc <- loadMesh "meshes/plane_top.ply"
+    planeLeftDesc <- loadMesh "meshes/plane_left.ply"
+    planeRightDesc <- loadMesh "meshes/plane_right.ply"
+    planeBackDesc <- loadMesh "meshes/plane_back.ply"
+    planeFrontDesc <- loadMesh "meshes/plane_front.ply"
+
     let tableObj =  Mesh tableDesc  $ Phong (Colour (100.0/255.0) (73.0/255.0) 0) 0.5 100
         monkeyObj = Mesh monkeyDesc $ GlossyReflective cCyan 0.7 10 cWhite 0.7 10
         torusObj =  Mesh torusDesc  $ Reflective (Colour 1 0.7 0.7) 0.9 1000 cWhite 0.7
@@ -257,12 +264,23 @@ loadTableScene = do
         chairLeft = Mesh chairLDesc $ Phong (Colour 1 (79/255) 0) 1.0 100000
         chairRight = Mesh chairRDesc $ Phong (Colour 1 (79/255) 0) 1.0 100000
 
-        a = Rectangle (V3 (-2.5) 10 0) (V3 5 0 0) (V3 0 0 5) (Emissive (Colour 1 (250/255) (151/255)) 3)
-        p = Rectangle (V3 (-5) 0 (-5)) (V3 0 0 20) (V3 10 0 0) (Matte cWhite)
+        a = Rectangle (V3 (-2.5) 8 0) (V3 5 0 0) (V3 0 0 5) (Emissive cWhite 3)
+
+        p_bottom = Mesh planeBottomDesc $ Matte cWhite
+        p_top = Mesh planeTopDesc $ Matte cWhite
+        p_left = Mesh planeLeftDesc $ Matte cYellow
+        p_right = Mesh planeRightDesc $ Matte cGreen
+        p_back = Mesh planeBackDesc $ Matte cRed
+        p_front = Mesh planeFrontDesc $ Matte cBlue
+
         ls = [ Area True a $ Just 15000
              , Environment True $ Emissive cBlue 1
              ]
-    return $ SceneDesc (worldOcc [chairLeft, chairRight, tableObj, monkeyObj, torusObj, icoObj, sphereObj, a, p] ls 1) NoScheme
+    return $ SceneDesc (worldOcc [ chairLeft, chairRight, tableObj
+                                 , monkeyObj, torusObj, icoObj
+                                 , sphereObj, a
+                                 , p_bottom, p_back, p_left, p_right, p_top, p_front
+                                 ] ls 1) NoScheme
                  (defCamera & thinLensRadius .~ (FloatVal 0.0)
                             & thinLensLookAt .~ (V3 0 3 0)
                             & thinLensVpDist .~ 500
