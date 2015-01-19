@@ -267,11 +267,11 @@ loadTableScene = do
         a = Rectangle (V3 (-2.5) 8 0) (V3 5 0 0) (V3 0 0 5) (Emissive cWhite 3)
 
         p_bottom = Mesh planeBottomDesc $ Matte cWhite
-        p_top = Mesh planeTopDesc $ Matte cWhite
-        p_left = Mesh planeLeftDesc $ Matte cYellow
-        p_right = Mesh planeRightDesc $ Matte cGreen
-        p_back = Mesh planeBackDesc $ Matte cRed
-        p_front = Mesh planeFrontDesc $ Matte cBlue
+        p_top = Mesh planeTopDesc       $ Matte cWhite
+        p_left = Mesh planeLeftDesc     $ Reflective cRed 0.9 1000 cWhite 0.7
+        p_right = Mesh planeRightDesc   $ Reflective cYellow 0.9 1000 cWhite 0.7
+        p_back = Mesh planeBackDesc     $ Reflective cBlue 0.9 1000 cWhite 0.7
+        p_front = Mesh planeFrontDesc   $ Reflective cWhite 0.9 1000 cWhite 0.7
 
         ls = [ Area True a $ Just 15000
              , Environment True $ Emissive cBlue 1
