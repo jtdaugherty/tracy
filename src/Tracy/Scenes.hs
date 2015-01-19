@@ -276,7 +276,8 @@ loadDragonScene = do
     mDesc <- loadMesh "meshes/dragon.ply"
     let cObj = Mesh mDesc $ Phong cRed 0.5 50
         p = Plane (V3 0 0.002 0) (V3 0 1 0) (Matte cWhite)
-        ls = [ Point True 1 cWhite (V3 0 2 0)
+        r = Rectangle (V3 0 1 0) (V3 0.1 0 0) (V3 0 0 0.1) (Emissive cWhite 200)
+        ls = [ Area True r Nothing
              ]
     return $ SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
                  (defCamera & thinLensRadius .~ (FloatVal 0.0)
@@ -285,7 +286,7 @@ loadDragonScene = do
                             & thinLensFpDist .~ 300
                             & thinLensEye    .~ (V3Val $ V3 (-0.1) 0.1 0.2)
                             )
-                 RayCastTracer
+                 AreaLightTracer
 
 loadMonkeyScene :: IO SceneDesc
 loadMonkeyScene = do
