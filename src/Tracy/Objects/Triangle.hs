@@ -15,10 +15,13 @@ import Tracy.Constants
 tri :: V3 Float -> V3 Float -> V3 Float -> Material -> Object
 tri v0 v1 v2 mat =
     let n = signorm $ cross (v1 - v0) (v2 - v0)
-    in triWithNormals v0 v1 v2 n n n mat
+    in triWithNormals (v0, n) (v1, n) (v2, n) mat
 
-triWithNormals :: V3 Float -> V3 Float -> V3 Float -> V3 Float -> V3 Float -> V3 Float -> Material -> Object
-triWithNormals v0 v1 v2 n0 n1 n2 mat =
+triWithNormals :: (V3 Float, V3 Float)
+               -> (V3 Float, V3 Float)
+               -> (V3 Float, V3 Float)
+               -> Material -> Object
+triWithNormals (v0, n0) (v1, n1) (v2, n2) mat =
     Object { _objectMaterial = mat
            , _hit = hitTriangle v0 v1 v2 n0 n1 n2 mat
            , _shadow_hit = shadowHitTriangle v0 v1 v2

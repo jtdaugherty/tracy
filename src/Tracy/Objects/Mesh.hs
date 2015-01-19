@@ -47,15 +47,15 @@ loadMesh filename = do
                      )
 
         -- Vector (Vector Scalar) -> Vector [Int] -> [[Int]]
-        intFs = V.toList $ V.map ((toInt <$>) . V.toList) fs
+        intFs = V.toList $ V.map ((toInt <$>)) fs
 
     return $ MeshDesc vVecs intFs
 
 mesh :: MeshDesc -> Material -> Object
 mesh mDesc m =
     let tris = mkTri <$> meshDescFaces mDesc
-        mkTri is = let (v0, n0) = (meshDescVertices mDesc) V.! (is !! 0)
-                       (v1, n1) = (meshDescVertices mDesc) V.! (is !! 1)
-                       (v2, n2) = (meshDescVertices mDesc) V.! (is !! 2)
-                   in triWithNormals v0 v1 v2 n0 n1 n2 m
+        mkTri is = let v0 = (meshDescVertices mDesc) V.! (is V.! 0)
+                       v1 = (meshDescVertices mDesc) V.! (is V.! 1)
+                       v2 = (meshDescVertices mDesc) V.! (is V.! 2)
+                   in triWithNormals v0 v1 v2 m
     in grid tris

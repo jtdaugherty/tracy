@@ -297,7 +297,7 @@ data WorldDesc =
 
 data MeshDesc =
     MeshDesc { meshDescVertices :: V.Vector (V3 Float, V3 Float)
-             , meshDescFaces :: [[Int]]
+             , meshDescFaces :: [V.Vector Int]
              }
     deriving (Eq, Show)
 
