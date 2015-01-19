@@ -44,6 +44,8 @@ consoleHandler chan = do
             INumCPUs n -> outputS "Using CPUs" n
             INumBatches n -> outputS "Batches" n
             IStartTime t -> outputS "Start time" t
+            IFinishTime t -> outputS "Finish time" t
+            ITotalTime t -> outputS "Total time" t
             IStarted -> return ()
             IBatchFinished finished total t ->
                     let totalSecs = fromEnum t `div` 1000000000000
@@ -58,8 +60,6 @@ consoleHandler chan = do
                                           , "s"
                                           ]
                     in output "Finished batch" (concat [ show finished, "/", show total, ", ", totalStr , " remaining" ])
-            IFinishTime t -> outputS "Finish time" t
-            ITotalTime t -> outputS "Total time" t
             IFinished -> return ()
             IShutdown -> putStrLn "  Done."
         if ev == IShutdown then
