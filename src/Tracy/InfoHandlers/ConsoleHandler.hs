@@ -24,7 +24,17 @@ consoleHandler chan = do
         case ev of
             ISceneName n -> output "Scene name" n
             IFrameNum n -> output "Frame number" (show n)
-            ISampleRoot root -> output "Sampler root" ((show root) ++ " (" ++ (show $ root ** 2) ++ " samples per pixel)")
+            ISampleRoot root -> let sStr = if root == 1
+                                           then "sample"
+                                           else "samples"
+                                    msg = concat [ show root
+                                                 , " ("
+                                                 , show $ root ** 2
+                                                 , " "
+                                                 , sStr
+                                                 , " per pixel)"
+                                                 ]
+                                in output "Sampler root" msg
             IAccelScheme name -> output "Acceleration method" (show name)
             INumObjects n -> outputS "Objects" n
             IConnected s -> output "Connected to" s
