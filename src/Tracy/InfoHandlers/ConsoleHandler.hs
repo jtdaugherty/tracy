@@ -5,6 +5,8 @@ module Tracy.InfoHandlers.ConsoleHandler
 
 import Control.Concurrent.Chan
 import Control.Monad
+-- Import this module to get an orphan instance of Show for UTCTime :(
+import Data.Time.LocalTime ()
 
 import Tracy.Types
 
