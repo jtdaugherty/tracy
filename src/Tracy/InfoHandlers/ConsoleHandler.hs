@@ -5,8 +5,6 @@ module Tracy.InfoHandlers.ConsoleHandler
 
 import Control.Concurrent.Chan
 import Control.Monad
-import Data.Time.Format
-import System.Locale
 
 import Tracy.Types
 
@@ -33,7 +31,7 @@ consoleHandler chan = do
             IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
             INumCPUs n -> outputS "Using CPUs" n
             INumBatches n -> outputS "Batches" n
-            IStartTime t -> outputS "Start time" (formatTime defaultTimeLocale rfc822DateFormat t)
+            IStartTime t -> outputS "Start time" t
             IStarted -> return ()
             IBatchFinished finished total t ->
                     let totalSecs = fromEnum t `div` 1000000000000
