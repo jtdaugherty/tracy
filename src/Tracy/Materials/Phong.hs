@@ -18,7 +18,7 @@ phong :: BRDF -> BRDF -> BRDF -> Material
 phong ambBrdf diffBrdf glossyBrdf =
     Material { _doShading = phongShading ambBrdf diffBrdf glossyBrdf lightContrib
              , _doAreaShading = phongShading ambBrdf diffBrdf glossyBrdf areaLightContrib
-             , _doPathShading = phongPathShading ambBrdf diffBrdf
+             , _doPathShading = phongPathShading diffBrdf
              , _getLe = const cBlack
              }
 
@@ -115,21 +115,16 @@ nullLD = LD { _lightDir = V3 0 0 0
             , _lightNormal = V3 0 0 0
             }
 
-phongPathShading :: BRDF -> BRDF -> Shade -> Tracer -> TraceM Color
-phongPathShading ambBrdf diffBrdf sh tracer = do
-    w <- view tdWorld
-    ambientColor <- (w^.ambient.lightColor) nullLD sh
-
+phongPathShading :: BRDF -> Shade -> Tracer -> TraceM Color
+phongPathShading diffBrdf sh tracer = do
     let wo = -1 *^ sh^.shadeRay.direction
-        baseL = (ambBrdf^.brdfRho) sh wo * ambientColor
-
     (pdf, fr, wi) <- (diffBrdf^.brdfSampleF) sh wo
 
     let reflected_ray = Ray { _origin = sh^.localHitPoint
                             , _direction = wi
                             }
     traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
-    return $ baseL + (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
+    return $ (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
 
 phongShading :: BRDF -> BRDF -> BRDF
              -> (BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
