@@ -19,7 +19,7 @@ defaultVp =
               , _pixelSize = 1.0
               , _gamma = 1.0
               , _inverseGamma = 1.0
-              , _maxDepth = 3
+              , _maxDepth = 10
               }
 
 defCamera :: CameraDesc
@@ -264,30 +264,27 @@ loadTableScene = do
         chairLeft = Mesh chairLDesc $ Phong (Colour 1 (79/255) 0) 1.0 100000
         chairRight = Mesh chairRDesc $ Phong (Colour 1 (79/255) 0) 1.0 100000
 
-        a = Rectangle (V3 (-2.5) 8 0) (V3 5 0 0) (V3 0 0 5) (Emissive cWhite 3)
+        a = Rectangle (V3 (-2.5) 8 0) (V3 5 0 0) (V3 0 0 5) (Emissive cWhite 6)
 
         p_bottom = Mesh planeBottomDesc $ Matte cWhite
         p_top = Mesh planeTopDesc       $ Matte cWhite
-        p_left = Mesh planeLeftDesc     $ Reflective cRed 0.9 1000 cWhite 0.7
-        p_right = Mesh planeRightDesc   $ Reflective cYellow 0.9 1000 cWhite 0.7
-        p_back = Mesh planeBackDesc     $ Reflective cBlue 0.9 1000 cWhite 0.7
-        p_front = Mesh planeFrontDesc   $ Reflective cWhite 0.9 1000 cWhite 0.7
+        p_left = Mesh planeLeftDesc     $ Matte (Colour (67/255) (151/255) (224/255))
+        p_right = Mesh planeRightDesc   $ Matte (Colour (67/255) (151/255) (224/255))
+        p_back = Mesh planeBackDesc     $ Matte cWhite
+        p_front = Mesh planeFrontDesc   $ Matte cWhite
 
-        ls = [ Area True a $ Just 15000
-             , Environment True $ Emissive cBlue 1
-             ]
-    return $ SceneDesc (worldOcc [ chairLeft, chairRight, tableObj
+    return $ SceneDesc (world [ chairLeft, chairRight, tableObj
                                  , monkeyObj, torusObj, icoObj
                                  , sphereObj, a
                                  , p_bottom, p_back, p_left, p_right, p_top, p_front
-                                 ] ls 1) NoScheme
+                                 ] []) NoScheme
                  (defCamera & thinLensRadius .~ (FloatVal 0.0)
                             & thinLensLookAt .~ (V3 0 3 0)
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
                             & thinLensEye .~ (V3Val $ V3 0 5 3.5)
                             )
-                 RayCastTracer
+                 PathTracer
 
 loadDragonScene :: IO SceneDesc
 loadDragonScene = do
