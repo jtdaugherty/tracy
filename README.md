@@ -26,6 +26,7 @@ Features:
  * Object transformations
  * Global illumation:
    - Ambient occlusion (approximation technique)
+   - Path-tracing support
  * Cameras:
    - Thin-lens camera
  * Light source types:
@@ -67,3 +68,6 @@ Perfect and glossy specular reflection:
 
 Table and chairs:
 ![demo7](/demo7.png)
+
+Table and chairs, path-traced:
+![demo8](/demo8.png)
