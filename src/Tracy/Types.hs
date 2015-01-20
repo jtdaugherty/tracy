@@ -183,6 +183,7 @@ data Light =
 data Material =
     Material { _doShading :: Shade -> Tracer -> TraceM Color
              , _doAreaShading :: Shade -> Tracer -> TraceM Color
+             , _doPathShading :: Shade -> Tracer -> TraceM Color
              , _getLe :: Shade -> Color
              }
 
@@ -270,6 +271,7 @@ data TracerDesc =
     RayCastTracer
   | AreaLightTracer
   | WhittedTracer
+  | PathTracer
     deriving (Eq, Show, Generic)
 
 data SceneDesc =

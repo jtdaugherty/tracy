@@ -21,8 +21,21 @@ matte :: BRDF -> BRDF -> Material
 matte ambBrdf diffBrdf =
     Material { _doShading = matteShading ambBrdf diffBrdf lightContrib
              , _doAreaShading = matteShading ambBrdf diffBrdf areaLightContrib
+             , _doPathShading = mattePathShading diffBrdf
              , _getLe = const cBlack
              }
+
+mattePathShading :: BRDF -> Shade -> Tracer -> TraceM Color
+mattePathShading diffBrdf sh tracer = do
+    let wo = (-1) *^ (sh^.shadeRay.direction)
+    (pdf, c, wi) <- (diffBrdf^.brdfSampleF) sh wo
+    let ndotwi = (sh^.normal) `dot` wi
+        refl_ray = Ray { _direction = wi
+                       , _origin = sh^.localHitPoint
+                       }
+
+    next <- (tracer^.doTrace) refl_ray ((sh^.depth) + 1)
+    return $ c * next * (grey $ float2Double $ ndotwi / pdf)
 
 matteShading :: BRDF -> BRDF
              -> (BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)

@@ -103,6 +103,7 @@ materialFromDesc _ (Emissive c e) = Right $ emissive c e
 
 tracerFromDesc :: TracerDesc -> Either String Tracer
 tracerFromDesc RayCastTracer = Right rayCastTracer
+tracerFromDesc PathTracer = Right pathTracer
 tracerFromDesc AreaLightTracer = Right areaLightTracer
 tracerFromDesc WhittedTracer = Right whittedTracer
 

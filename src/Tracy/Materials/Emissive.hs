@@ -14,6 +14,7 @@ emissive :: Color -> Float -> Material
 emissive c ls =
     Material { _doShading = emissiveAreaShading c ls
              , _doAreaShading = emissiveAreaShading c ls
+             , _doPathShading = emissiveAreaShading c ls
              , _getLe = const $ grey (float2Double ls) * c
              }
 

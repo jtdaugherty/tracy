@@ -2,6 +2,7 @@ module Tracy.Tracers
   ( rayCastTracer
   , areaLightTracer
   , whittedTracer
+  , pathTracer
   )
   where
 
@@ -31,6 +32,24 @@ rayCastTrace ray theDepth = do
               Just (sh, _t) -> (sh^.material.doShading)
                                  (sh & shadeRay .~ ray & depth .~ theDepth)
                                  rayCastTracer
+
+pathTracer :: Tracer
+pathTracer =
+    Tracer { _doTrace = pathTrace
+           }
+
+pathTrace :: Ray -> Int -> TraceM Color
+pathTrace ray theDepth = do
+    maxD <- view (tdWorld.viewPlane.maxDepth)
+    if theDepth > maxD then
+        return cBlack else
+        do
+          v <- doHit ray
+          case v of
+              Nothing -> view $ tdWorld.bgColor
+              Just (sh, _t) -> (sh^.material.doPathShading)
+                                 (sh & shadeRay .~ ray & depth .~ theDepth)
+                                 pathTracer
 
 doHit :: Ray -> TraceM (Maybe (Shade, Float))
 doHit r = do

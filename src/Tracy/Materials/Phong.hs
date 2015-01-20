@@ -18,6 +18,7 @@ phong :: BRDF -> BRDF -> BRDF -> Material
 phong ambBrdf diffBrdf glossyBrdf =
     Material { _doShading = phongShading ambBrdf diffBrdf glossyBrdf lightContrib
              , _doAreaShading = phongShading ambBrdf diffBrdf glossyBrdf areaLightContrib
+             , _doPathShading = phongPathShading ambBrdf diffBrdf
              , _getLe = const cBlack
              }
 
@@ -35,6 +36,7 @@ reflective c ks e cr kr =
         reflBrdf = perfectSpecular cr kr
     in Material { _doShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
                 , _doAreaShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
+                , _doPathShading = reflectivePathShading diffBrdf reflBrdf
                 , _getLe = const cBlack
                 }
 
@@ -46,8 +48,21 @@ glossyReflective c ks e cr kr er =
         reflBrdf = glossySpecular cr kr er
     in Material { _doShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
                 , _doAreaShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
+                , _doPathShading = glossyReflectivePathShading glossyBrdf
                 , _getLe = const cBlack
                 }
+
+glossyReflectivePathShading :: BRDF -> Shade -> Tracer -> TraceM Color
+glossyReflectivePathShading glossyBrdf sh tracer = do
+    let wo = (-1) *^ (sh^.shadeRay.direction)
+
+    (pdf, fr, wi) <- (glossyBrdf^.brdfSampleF) sh wo
+
+    let reflected_ray = Ray { _origin = sh^.localHitPoint
+                            , _direction = wi
+                            }
+    traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
+    return $ (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
 
 glossyReflectiveShading :: BRDF -> BRDF -> BRDF -> BRDF
                         -> (BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
@@ -81,11 +96,40 @@ reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf perLight sh tracer = do
     traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
     return $ base + (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi))
 
+reflectivePathShading :: BRDF -> BRDF -> Shade -> Tracer -> TraceM Color
+reflectivePathShading diffBrdf reflBrdf sh tracer = do
+    let wo = (-1) *^ (sh^.shadeRay.direction)
+
+    (_, base, _) <- (diffBrdf^.brdfSampleF) sh wo
+    (pdf, fr, wi) <- (reflBrdf^.brdfSampleF) sh wo
+
+    let reflected_ray = Ray { _origin = sh^.localHitPoint
+                            , _direction = wi
+                            }
+    traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
+    return $ (fr * (base + traced) * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
+
 nullLD :: LightDir
 nullLD = LD { _lightDir = V3 0 0 0
             , _lightSamplePoint = V3 0 0 0
             , _lightNormal = V3 0 0 0
             }
+
+phongPathShading :: BRDF -> BRDF -> Shade -> Tracer -> TraceM Color
+phongPathShading ambBrdf diffBrdf sh tracer = do
+    w <- view tdWorld
+    ambientColor <- (w^.ambient.lightColor) nullLD sh
+
+    let wo = -1 *^ sh^.shadeRay.direction
+        baseL = (ambBrdf^.brdfRho) sh wo * ambientColor
+
+    (pdf, fr, wi) <- (diffBrdf^.brdfSampleF) sh wo
+
+    let reflected_ray = Ray { _origin = sh^.localHitPoint
+                            , _direction = wi
+                            }
+    traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
+    return $ baseL + (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
 
 phongShading :: BRDF -> BRDF -> BRDF
              -> (BRDF -> BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
