@@ -49,7 +49,7 @@ main = do
       blank = Colour 0 0 0
       hitColor = Colour 0 1 0
 
-  rng <- create
+  rng <- createSystemRandom
 
   forM_ samplers $ \(name, path, s, isDisk) -> do
          putStrLn $ "Sampling " ++ show name ++ " to " ++ path
