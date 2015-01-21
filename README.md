@@ -49,25 +49,25 @@ Features:
      sampling methods
 
 Basic shapes with ambient occlusion:
-![demo](/demo.png)
+![demo](/demos/demo.png)
 
 Thin-lens view with specular highlights and ambient occlusion:
-![demo2](/demo2.png)
+![demo2](/demos/demo2.png)
 
 Stanford Bunny mesh:
-![demo3](/demo3.png)
+![demo3](/demos/demo3.png)
 
 Dragon mesh:
-![demo4](/demo4.png)
+![demo4](/demos/demo4.png)
 
 Area lights:
-![demo5](/demo5.png)
+![demo5](/demos/demo5.png)
 
 Perfect and glossy specular reflection:
-![demo6](/demo6.png)
+![demo6](/demos/demo6.png)
 
 Table and chairs:
-![demo7](/demo7.png)
+![demo7](/demos/demo7.png)
 
 Table and chairs, path-traced:
-![demo8](/demo8.png)
+![demo8](/demos/demo8.png)
