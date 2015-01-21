@@ -257,7 +257,7 @@ loadTableScene = do
     planeFrontDesc <- loadMesh "meshes/plane_front.ply"
 
     let tableObj =  Mesh tableDesc  $ Phong (Colour (100.0/255.0) (73.0/255.0) 0) 0.5 100
-        monkeyObj = Mesh monkeyDesc $ GlossyReflective cCyan 0.7 10 cWhite 0.7 10
+        monkeyObj = Mesh monkeyDesc $ GlossyReflective cCyan 0.7 10 cWhite 0.7 100
         torusObj =  Mesh torusDesc  $ Reflective (Colour 1 0.7 0.7) 0.9 1000 (Colour 1 0.7 0.7) 0.7
         icoObj =   Mesh icoDesc     $ Matte cYellow
         sphereObj = Sphere (V3 0.10225 4.449909 (-1.18322)) 0.811 $ Reflective (grey 0.3) 0.9 1000 cWhite 0.9
