@@ -100,14 +100,14 @@ reflectivePathShading :: BRDF -> BRDF -> Shade -> Tracer -> TraceM Color
 reflectivePathShading diffBrdf reflBrdf sh tracer = do
     let wo = (-1) *^ (sh^.shadeRay.direction)
 
-    (_, base, _) <- (diffBrdf^.brdfSampleF) sh wo
     (pdf, fr, wi) <- (reflBrdf^.brdfSampleF) sh wo
+    let base = (diffBrdf^.brdfFunction) sh wo wi
 
     let reflected_ray = Ray { _origin = sh^.localHitPoint
                             , _direction = wi
                             }
     traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
-    return $ (fr * (base + traced) * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
+    return $ base + (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
 
 nullLD :: LightDir
 nullLD = LD { _lightDir = V3 0 0 0
