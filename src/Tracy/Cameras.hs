@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, BangPatterns #-}
 module Tracy.Cameras
   ( thinLensCamera
   )
@@ -36,14 +36,14 @@ thinLensCamera eye look up exposure z vpDist fpDist rad s =
 
 thinLensRayDir :: Camera ThinLens -> V2 Float -> V2 Float -> V3 Float
 thinLensRayDir cam pixelPoint lensPoint =
-    let f = cam^.cameraData^.lensFocalPlaneDistance
-        d = cam^.cameraData^.lensVPDistance
-        r = f / d
-        px = pixelPoint^._x * r
-        py = pixelPoint^._y * r
-        raydir = ((px - lensPoint^._x) *^ cam^.cameraU) +
-                 ((py - lensPoint^._y) *^ cam^.cameraV) -
-                 (f *^ cam^.cameraW)
+    let !f = cam^.cameraData^.lensFocalPlaneDistance
+        !d = cam^.cameraData^.lensVPDistance
+        !r = f / d
+        !px = pixelPoint^._x * r
+        !py = pixelPoint^._y * r
+        !raydir = ((px - lensPoint^._x) *^ cam^.cameraU) +
+                  ((py - lensPoint^._y) *^ cam^.cameraV) -
+                  (f *^ cam^.cameraW)
 
     in signorm raydir
 
@@ -57,20 +57,20 @@ maxToOne (Colour r g b) = Colour r' g' b'
 
 thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
-  let root = config^.sampleRoot
-      newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
-      maxToOneDenom = grey (float2Double $ root * root)
-      maxToOneExposure = grey (float2Double $ cam^.exposureTime)
-      vp = w^.viewPlane
-      row = toEnum theRow
-      colors = SV.generate (fromEnum $ vp^.hres) (getCol . toEnum)
-      hitFuncs = w^..objects.folded.hit
-      shadowHitFuncs = w^..objects.folded.shadow_hit
+  let !root = config^.sampleRoot
+      !newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
+      !maxToOneDenom = grey (float2Double $ root * root)
+      !maxToOneExposure = grey (float2Double $ cam^.exposureTime)
+      !vp = w^.viewPlane
+      !row = toEnum theRow
+      !colors = SV.generate (fromEnum $ vp^.hres) (getCol . toEnum)
+      !hitFuncs = w^..objects.folded.hit
+      !shadowHitFuncs = w^..objects.folded.shadow_hit
       getCol col =
-          let squareSampleSet = (sampleData^.squareSampleSets) V.! sampleIndex
-              diskSampleSet = (sampleData^.diskSampleSets) V.! sampleIndex
-              objectSampleSet = (sampleData^.objectSampleSets) V.! sampleIndex
-              sampleIndex = sampleIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
+          let !squareSampleSet = (sampleData^.squareSampleSets) V.! sampleIndex
+              !diskSampleSet = (sampleData^.diskSampleSets) V.! sampleIndex
+              !objectSampleSet = (sampleData^.objectSampleSets) V.! sampleIndex
+              !sampleIndex = sampleIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
 
           in maxToOne ((V.sum (results col squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
               maxToOneExposure)
@@ -80,21 +80,21 @@ thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
           V.map (result col) (V.zip3 pixelSamples diskSamples objectSamples)
 
       result col ((sx, sy), (dx, dy), (ox, oy)) =
-          let x = newPixSize * (col - (0.5 * vp^.hres) + sx)
-              y = newPixSize * (row - (0.5 * vp^.vres) + sy)
+          let !x = newPixSize * (col - (0.5 * vp^.hres) + sx)
+              !y = newPixSize * (row - (0.5 * vp^.vres) + sy)
 
-              lx = dx * cam^.cameraData.lensRadius
-              ly = dy * cam^.cameraData.lensRadius
+              !lx = dx * cam^.cameraData.lensRadius
+              !ly = dy * cam^.cameraData.lensRadius
 
-              o = cam^.cameraEyePoint +
+              !o = cam^.cameraEyePoint +
                   (lx *^ cam^.cameraU) +
                   (ly *^ cam^.cameraV)
 
-              d_1 = V2 x y
-              d_2 = V2 lx ly
-              d = (cam^.cameraData.lensRayDir) cam d_1 d_2
+              !d_1 = V2 x y
+              !d_2 = V2 lx ly
+              !d = (cam^.cameraData.lensRayDir) cam d_1 d_2
 
-              ray = Ray { _origin = o
+              !ray = Ray { _origin = o
                         , _direction = d
                         }
               st = TD { _tdHemiSample = toUnitHemi 1 (sx, sy)
