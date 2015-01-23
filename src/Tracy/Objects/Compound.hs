@@ -17,7 +17,7 @@ compound os m =
     Object { _objectMaterial = m -- XXX unused
            , _hit = hitCompound (os^..folded.hit)
            , _shadow_hit = shadowHitCompound (os^..folded.hit)
-           , _bounding_box = error "compound has no bounding_box"
+           , _bounding_box = Nothing
            , _areaLightImpl = Nothing
            }
 

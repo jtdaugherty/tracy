@@ -83,7 +83,7 @@ data AnimFloat =
 
 -- A transformation is a pair of (forward transformation matrix, inverse
 -- transformation matrix).  Note the Monoid instance for this type.
-data Transformation = Trans (M44 Float, M44 Float)
+data Transformation = Trans !(M44 Float, M44 Float)
     deriving (Eq, Read, Show, Generic)
 
 instance Monoid Transformation where
@@ -92,11 +92,11 @@ instance Monoid Transformation where
         Trans (f1 !*! f2, i2 !*! i1)
 
 data Shade =
-    Shade { _localHitPoint :: V3 Float
-          , _normal :: V3 Float
+    Shade { _localHitPoint :: !(V3 Float)
+          , _normal :: !(V3 Float)
           , _material :: Material
-          , _shadeRay :: Ray
-          , _depth :: Int
+          , _shadeRay :: !Ray
+          , _depth :: !Int
           }
 
 data Ray =
@@ -115,7 +115,7 @@ data Object =
     Object { _objectMaterial :: Material
            , _hit :: Ray -> Maybe (Shade, Float)
            , _shadow_hit :: Ray -> Maybe Float
-           , _bounding_box :: Maybe BBox
+           , _bounding_box :: !(Maybe BBox)
            , _areaLightImpl :: Maybe ObjectAreaLightImpl
            }
 
@@ -248,11 +248,11 @@ data V3SamplerDesc = UnitHemi Float V2SamplerDesc
                      deriving (Show, Eq, Generic)
 
 data TraceData =
-    TD { _tdHemiSample :: V3 Float
+    TD { _tdHemiSample :: !(V3 Float)
        , _tdHemiSampleExp :: Float -> V3 Float
-       , _tdDiskSample :: V2 Float
-       , _tdSquareSample :: V2 Float
-       , _tdObjectSurfaceSample :: V2 Float
+       , _tdDiskSample :: !(V2 Float)
+       , _tdSquareSample :: !(V2 Float)
+       , _tdObjectSurfaceSample :: !(V2 Float)
        , _tdWorld :: World
        , _tdWorldHitFuncs :: [Ray -> Maybe (Shade, Float)]
        , _tdWorldShadowHitFuncs :: [Ray -> Maybe Float]

@@ -67,131 +67,131 @@ setupCells b os (nx, ny, nz) = mkCompounds $ foldr addObject M.empty os
       p0 = b^.bboxP0
       p1 = b^.bboxP1
       addObject :: Object -> M.Map (Int, Int, Int) [Object] -> M.Map (Int, Int, Int) [Object]
-      addObject o m = let Just ob = o^.bounding_box
+      addObject o m = let Just !ob = o^.bounding_box
 
-                          ixmin = clamp (fromEnum $ (ob^.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (nx - 1)
-                          iymin = clamp (fromEnum $ (ob^.bboxP0._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (ny - 1)
-                          izmin = clamp (fromEnum $ (ob^.bboxP0._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (nz - 1)
+                          !ixmin = clamp (fromEnum $ (ob^.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (nx - 1)
+                          !iymin = clamp (fromEnum $ (ob^.bboxP0._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (ny - 1)
+                          !izmin = clamp (fromEnum $ (ob^.bboxP0._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (nz - 1)
 
-                          ixmax = clamp (fromEnum $ (ob^.bboxP1._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (nx - 1)
-                          iymax = clamp (fromEnum $ (ob^.bboxP1._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (ny - 1)
-                          izmax = clamp (fromEnum $ (ob^.bboxP1._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (nz - 1)
+                          !ixmax = clamp (fromEnum $ (ob^.bboxP1._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (nx - 1)
+                          !iymax = clamp (fromEnum $ (ob^.bboxP1._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (ny - 1)
+                          !izmax = clamp (fromEnum $ (ob^.bboxP1._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (nz - 1)
 
                           ins Nothing = Just [o]
-                          ins (Just xs) = Just (o : xs)
+                          ins (Just !xs) = Just (o : xs)
                           addToCell = M.alter ins
-                          is = [ (x, y, z)
-                               | z <- [izmin..izmax]
-                               , y <- [iymin..iymax]
-                               , x <- [ixmin..ixmax]
-                               ]
+                          !is = [ (x, y, z)
+                                | z <- [izmin..izmax]
+                                , y <- [iymin..iymax]
+                                , x <- [ixmin..ixmax]
+                                ]
                       in (foldr (.) id $ addToCell <$> is) m
 
       mkCompounds m = M.map (\objs -> compound objs undefined) m
 
-data St = St { txNext :: Float
-             , tyNext :: Float
-             , tzNext :: Float
-             , ix :: Int
-             , iy :: Int
-             , iz :: Int
+data St = St { txNext :: !Float
+             , tyNext :: !Float
+             , tzNext :: !Float
+             , ix :: !Int
+             , iy :: !Int
+             , iz :: !Int
              }
              deriving Show
 
 hitGrid :: (Int, Int, Int) -> BBox -> M.Map (Int, Int, Int) Object -> Ray -> Maybe (Shade, Float)
-hitGrid (nx, ny, nz) !bbox m ray =
+hitGrid (nx, ny, nz) !bbox m !ray =
     if t0 > t1
        then Nothing
-       else let st = St tx_next ty_next tz_next iix iiy iiz
+       else let !st = St tx_next ty_next tz_next iix iiy iiz
             in evalState findHit st
     where
-        ox = ray^.origin._x
-        oy = ray^.origin._y
-        oz = ray^.origin._z
-        dx = ray^.direction._x
-        dy = ray^.direction._y
-        dz = ray^.direction._z
-        x0 = bbox^.bboxP0._x
-        y0 = bbox^.bboxP0._y
-        z0 = bbox^.bboxP0._z
-        x1 = bbox^.bboxP1._x
-        y1 = bbox^.bboxP1._y
-        z1 = bbox^.bboxP1._z
+        !ox = ray^.origin._x
+        !oy = ray^.origin._y
+        !oz = ray^.origin._z
+        !dx = ray^.direction._x
+        !dy = ray^.direction._y
+        !dz = ray^.direction._z
+        !x0 = bbox^.bboxP0._x
+        !y0 = bbox^.bboxP0._y
+        !z0 = bbox^.bboxP0._z
+        !x1 = bbox^.bboxP1._x
+        !y1 = bbox^.bboxP1._y
+        !z1 = bbox^.bboxP1._z
 
-        a = 1.0 / dx
-        (tx_min, tx_max) = if a >= 0
-                           then ((x0 - ox) * a, (x1 - ox) * a)
-                           else ((x1 - ox) * a, (x0 - ox) * a)
-        b = 1.0 / dy
-        (ty_min, ty_max) = if b >= 0
-                           then ((y0 - oy) * b, (y1 - oy) * b)
-                           else ((y1 - oy) * b, (y0 - oy) * b)
-        c = 1.0 / dz
-        (tz_min, tz_max) = if c >= 0
-                           then ((z0 - oz) * c, (z1 - oz) * c)
-                           else ((z1 - oz) * c, (z0 - oz) * c)
+        !a = 1.0 / dx
+        (!tx_min, !tx_max) = if a >= 0
+                             then ((x0 - ox) * a, (x1 - ox) * a)
+                             else ((x1 - ox) * a, (x0 - ox) * a)
+        !b = 1.0 / dy
+        (!ty_min, !ty_max) = if b >= 0
+                             then ((y0 - oy) * b, (y1 - oy) * b)
+                             else ((y1 - oy) * b, (y0 - oy) * b)
+        !c = 1.0 / dz
+        (!tz_min, !tz_max) = if c >= 0
+                             then ((z0 - oz) * c, (z1 - oz) * c)
+                             else ((z1 - oz) * c, (z0 - oz) * c)
 
-        t0 = max3 tx_min ty_min tz_min
-        t1 = min3 tx_max ty_max tz_max
+        !t0 = max3 tx_min ty_min tz_min
+        !t1 = min3 tx_max ty_max tz_max
 
         iix, iiy, iiz :: Int
-        (iix, iiy, iiz) = if inside bbox (ray^.origin)
-                          then ( clamp (fromEnum $ (ox - x0) * (toEnum nx) / (x1 - x0)) 0 (nx - 1)
-                               , clamp (fromEnum $ (oy - y0) * (toEnum ny) / (y1 - y0)) 0 (ny - 1)
-                               , clamp (fromEnum $ (oz - z0) * (toEnum nz) / (z1 - z0)) 0 (nz - 1)
-                               )
-                          else let p = ray^.origin + t0 *^ ray^.direction
-                               in ( clamp (fromEnum $ (p^._x - x0) * (toEnum nx) / (x1 - x0)) 0 (nx - 1)
-                                  , clamp (fromEnum $ (p^._y - y0) * (toEnum ny) / (y1 - y0)) 0 (ny - 1)
-                                  , clamp (fromEnum $ (p^._z - z0) * (toEnum nz) / (z1 - z0)) 0 (nz - 1)
+        (!iix, !iiy, !iiz) = if inside bbox (ray^.origin)
+                             then ( clamp (fromEnum $ (ox - x0) * (toEnum nx) / (x1 - x0)) 0 (nx - 1)
+                                  , clamp (fromEnum $ (oy - y0) * (toEnum ny) / (y1 - y0)) 0 (ny - 1)
+                                  , clamp (fromEnum $ (oz - z0) * (toEnum nz) / (z1 - z0)) 0 (nz - 1)
                                   )
+                             else let !p = ray^.origin + t0 *^ ray^.direction
+                                  in ( clamp (fromEnum $ (p^._x - x0) * (toEnum nx) / (x1 - x0)) 0 (nx - 1)
+                                     , clamp (fromEnum $ (p^._y - y0) * (toEnum ny) / (y1 - y0)) 0 (ny - 1)
+                                     , clamp (fromEnum $ (p^._z - z0) * (toEnum nz) / (z1 - z0)) 0 (nz - 1)
+                                     )
 
-        dtx = (tx_max - tx_min) / toEnum nx
-        dty = (ty_max - ty_min) / toEnum ny
-        dtz = (tz_max - tz_min) / toEnum nz
+        !dtx = (tx_max - tx_min) / toEnum nx
+        !dty = (ty_max - ty_min) / toEnum ny
+        !dtz = (tz_max - tz_min) / toEnum nz
 
-        (tx_next, ix_step, ix_stop) = if dx == 0
-                                      then ( hugeValue
-                                           , -1
-                                           , -1
-                                           )
-                                      else if dx > 0
-                                           then ( tx_min + (toEnum iix + 1) * dtx
-                                                , 1
-                                                , nx
-                                                )
-                                           else ( tx_min + (toEnum $ nx - iix) * dtx
-                                                , -1
-                                                , -1
-                                                )
-        (ty_next, iy_step, iy_stop) = if dy == 0
-                                      then ( hugeValue
-                                           , -1
-                                           , -1
-                                           )
-                                      else if dy > 0
-                                           then ( ty_min + (toEnum iiy + 1) * dty
-                                                , 1
-                                                , ny
-                                                )
-                                           else ( ty_min + (toEnum $ ny - iiy) * dty
-                                                , -1
-                                                , -1
-                                                )
-        (tz_next, iz_step, iz_stop) = if dz == 0
-                                      then ( hugeValue
-                                           , -1
-                                           , -1
-                                           )
-                                      else if dz > 0
-                                           then ( tz_min + (toEnum iiz + 1) * dtz
-                                                , 1
-                                                , nz
-                                                )
-                                           else ( tz_min + (toEnum $ nz - iiz) * dtz
-                                                , -1
-                                                , -1
-                                                )
+        (!tx_next, !ix_step, !ix_stop) = if dx == 0
+                                         then ( hugeValue
+                                              , -1
+                                              , -1
+                                              )
+                                         else if dx > 0
+                                              then ( tx_min + (toEnum iix + 1) * dtx
+                                                   , 1
+                                                   , nx
+                                                   )
+                                              else ( tx_min + (toEnum $ nx - iix) * dtx
+                                                   , -1
+                                                   , -1
+                                                   )
+        (!ty_next, !iy_step, !iy_stop) = if dy == 0
+                                         then ( hugeValue
+                                              , -1
+                                              , -1
+                                              )
+                                         else if dy > 0
+                                              then ( ty_min + (toEnum iiy + 1) * dty
+                                                   , 1
+                                                   , ny
+                                                   )
+                                              else ( ty_min + (toEnum $ ny - iiy) * dty
+                                                   , -1
+                                                   , -1
+                                                   )
+        (!tz_next, !iz_step, !iz_stop) = if dz == 0
+                                         then ( hugeValue
+                                              , -1
+                                              , -1
+                                              )
+                                         else if dz > 0
+                                              then ( tz_min + (toEnum iiz + 1) * dtz
+                                                   , 1
+                                                   , nz
+                                                   )
+                                              else ( tz_min + (toEnum $ nz - iiz) * dtz
+                                                   , -1
+                                                   , -1
+                                                   )
         findHit = do txn <- gets txNext
                      tyn <- gets tyNext
                      tzn <- gets tzNext

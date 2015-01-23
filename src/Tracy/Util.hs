@@ -34,8 +34,8 @@ getColorBytes (Colour r g b) =
 
 defaultShade :: Shade
 defaultShade =
-    Shade { _localHitPoint = error "no local hit point set on Shade"
-          , _normal = error "no normal set on Shade"
+    Shade { _localHitPoint = V3 0 0 0
+          , _normal = V3 0 0 0
           , _material = error "no material set on Shade"
           , _shadeRay = Ray (V3 0 0 0) (V3 0 0 0)
           , _depth = 0
