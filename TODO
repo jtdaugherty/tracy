@@ -8,6 +8,8 @@
 - Performance
   * write hitGrid in C
   * Implement bounding volume hierarchy support
+  * See if moving things to Doubles avoid NaN errors leading to black
+    pixels
 
 - Sampling
   * Make sampler-debug more useful (e.g. take side length options,
