@@ -17,7 +17,7 @@ localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig ->
 localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
     let squareSampler = correlatedMultiJittered
         diskSampler = builtScene^.sceneCamera.cameraData.lensSampler
-        theNumSets = fromEnum $ builtScene^.sceneWorld.viewPlane.hres
+        theNumSets = fromEnum $ 10 * builtScene^.sceneWorld.viewPlane.hres
         aScheme = builtScene^.sceneAccelScheme
         worldAccel = (aScheme^.schemeApply) (builtScene^.sceneWorld)
         worldAccelShadows = case cfg^.forceShadows of

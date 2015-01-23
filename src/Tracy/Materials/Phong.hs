@@ -36,7 +36,7 @@ reflective c ks e cr kr =
         reflBrdf = perfectSpecular cr kr
     in Material { _doShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
                 , _doAreaShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
-                , _doPathShading = reflectivePathShading diffBrdf reflBrdf
+                , _doPathShading = reflectivePathShading reflBrdf
                 , _getLe = const cBlack
                 }
 
@@ -96,18 +96,17 @@ reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf perLight sh tracer = do
     traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
     return $ base + (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi))
 
-reflectivePathShading :: BRDF -> BRDF -> Shade -> Tracer -> TraceM Color
-reflectivePathShading diffBrdf reflBrdf sh tracer = do
+reflectivePathShading :: BRDF -> Shade -> Tracer -> TraceM Color
+reflectivePathShading reflBrdf sh tracer = do
     let wo = (-1) *^ (sh^.shadeRay.direction)
 
-    (_, base, _) <- (diffBrdf^.brdfSampleF) sh wo
     (pdf, fr, wi) <- (reflBrdf^.brdfSampleF) sh wo
 
     let reflected_ray = Ray { _origin = sh^.localHitPoint
                             , _direction = wi
                             }
     traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
-    return $ (fr * (base + traced) * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
+    return $ (fr * traced * (grey $ float2Double $ (sh^.normal) `dot` wi)) / (grey $ float2Double pdf)
 
 nullLD :: LightDir
 nullLD = LD { _lightDir = V3 0 0 0
