@@ -8,7 +8,6 @@
 - Performance
   * write hitGrid in C
   * Implement bounding volume hierarchy support
-  * Audit space behavior to reduce allocations and GC
 
 - Sampling
   * Make sampler-debug more useful (e.g. take side length options,
