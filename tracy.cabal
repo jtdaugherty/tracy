@@ -12,7 +12,7 @@ cabal-version:       >=1.8
 
 library
   Hs-Source-Dirs:      src
-  GHC-Options:         -O2 -Wall
+  GHC-Options:         -O2 -Wall -funbox-strict-fields
   build-depends:
     base == 4.*,
     AC-Colour >= 1.1.6,
