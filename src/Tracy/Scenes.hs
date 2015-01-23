@@ -274,10 +274,10 @@ loadTableScene = do
         p_front = Mesh planeFrontDesc   $ Matte cWhite
 
     return $ SceneDesc (world [ chairLeft, chairRight, tableObj
-                                 , monkeyObj, torusObj, icoObj
-                                 , sphereObj, a
-                                 , p_bottom, p_back, p_left, p_right, p_top, p_front
-                                 ] []) NoScheme
+                              , monkeyObj, torusObj, icoObj
+                              , sphereObj, a
+                              , p_bottom, p_back, p_left, p_right, p_top, p_front
+                              ] []) NoScheme
                  (defCamera & thinLensRadius .~ (FloatVal 0.0)
                             & thinLensLookAt .~ (V3 0 3 0)
                             & thinLensVpDist .~ 500
