@@ -6,7 +6,6 @@
   * Support rendering frame sequences on multiple hosts
 
 - Performance
-  * write hitGrid in C
   * Implement bounding volume hierarchy support
   * See if moving things to Doubles avoid NaN errors leading to black
     pixels
@@ -30,11 +29,8 @@
 
 - Animation
   * animate more things, add more animated value types
-  * GUI: show only current frame for now, work out how to deal with
-    multiple frames later
+  * GUI: support showing successive frames for multi-frame renderings?
 
 - Scene storage format
   * COLLADA? (or at least a subset of it)
-  * Or XML-based format (anything would be nicer than recompiling every
-    time)?
   * GUI: keystroke to trigger a reload scenes from disk and re-render
