@@ -36,7 +36,10 @@ library
     cereal,
     zeromq4-haskell,
     old-locale,
-    ply-loader >= 0.4
+    ply-loader >= 0.4,
+    yaml,
+    aeson,
+    aeson-pretty
 
   C-Sources:
     cbits/average.c
@@ -52,6 +55,7 @@ library
     Tracy.Main
     Tracy.Samplers
     Tracy.SceneBuilder
+    Tracy.SceneLoader
     Tracy.Scenes
     Tracy.Tracers
     Tracy.Types
@@ -79,6 +83,14 @@ library
     Tracy.Objects.Mesh
     Tracy.RenderManagers.Local
     Tracy.RenderManagers.Network
+
+executable tracy-loader
+  Hs-Source-Dirs:      programs
+  Main-is:             Loader.hs
+  GHC-Options:         -O2 -Wall -threaded
+  build-depends:
+    base == 4.*,
+    tracy
 
 executable tracy
   Hs-Source-Dirs:      programs
