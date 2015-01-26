@@ -532,8 +532,12 @@ instance Y.FromJSON MaterialDesc where
             "matte" -> Matte <$> v Y..: "color"
             "emissive" -> Emissive <$> v Y..: "color"
                                    <*> v Y..: "strength"
+            "reflective" -> Reflective <$> v Y..: "baseColor"
+                                       <*> v Y..: "ks"
+                                       <*> v Y..: "exp"
+                                       <*> v Y..: "reflectiveColor"
+                                       <*> v Y..: "reflectiveStrength"
             t' -> fail $ "Unsupported material type: " ++ (show $ T.unpack t')
-        -- Reflective Color Float Float Color Float
         -- GlossyReflective Color Float Float Color Float Float
     parseJSON _ = fail "Expected object for MaterialDesc"
 

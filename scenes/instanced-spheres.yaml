@@ -53,17 +53,14 @@ world:
               center: V3 0 0 0
               radius: 40.0
               material:
-                  type: phong
+                  type: reflective
                   ks: 0.5
                   exp: 100
-                  color: Colour 1 0 0
+                  strength: 0.3
+                  baseColor: Colour 1 0 0
+                  reflectiveColor: Colour 1 1 1
           objects:
               - transform: [ Translate -50 50 0 ]
-                material:
-                    type: phong
-                    color: Colour 0 0 1
-                    ks: 0.5
-                    exp: 50
               - transform: [ Translate -50 -50 0 ]
                 material:
                     type: phong
