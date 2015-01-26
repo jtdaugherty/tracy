@@ -101,22 +101,6 @@ tableScene =
                             )
                  PathTracer
 
-dragonScene :: SceneDesc
-dragonScene =
-    let cObj = Mesh (MeshFile "meshes/dragon.ply") $ Phong cRed 0.5 50
-        p = Plane (V3 0 0.002 0) (V3 0 1 0) (Matte cWhite)
-        r = Rectangle (V3 0 1 0) (V3 0.1 0 0) (V3 0 0 0.1) (Emissive cWhite 200)
-        ls = [ Area True r Nothing
-             ]
-    in SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
-                            & thinLensLookAt .~ (V3 0 0.15 0)
-                            & thinLensVpDist .~ 300
-                            & thinLensFpDist .~ 300
-                            & thinLensEye    .~ (V3Val $ V3 (-0.1) 0.1 0.2)
-                            )
-                 AreaLightTracer
-
 monkeyScene :: SceneDesc
 monkeyScene =
     let cObj = Mesh (MeshFile "meshes/monkey.ply") $ Phong cWhite 0.5 50
@@ -183,7 +167,6 @@ allScenes :: [(String, SceneDesc)]
 allScenes =
     [ ("bunny",           bunnyScene)
     , ("table",           tableScene)
-    , ("dragon",          dragonScene)
     , ("monkey",          monkeyScene)
     , ("rectangles",      rectangles)
     , ("area-light",      areaLightScene)

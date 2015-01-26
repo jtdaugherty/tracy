@@ -1,0 +1,62 @@
+tracer: RayCastTracer
+accel: NoScheme
+camera:
+    eye:
+        type: const
+        value: V3 -0.1 0.1 0.2
+    lookAt: V3 0 0.15 0
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 300
+    fpDist: 300
+    lensRadius:
+        type: const
+        value: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambientOccluder
+        color: Colour 1 1 1
+        strength: 1
+        minAmount: Colour 0 0 0
+
+    lights:
+        - type: area
+          shadows: true
+          object:
+              type: rect
+              corner: V3 0 1 0
+              over: V3 0.1 0 0
+              up: V3 0 0 0.1
+              material:
+                  type: emissive
+                  color: Colour 1 1 1
+                  strength: 2
+
+    objects:
+        - type: mesh
+          path: meshes/dragon.ply
+          material:
+              type: phong
+              color: Colour 1 0 0
+              ks: 0.5
+              exp: 50
+        - type: plane
+          origin: V3 0 0.002 0
+          normal: V3 0 1 0
+          material:
+              type: matte
+              color: Colour 1 1 1

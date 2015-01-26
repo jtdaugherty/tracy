@@ -531,8 +531,9 @@ instance Y.FromJSON MaterialDesc where
                              <*> v Y..: "ks"
                              <*> v Y..: "exp"
             "matte" -> Matte <$> v Y..: "color"
+            "emissive" -> Emissive <$> v Y..: "color"
+                                   <*> v Y..: "strength"
             t' -> fail $ "Unsupported material type: " ++ (show $ T.unpack t')
-        -- Emissive Color Float
         -- Reflective Color Float Float Color Float
         -- GlossyReflective Color Float Float Color Float Float
     parseJSON _ = fail "Expected object for MaterialDesc"
@@ -550,9 +551,11 @@ instance Y.FromJSON LightDesc where
             "ambientOccluder" -> AmbientOccluder <$> v Y..: "color"
                                                  <*> v Y..: "minAmount"
                                                  <*> v Y..: "strength"
+            "area" -> Area <$> v Y..: "shadows"
+                           <*> v Y..: "object"
+                           <*> v Y..:? "invArea"
             t' -> fail $ "Unsupported material type: " ++ (show $ T.unpack t')
 
-        -- Area Bool ObjectDesc (Maybe Float)
         -- Environment Bool MaterialDesc
     parseJSON _ = fail "Expected object for LightDesc"
 
@@ -581,10 +584,13 @@ instance Y.FromJSON ObjectDesc where
                                      <*> v Y..: "objects"
             "mesh" -> Mesh <$> v Y..: "path"
                            <*> v Y..: "material"
+            "rect" -> Rectangle <$> v Y..: "corner"
+                                <*> v Y..: "over"
+                                <*> v Y..: "up"
+                                <*> v Y..: "material"
             t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')
 
     -- ConcaveSphere (V3 Float) Float MaterialDesc
-    -- Rectangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
     -- Grid [ObjectDesc]
     parseJSON _ = fail "Expected object for ObjectDesc"
 
