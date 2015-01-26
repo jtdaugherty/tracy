@@ -9,8 +9,8 @@ import System.Exit
 import GHC.Conc
 
 import Tracy.Main
-import Tracy.Scenes
 import Tracy.Types
+import Tracy.SceneLoader
 
 import Tracy.DataHandlers.FileHandler
 import Tracy.DataHandlers.GUIHandler
@@ -123,9 +123,10 @@ main = do
 
   setNumCapabilities $ argCpuCount preCfg
 
-  case lookup toRender allScenes of
-    Nothing -> putStrLn $ "No such scene: " ++ toRender
-    Just sceneDesc -> do
+  result <- loadSceneDesc toRender
+  case result of
+      Left e -> putStrLn ("Could not load scene: " ++ e) >> exitFailure
+      Right sceneDesc -> do
         let renderCfg = defaultRenderConfig & sampleRoot .~ (argSampleRoot preCfg)
                                             & forceShadows .~ (argForceShadows preCfg)
 
