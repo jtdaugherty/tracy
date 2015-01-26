@@ -429,10 +429,10 @@ parseReadsT t errMsg =
         _ -> fail errMsg
 
 instance Read Colour where
-    readsPrec d r = readParen (d > app_prec) act r
+    readsPrec d r = readParen (d > app_prec) action r
       where
         app_prec = 10
-        act next = do
+        action next = do
             ("Colour", n1) <- lex next
             (d1, n2) <- readsPrec (app_prec+1) n1
             (d2, n3) <- readsPrec (app_prec+1) n2

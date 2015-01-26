@@ -5,8 +5,6 @@ module Tracy.Objects.Mesh
 
 import Control.Applicative
 import Control.Concurrent
-import Control.Lens
-import Control.Monad
 import Data.ByteString.Char8 hiding (putStrLn)
 import qualified Data.Vector as V
 import Linear
