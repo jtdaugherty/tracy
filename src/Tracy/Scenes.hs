@@ -49,95 +49,6 @@ worldOcc os ls ambStr = WorldDesc { _wdViewPlane = defaultVp
                                   , _wdWorldShadows = True
                                   }
 
-sphereGrid :: [ObjectDesc]
-sphereGrid =
-    let spheres = concat [ ss y e r | (y, e, r) <- params ]
-        params = [ (-1200, 1   , 30.0)
-                 , (-1100, 1   , 20.0)
-                 , (-1000, 1   , 10.0)
-                 , (-900 , 1   , 20.0)
-                 , (-800 , 1   , 30.0)
-                 , (-700 , 1   , 40.0)
-                 , (-600 , 2   , 30.0)
-                 , (-500 , 1   , 10.0)
-                 , (-400 , 10  , 20.0)
-                 , (-300 , 10  , 30.0)
-                 , (-200 , 20  , 15.0)
-                 , (-100 , 75  , 20.0)
-                 , (0    , 200 , 25.0)
-                 , (100  , 75  , 30.0)
-                 , (200  , 20  , 35.0)
-                 , (300  , 10  , 10.0)
-                 , (400  , 10  , 30.0)
-                 , (500  , 1   , 20.0)
-                 ]
-        pairs = [ (-1050, (Phong cBlue))
-                , (-1000, (Phong cYellow))
-                , (-950, (Phong cGreen))
-                , (-900, (Phong cWhite))
-                , (-850, (Phong cBlue))
-                , (-800, (Phong cMagenta))
-                , (-750, (Phong cCyan))
-                , (-700, (Phong cYellow))
-                , (-650, (Phong cBlue))
-                , (-600, (Phong cGreen))
-                , (-550, (Phong cWhite))
-                , (-500, (Phong cRed))
-                , (-450, (Phong cMagenta))
-                , (-400, (Phong cBlue))
-                , (-350, (Phong cGreen))
-                , (-300, (Phong cWhite))
-                , (-250, (Phong cYellow))
-                , (-200, (Phong cCyan))
-                , (-150, (Phong cRed))
-                , (-100, (Phong cMagenta))
-                , (-50, (Phong cBlue))
-                , (0, (Phong cGreen))
-                , (50, (Phong cWhite))
-                , (100, (Phong cYellow))
-                , (150, (Phong cMagenta))
-                ]
-        ss y e r = [ Sphere (V3 xz y xz) r (mkMat 0.5 e)
-                   | (xz, mkMat) <- pairs
-                   ]
-    in spheres
-
-clearSpheres :: SceneDesc
-clearSpheres =
-    let ls = [ Point False 1.5 cWhite (V3 (-500) 500 500)
-             ]
-    in SceneDesc (world sphereGrid ls & wdWorldShadows .~ False)
-                 GridScheme
-                 defCamera
-                 RayCastTracer
-
-blurrySpheres :: SceneDesc
-blurrySpheres =
-    let ls = [ Point False 1.5 cWhite (V3 (-500) 500 500)
-             ]
-    in SceneDesc (worldOcc sphereGrid ls 1 & wdWorldShadows .~ False)
-                 GridScheme
-                 (defCamera & thinLensRadius .~ (DoubleVal 10.0)
-                            & thinLensLookAt .~ (V3 0 30 0)
-                            & thinLensVpDist .~ 500
-                            & thinLensFpDist .~ 500
-                            & thinLensEye    .~ (V3Val $ V3 0 50 300))
-                 RayCastTracer
-
-cubeScene :: SceneDesc
-cubeScene =
-    let cObj = Mesh (MeshFile "meshes/cube.ply") $ Matte cWhite
-        ls = [ Point True 1 cWhite (V3 (-10) 10 10)
-             ]
-    in SceneDesc (world [cObj] ls) NoScheme
-                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
-                            & thinLensLookAt .~ (V3 0 0 0)
-                            & thinLensVpDist .~ 200
-                            & thinLensFpDist .~ 200
-                            & thinLensEye    .~ (V3Val $ V3 2.1 2.1 3)
-                            )
-                 RayCastTracer
-
 bunnyScene :: SceneDesc
 bunnyScene =
     let cObj = Mesh (MeshFile "meshes/bunny.ply") $ Phong cWhite 0.5 100
@@ -270,10 +181,7 @@ reflScene =
 
 allScenes :: [(String, SceneDesc)]
 allScenes =
-    [ ("clear-spheres",   clearSpheres)
-    , ("blurry-spheres",  blurrySpheres)
-    , ("cube",            cubeScene)
-    , ("bunny",           bunnyScene)
+    [ ("bunny",           bunnyScene)
     , ("table",           tableScene)
     , ("dragon",          dragonScene)
     , ("monkey",          monkeyScene)
