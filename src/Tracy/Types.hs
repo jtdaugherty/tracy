@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures, BangPatterns, MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures, BangPatterns, MultiParamTypeClasses, OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Types where
 
@@ -18,6 +18,8 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.Ptr
 import Data.Vector.Cereal ()
+import qualified Data.Yaml as Y
+import qualified Data.Text as T
 
 type Color = Colour
 
@@ -242,10 +244,10 @@ data V2SamplerDesc = Regular
                    | MultiJittered
                    | CorrelatedMultiJittered
                    | UnitDisk V2SamplerDesc
-                     deriving (Show, Eq, Generic)
+                     deriving (Show, Eq, Generic, Read)
 
 data V3SamplerDesc = UnitHemi Double V2SamplerDesc
-                     deriving (Show, Eq, Generic)
+                     deriving (Show, Eq, Generic, Read)
 
 data TraceData =
     TD { _tdHemiSample :: !(V3 Double)
@@ -272,7 +274,7 @@ data TracerDesc =
   | AreaLightTracer
   | WhittedTracer
   | PathTracer
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Show, Generic, Read)
 
 data SceneDesc =
     SceneDesc { _sceneDescWorld :: WorldDesc
@@ -285,7 +287,7 @@ data SceneDesc =
 data AccelSchemeDesc =
       NoScheme
     | GridScheme
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Show, Generic, Read)
 
 data WorldDesc =
     WorldDesc { _wdViewPlane :: ViewPlane
@@ -401,6 +403,143 @@ instance Serialize AnimDouble where
 instance Serialize MeshDesc where
     get = MeshDesc <$> (V.fromList <$> get) <*> get
     put (MeshDesc vs fs) = put (V.toList vs) >> put fs
+
+instance Y.FromJSON ViewPlane where
+    parseJSON (Y.Object v) =
+        ViewPlane <$> v Y..: "hres"
+                  <*> v Y..: "vres"
+                  <*> v Y..: "pixelSize"
+                  <*> v Y..: "gamma"
+                  <*> v Y..: "inverseGamma"
+                  <*> v Y..: "maxDepth"
+    parseJSON _ = fail "Expected object for ViewPlane"
+
+readsT :: (Read a) => T.Text -> [(a, String)]
+readsT t = reads (T.unpack t)
+
+parseReadsT :: (Read a) => T.Text -> String -> Y.Parser a
+parseReadsT t errMsg =
+    case readsT t of
+        [(v, "")] -> return v
+        _ -> fail errMsg
+
+instance Y.FromJSON TracerDesc where
+    parseJSON (Y.String s) = parseReadsT s "Invalid TracerDesc value"
+    parseJSON _ = fail "Expected string for TracerDesc"
+
+instance Y.FromJSON AccelSchemeDesc where
+    parseJSON (Y.String s) = parseReadsT s "Invalid AccelSchemeDesc value"
+    parseJSON _ = fail "Expected string for AccelSchemeDesc"
+
+instance Y.FromJSON (V3 Float) where
+    parseJSON (Y.String s) = parseReadsT s "Invalid V3 value"
+    parseJSON _ = fail "Expected string for V3"
+
+instance Y.FromJSON AnimV3 where
+    parseJSON (Y.Object v) =
+        V3Val <$> v Y..: "const"
+        -- V3Lerp (Int, Int) (V3 Float, V3 Float)
+        -- V3LerpRotY (Int, Int) (V3 Float) Float
+    parseJSON _ = fail "Expected object for AnimV3"
+
+instance Y.FromJSON AnimFloat where
+    parseJSON (Y.Object v) =
+        FloatVal <$> v Y..: "const"
+        -- FloatLerp (Int, Int) (Float, Float)
+    parseJSON _ = fail "Expected object for AnimV3"
+
+instance Y.FromJSON CameraDesc where
+    parseJSON (Y.Object v) =
+        ThinLensCamera <$> v Y..: "eye"
+                       <*> v Y..: "lookAt"
+                       <*> v Y..: "up"
+                       <*> v Y..: "exposure"
+                       <*> v Y..: "zoom"
+                       <*> v Y..: "vpDist"
+                       <*> v Y..: "fpDist"
+                       <*> v Y..: "lensRadius"
+                       <*> v Y..: "lensSampler"
+    parseJSON _ = fail "Expected object for CameraDesc"
+
+instance Y.FromJSON V2SamplerDesc where
+    parseJSON (Y.String s) = parseReadsT s "Invalid V2SamplerDesc value"
+    parseJSON _ = fail "Expected string for V2SamplerDesc"
+
+instance Y.FromJSON V3SamplerDesc where
+    parseJSON (Y.String s) = parseReadsT s "Invalid V3SamplerDesc value"
+    parseJSON _ = fail "Expected string for V3SamplerDesc"
+
+instance Y.FromJSON Color where
+    parseJSON (Y.String _) = pure cBlack
+    parseJSON _ = fail "Expected string for Color value"
+
+instance Y.FromJSON MaterialDesc where
+    parseJSON (Y.Object v) = do
+        t <- v Y..: "type"
+        case t of
+            "phong" -> Phong <$> v Y..: "color"
+                             <*> v Y..: "ks"
+                             <*> v Y..: "exp"
+            t' -> fail $ "Unsupported material type: " ++ (show $ T.unpack t')
+        -- Matte Color
+        -- Phong Color Float Float
+        -- Emissive Color Float
+        -- Reflective Color Float Float Color Float
+        -- GlossyReflective Color Float Float Color Float Float
+    parseJSON _ = fail "Expected object for MaterialDesc"
+
+instance Y.FromJSON LightDesc where
+    parseJSON (Y.Object v) = do
+        t <- v Y..: "type"
+        case t of
+            "point" -> Point <$> v Y..: "shadows"
+                             <*> v Y..: "strength"
+                             <*> v Y..: "color"
+                             <*> v Y..: "position"
+            "ambient" -> Ambient <$> v Y..: "strength"
+                                 <*> v Y..: "color"
+            t' -> fail $ "Unsupported material type: " ++ (show $ T.unpack t')
+
+        -- AmbientOccluder Color Color Float
+        -- Area Bool ObjectDesc (Maybe Float)
+        -- Environment Bool MaterialDesc
+    parseJSON _ = fail "Expected object for LightDesc"
+
+instance Y.FromJSON ObjectDesc where
+    parseJSON (Y.Object v) = do
+        t <- v Y..: "type"
+        case t of
+            "sphere" -> Sphere <$> v Y..: "center"
+                               <*> v Y..: "radius"
+                               <*> v Y..: "material"
+            t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')
+    -- ConcaveSphere (V3 Float) Float MaterialDesc
+    -- Rectangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
+    -- Triangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
+    -- Box (V3 Float) (V3 Float) MaterialDesc
+    -- Plane (V3 Float) (V3 Float) MaterialDesc
+    -- Mesh MeshDesc MaterialDesc
+    -- Instances ObjectDesc [(Transformation, Maybe MaterialDesc)]
+    -- Grid [ObjectDesc]
+    parseJSON _ = fail "Expected object for ObjectDesc"
+
+instance Y.FromJSON WorldDesc where
+    parseJSON (Y.Object v) =
+        WorldDesc <$> v Y..: "viewPlane"
+                  <*> v Y..: "bgColor"
+                  <*> v Y..: "objects"
+                  <*> v Y..: "lights"
+                  <*> v Y..: "ambient"
+                  <*> v Y..: "shadows"
+    parseJSON _ = fail "Expected object for WorldDesc"
+
+instance Y.FromJSON SceneDesc where
+    parseJSON (Y.Object v) =
+        SceneDesc <$> v Y..: "world"
+                  <*> v Y..: "accel"
+                  <*> v Y..: "camera"
+                  <*> v Y..: "tracer"
+    parseJSON _ = fail "Expected object for SceneDesc"
 
 makeLenses ''Shade
 makeLenses ''Ray
