@@ -3,7 +3,8 @@ accel: NoScheme
 
 camera:
     eye:
-        const: V3 0 100 300
+        type: const
+        value: V3 0 100 300
     lookAt: V3 0 0 0
     up: V3 0 1 0
     exposure: 1.0
@@ -11,7 +12,8 @@ camera:
     vpDist: 500
     fpDist: 300
     lensRadius:
-        const: 0
+        type: const
+        value: 0
     lensSampler: UnitDisk CorrelatedMultiJittered
 
 world:

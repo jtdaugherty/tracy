@@ -1,0 +1,101 @@
+tracer: RayCastTracer
+accel: NoScheme
+camera:
+    eye:
+        type: lerpRotY
+        fromFrame: 1
+        toFrame: 200
+        from: V3 0 100 300
+        angle: 6.2831853 # 2 pi
+    lookAt: V3 0 0 0
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 590
+    fpDist: 300
+    lensRadius:
+        type: const
+        value: 5
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambientOccluder
+        color: Colour 1 1 1
+        strength: 3
+        minAmount: Colour 0 0 0
+
+    lights:
+        - type: point
+          shadows: true
+          strength: 1
+          color: Colour 1 1 1
+          position: V3 -500 500 500
+
+    objects:
+        - type: tri
+          v1: V3 100 50 0
+          v2: V3 50 100 0
+          v3: V3 (-50) 75 0
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: box
+          from: V3 -150 0 -75
+          to: V3 -100 75 -25
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: box
+          from: V3 -150 0 25
+          to: V3 -100 75 75
+          material:
+              type: matte
+              color: Colour 1 1 0
+        - type: box
+          from: V3 100 0 -100
+          to: V3 150 50 -50
+          material:
+              type: matte
+              color: Colour 1 0 0
+        - type: box
+          from: V3 100 0 0
+          to: V3 150 50 50
+          material:
+              type: matte
+              color: Colour 0 1 1
+        - type: plane
+          origin: V3 0 0 0
+          normal: V3 0 1 0
+          material:
+              type: matte
+              color: Colour 0 1 0
+        - type: sphere
+          center: V3 50 5 0
+          radius: 10.0
+          material:
+              type: matte
+              color: Colour 1 0 1
+        - type: sphere
+          center: V3 -50 10 0
+          radius: 15
+          material:
+              type: matte
+              color: Colour 1 1 0
+        - type: sphere
+          center: V3 0 0 11
+          radius: 30.0
+          material:
+              type: matte
+              color: Colour 0 0 1

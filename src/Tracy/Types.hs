@@ -452,16 +452,36 @@ instance Y.FromJSON (V3 Double) where
     parseJSON _ = fail "Expected string for V3"
 
 instance Y.FromJSON AnimV3 where
-    parseJSON (Y.Object v) =
-        V3Val <$> v Y..: "const"
-        -- V3Lerp (Int, Int) (V3 Float, V3 Float)
-        -- V3LerpRotY (Int, Int) (V3 Float) Float
+    parseJSON (Y.Object v) = do
+        t <- v Y..: "type"
+        case (t::T.Text) of
+            "const" -> V3Val <$> v Y..: "value"
+            "lerp" -> V3Lerp <$> ((,) <$> (v Y..: "fromFrame")
+                                      <*> (v Y..: "toFrame")
+                                 )
+                             <*> ((,) <$> (v Y..: "from")
+                                      <*> (v Y..: "to")
+                                 )
+            "lerpRotY" -> V3LerpRotY <$> ((,) <$> (v Y..: "fromFrame")
+                                              <*> (v Y..: "toFrame")
+                                         )
+                                     <*> (v Y..: "from")
+                                     <*> (v Y..: "angle")
+            t' -> fail $ "Invalid AnimV3 type: " ++ (show $ T.unpack t')
     parseJSON _ = fail "Expected object for AnimV3"
 
 instance Y.FromJSON AnimDouble where
-    parseJSON (Y.Object v) =
-        DoubleVal <$> v Y..: "const"
-        -- FloatLerp (Int, Int) (Float, Float)
+    parseJSON (Y.Object v) = do
+        t <- v Y..: "type"
+        case (t::T.Text) of
+            "const" -> DoubleVal <$> v Y..: "value"
+            "lerp" -> DoubleLerp <$> ((,) <$> (v Y..: "fromFrame")
+                                          <*> (v Y..: "toFrame")
+                                     )
+                                 <*> ((,) <$> (v Y..: "from")
+                                          <*> (v Y..: "to")
+                                     )
+            t' -> fail $ "Invalid AnimDouble type: " ++ (show $ T.unpack t')
     parseJSON _ = fail "Expected object for AnimDouble"
 
 instance Y.FromJSON CameraDesc where
@@ -496,9 +516,8 @@ instance Y.FromJSON MaterialDesc where
             "phong" -> Phong <$> v Y..: "color"
                              <*> v Y..: "ks"
                              <*> v Y..: "exp"
+            "matte" -> Matte <$> v Y..: "color"
             t' -> fail $ "Unsupported material type: " ++ (show $ T.unpack t')
-        -- Matte Color
-        -- Phong Color Float Float
         -- Emissive Color Float
         -- Reflective Color Float Float Color Float
         -- GlossyReflective Color Float Float Color Float Float
@@ -514,9 +533,11 @@ instance Y.FromJSON LightDesc where
                              <*> v Y..: "position"
             "ambient" -> Ambient <$> v Y..: "strength"
                                  <*> v Y..: "color"
+            "ambientOccluder" -> AmbientOccluder <$> v Y..: "color"
+                                                 <*> v Y..: "minAmount"
+                                                 <*> v Y..: "strength"
             t' -> fail $ "Unsupported material type: " ++ (show $ T.unpack t')
 
-        -- AmbientOccluder Color Color Float
         -- Area Bool ObjectDesc (Maybe Float)
         -- Environment Bool MaterialDesc
     parseJSON _ = fail "Expected object for LightDesc"
@@ -528,12 +549,19 @@ instance Y.FromJSON ObjectDesc where
             "sphere" -> Sphere <$> v Y..: "center"
                                <*> v Y..: "radius"
                                <*> v Y..: "material"
+            "plane" -> Plane <$> v Y..: "origin"
+                             <*> v Y..: "normal"
+                             <*> v Y..: "material"
+            "box" -> Box <$> v Y..: "from"
+                         <*> v Y..: "to"
+                         <*> v Y..: "material"
+            "tri" -> Triangle <$> v Y..: "v1"
+                              <*> v Y..: "v2"
+                              <*> v Y..: "v3"
+                              <*> v Y..: "material"
             t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')
     -- ConcaveSphere (V3 Float) Float MaterialDesc
     -- Rectangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
-    -- Triangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
-    -- Box (V3 Float) (V3 Float) MaterialDesc
-    -- Plane (V3 Float) (V3 Float) MaterialDesc
     -- Mesh MeshDesc MaterialDesc
     -- Instances ObjectDesc [(Transformation, Maybe MaterialDesc)]
     -- Grid [ObjectDesc]

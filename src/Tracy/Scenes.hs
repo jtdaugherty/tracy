@@ -86,41 +86,6 @@ instancedSpheresGrid =
                     )
          RayCastTracer
 
-objectDemo :: SceneDesc
-objectDemo =
-    let s = Sphere (V3 0 0 11) 30.0 (Matte cBlue)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
-        s2 = Sphere (V3 50 5 0) 10.0 (Matte cMagenta)
-        s3 = Sphere (V3 (-50) 10 0) 15.0 (Matte cYellow)
-        b1 = Box (V3 100 0 0) (V3 150 50 50) (Matte cCyan)
-        b2 = Box (V3 100 0 (-100)) (V3 150 50 (-50)) (Matte cRed)
-        b3 = Box (V3 (-150) 0 25) (V3 (-100) 75 75) (Matte cYellow)
-        b4 = Box (V3 (-150) 0 (-75)) (V3 (-100) 75 (-25)) (Matte cWhite)
-        t1 = Triangle (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (Matte cWhite)
-        ls = [ Point True 1 cWhite (V3 (-500) 500 500)
-             ]
-    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] ls 3) NoScheme
-         (defCamera & thinLensEye .~ (V3LerpRotY (1, 200) (V3 0 100 300) (2 * pi))
-                    & thinLensVpDist .~ 590
-                    & thinLensFpDist .~ 300
-                    & thinLensRadius .~ (DoubleVal 5)
-                    & thinLensLookAt .~ (V3 0 0 0)
-         )
-         RayCastTracer
-
-objectDemoNoPoint :: SceneDesc
-objectDemoNoPoint =
-    let s = Sphere (V3 0 0 11) 30.0 (Matte cBlue)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (Matte cGreen)
-        s2 = Sphere (V3 50 5 0) 10.0 (Matte cMagenta)
-        s3 = Sphere (V3 (-50) 10 0) 15.0 (Matte cYellow)
-        b1 = Box (V3 100 0 0) (V3 150 50 50) (Matte cCyan)
-        b2 = Box (V3 100 0 (-100)) (V3 150 50 (-50)) (Matte cRed)
-        b3 = Box (V3 (-150) 0 25) (V3 (-100) 75 75) (Matte cYellow)
-        b4 = Box (V3 (-150) 0 (-75)) (V3 (-100) 75 (-25)) (Matte cWhite)
-        t1 = Triangle (V3 100 50 0) (V3 50 100 0) (V3 (-50) 75 0) (Matte cWhite)
-    in SceneDesc (worldOcc [t1, s, p, s2, s3, b1, b2, b3, b4] [] 4) NoScheme defCamera RayCastTracer
-
 sphereGrid :: [ObjectDesc]
 sphereGrid =
     let spheres = concat [ ss y e r | (y, e, r) <- params ]
@@ -344,8 +309,6 @@ allScenes :: [(String, SceneDesc)]
 allScenes =
     [ ("instanced-spheres", instancedSpheres)
     , ("instanced-spheres-grid", instancedSpheresGrid)
-    , ("object-demo",     objectDemo)
-    , ("object-demo2",    objectDemoNoPoint)
     , ("clear-spheres",   clearSpheres)
     , ("blurry-spheres",  blurrySpheres)
     , ("cube",            cubeScene)
