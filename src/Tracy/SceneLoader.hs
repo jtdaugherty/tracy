@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Tracy.SceneLoader
-  ( loadScene
+  ( loadSceneDesc
   )
   where
 
@@ -8,9 +8,9 @@ import qualified Data.Yaml as Y
 
 import Tracy.Types
 
-loadScene :: FilePath -> IO ()
-loadScene path = do
+loadSceneDesc :: FilePath -> IO (Either String SceneDesc)
+loadSceneDesc path = do
     result <- Y.decodeFileEither path
     case result of
-        Left e -> print e
-        Right (v::SceneDesc) -> print v
+        Left e -> return $ Left $ show e
+        Right (v::SceneDesc) -> return $ Right v

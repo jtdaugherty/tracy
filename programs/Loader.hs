@@ -7,4 +7,4 @@ import Tracy.SceneLoader
 main :: IO ()
 main = do
     [path] <- getArgs
-    loadScene path
+    print =<< loadSceneDesc path
