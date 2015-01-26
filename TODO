@@ -27,8 +27,7 @@
 
 - Animation
   * animate more things, add more animated value types
-  * GUI: support showing successive frames for multi-frame renderings?
 
-- Scene storage format
-  * COLLADA? (or at least a subset of it)
-  * GUI: keystroke to trigger a reload scenes from disk and re-render
+- GUI
+  * Keystroke to trigger a reload scenes from disk and re-render
+  * Support showing successive frames for multi-frame renderings?
