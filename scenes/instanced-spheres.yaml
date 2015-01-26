@@ -1,0 +1,84 @@
+tracer: RayCastTracer
+accel: NoScheme
+camera:
+    eye:
+        type: const
+        value: V3 0 0 200
+    lookAt: V3 0 0 0
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 590
+    fpDist: 300
+    lensRadius:
+        type: const
+        value: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambientOccluder
+        color: Colour 1 1 1
+        strength: 1
+        minAmount: Colour 0 0 0
+
+    lights:
+        - type: point
+          shadows: false
+          strength: 1
+          color: Colour 1 1 1
+          position: V3 -500 500 500
+
+    objects:
+        - type: plane
+          origin: V3 0 -100 0
+          normal: V3 0 1 0
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: instances
+          master:
+              type: sphere
+              center: V3 0 0 0
+              radius: 40.0
+              material:
+                  type: phong
+                  ks: 0.5
+                  exp: 100
+                  color: Colour 1 0 0
+          objects:
+              - transform: [ Translate -50 50 0 ]
+                material:
+                    type: phong
+                    color: Colour 0 0 1
+                    ks: 0.5
+                    exp: 50
+              - transform: [ Translate -50 -50 0 ]
+                material:
+                    type: phong
+                    color: Colour 1 1 1
+                    ks: 0.5
+                    exp: 50
+              - transform: [ Translate 50 50 0 ]
+                material:
+                    type: phong
+                    color: Colour 1 0 0
+                    ks: 0.5
+                    exp: 50
+              - transform: [ Translate 50 -50 0 ]
+                material:
+                    type: phong
+                    color: Colour 0 1 0
+                    ks: 0.5
+                    exp: 50

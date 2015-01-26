@@ -88,6 +88,15 @@ data AnimDouble =
 data Transformation = Trans !(M44 Double, M44 Double)
     deriving (Eq, Read, Show, Generic)
 
+data TransformationDesc =
+    Translate Double Double Double
+    | Scale Double Double Double
+    | ScaleUni Double
+    | RotateX Double
+    | RotateY Double
+    | RotateZ Double
+    deriving (Eq, Show, Read, Generic)
+
 instance Monoid Transformation where
     mempty = Trans (eye4, eye4)
     (Trans (f1, i1)) `mappend` (Trans (f2, i2)) =
@@ -313,9 +322,12 @@ data ObjectDesc =
     | Box (V3 Double) (V3 Double) MaterialDesc
     | Plane (V3 Double) (V3 Double) MaterialDesc
     | Mesh MeshSource MaterialDesc
-    | Instances ObjectDesc [(Transformation, Maybe MaterialDesc)]
+    | Instances ObjectDesc [InstanceDesc]
     | Grid [ObjectDesc]
     deriving (Eq, Show, Generic)
+
+data InstanceDesc = ID [TransformationDesc] (Maybe MaterialDesc)
+                  deriving (Eq, Show, Generic)
 
 data MeshSource =
     MeshFile FilePath
@@ -395,6 +407,8 @@ instance Serialize ObjectDesc where
 instance Serialize LightDesc where
 instance Serialize MaterialDesc where
 instance Serialize AccelSchemeDesc where
+instance Serialize TransformationDesc where
+instance Serialize InstanceDesc where
 instance Serialize TracerDesc where
 instance Serialize ViewPlane where
 instance Serialize JobRequest where
@@ -542,6 +556,10 @@ instance Y.FromJSON LightDesc where
         -- Environment Bool MaterialDesc
     parseJSON _ = fail "Expected object for LightDesc"
 
+instance Y.FromJSON TransformationDesc where
+    parseJSON (Y.String s) = parseReadsT s "Invalid transformation value"
+    parseJSON _ = fail "Expected string for Transformation"
+
 instance Y.FromJSON ObjectDesc where
     parseJSON (Y.Object v) = do
         t <- v Y..: "type"
@@ -559,13 +577,21 @@ instance Y.FromJSON ObjectDesc where
                               <*> v Y..: "v2"
                               <*> v Y..: "v3"
                               <*> v Y..: "material"
+            "instances" -> Instances <$> v Y..: "master"
+                                     <*> v Y..: "objects"
             t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')
+
     -- ConcaveSphere (V3 Float) Float MaterialDesc
     -- Rectangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
     -- Mesh MeshDesc MaterialDesc
-    -- Instances ObjectDesc [(Transformation, Maybe MaterialDesc)]
     -- Grid [ObjectDesc]
     parseJSON _ = fail "Expected object for ObjectDesc"
+
+instance Y.FromJSON InstanceDesc where
+    parseJSON (Y.Object v) =
+        ID <$> v Y..: "transform"
+           <*> v Y..: "material"
+    parseJSON _ = fail "Expected object for InstanceDesc"
 
 instance Y.FromJSON WorldDesc where
     parseJSON (Y.Object v) =

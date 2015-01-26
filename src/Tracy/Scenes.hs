@@ -5,11 +5,9 @@ module Tracy.Scenes
 
 import Control.Lens
 import Data.Colour
-import Data.Monoid
 import Linear
 
 import Tracy.Types
-import Tracy.Transformations
 
 defaultVp :: ViewPlane
 defaultVp =
@@ -50,41 +48,6 @@ worldOcc os ls ambStr = WorldDesc { _wdViewPlane = defaultVp
                                   , _wdAmbient = AmbientOccluder cWhite cBlack ambStr
                                   , _wdWorldShadows = True
                                   }
-
-instancedSpheres :: SceneDesc
-instancedSpheres =
-    let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 0.5 100)
-        p = Plane (V3 0 (-100) 0) (V3 0 1 0) (Matte cWhite)
-        ls = [ Point False 1 cWhite (V3 (-500) 500 500)
-             ]
-        is = Instances s [ (translate (-50) 50 0     , Just $ Phong cBlue  0.5 50)
-                         , (translate (-50) (-50) 0  , Just $ Phong cWhite 0.5 50)
-                         , (translate 50 50 0        , Just $ Phong cRed   0.5 50)
-                         , (translate 50 (-50) 0     , Just $ Phong cGreen 0.5 50)
-                         ]
-    in SceneDesc (worldOcc [is, p] ls 1) NoScheme
-         (defCamera & thinLensLookAt .~ (V3 0 0 0)
-                    & thinLensEye    .~ (V3Val $ V3 0 0 200)
-                    )
-         RayCastTracer
-
-instancedSpheresGrid :: SceneDesc
-instancedSpheresGrid =
-    let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 0.5 100)
-        p = Plane (V3 0 (-100) 0) (V3 0 1 0) (Matte cWhite)
-        ls = [ Point False 1 cWhite (V3 (-500) 500 500)
-             ]
-        g = Grid [ Instances s [ (translate (-50) 50 0     , Just $ Phong cBlue  0.5 50)
-                               , (translate (-50) (-50) 0  , Just $ Phong cWhite 0.5 50)
-                               , (translate 50 50 0        , Just $ Phong cRed   0.5 50)
-                               , (translate 50 (-50) 0     , Just $ Phong cGreen 0.5 50)
-                               ]
-                 ]
-    in SceneDesc (worldOcc [g, p] ls 1) NoScheme
-         (defCamera & thinLensLookAt .~ (V3 0 0 0)
-                    & thinLensEye    .~ (V3Val $ V3 0 0 200)
-                    )
-         RayCastTracer
 
 sphereGrid :: [ObjectDesc]
 sphereGrid =
@@ -272,9 +235,9 @@ areaLightScene =
 
         a = Rectangle (V3 0 0 0) (V3 50 0 0) (V3 0 50 0) (Matte cWhite)
 
-        i1 = Instances a [(translate (-100) 30 (-100) <> rotateX (pi/6), Just $ Emissive cRed 3)]
-        i2 = Instances a [(translate (-10) 30 (-100) <> rotateX (pi/4) , Just $ Emissive cGreen 3)]
-        i3 = Instances a [(translate 110 30 (-100) <> rotateX (pi/3)   , Just $ Emissive cBlue 3)]
+        i1 = Instances a [ ID [Translate (-100) 30 (-100), RotateX (pi/6)] (Just $ Emissive cRed 3)]
+        i2 = Instances a [ ID [Translate (-10) 30 (-100), RotateX (pi/4)]  (Just $ Emissive cGreen 3)]
+        i3 = Instances a [ ID [Translate 110 30 (-100), RotateX (pi/3)]    (Just $ Emissive cBlue 3)]
 
         ls = [ Area True i1 Nothing
              , Area True i2 Nothing
@@ -287,15 +250,15 @@ reflScene =
     let s = Sphere (V3 0 40 0) 40 (GlossyReflective cWhite 0 50 cWhite 0.9 50)
         p = Plane (V3 0 0 0) (V3 0 1 0) (GlossyReflective cWhite 0.5 10 cWhite 1 100)
 
-        ss = Instances s [ (translate (-90) 0 0,     Just $ GlossyReflective cBlue    0.5 10 cWhite 0.8 10)
-                         , (translate 0 0 0,         Just $ GlossyReflective cWhite   0.8 50 cWhite 0.9 500)
-                         , (translate 90 0 0,        Just $ GlossyReflective cYellow  1 500 cWhite 0.8 100000)
-                         , (translate (-90) 0 90,    Just $ GlossyReflective cRed     0.5 10 cWhite 0.8 10)
-                         , (translate 0 0 90,        Just $ GlossyReflective cGreen   0.8 50 cWhite 0.9 500)
-                         , (translate 90 0 90,       Just $ GlossyReflective cMagenta 1 500 cWhite 0.8 100000)
-                         , (translate (-90) 0 (-90), Just $ GlossyReflective cYellow  0.5 10 cWhite 0.9 10)
-                         , (translate 0 0 (-90),     Just $ GlossyReflective cBlack   0.8 50 cWhite 0.9 500)
-                         , (translate 90 0 (-90),    Just $ GlossyReflective cCyan    1 500 cWhite 0.9 100000)
+        ss = Instances s [ ID [Translate (-90) 0 0]     (Just $ GlossyReflective cBlue    0.5 10 cWhite 0.8 10)
+                         , ID [Translate 0 0 0]         (Just $ GlossyReflective cWhite   0.8 50 cWhite 0.9 500)
+                         , ID [Translate 90 0 0]        (Just $ GlossyReflective cYellow  1 500 cWhite 0.8 100000)
+                         , ID [Translate (-90) 0 90]    (Just $ GlossyReflective cRed     0.5 10 cWhite 0.8 10)
+                         , ID [Translate 0 0 90]        (Just $ GlossyReflective cGreen   0.8 50 cWhite 0.9 500)
+                         , ID [Translate 90 0 90]       (Just $ GlossyReflective cMagenta 1 500 cWhite 0.8 100000)
+                         , ID [Translate (-90) 0 (-90)] (Just $ GlossyReflective cYellow  0.5 10 cWhite 0.9 10)
+                         , ID [Translate 0 0 (-90)]     (Just $ GlossyReflective cBlack   0.8 50 cWhite 0.9 500)
+                         , ID [Translate 90 0 (-90)]    (Just $ GlossyReflective cCyan    1 500 cWhite 0.9 100000)
                          ]
         r1 = Rectangle (V3 (-100) 300 0) (V3 200 0 0) (V3 0.0 30.901697 95.10565) (Emissive cWhite 3)
         ls = [ Area True r1 $ Just 200000
@@ -307,9 +270,7 @@ reflScene =
 
 allScenes :: [(String, SceneDesc)]
 allScenes =
-    [ ("instanced-spheres", instancedSpheres)
-    , ("instanced-spheres-grid", instancedSpheresGrid)
-    , ("clear-spheres",   clearSpheres)
+    [ ("clear-spheres",   clearSpheres)
     , ("blurry-spheres",  blurrySpheres)
     , ("cube",            cubeScene)
     , ("bunny",           bunnyScene)

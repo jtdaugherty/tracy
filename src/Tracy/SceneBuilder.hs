@@ -8,6 +8,7 @@ import Control.Lens ((^.))
 import Control.Monad.Trans (liftIO)
 import Control.Monad.Trans.Either
 import Data.Traversable (sequenceA)
+import Data.Monoid
 import Linear (V3)
 
 import Tracy.Types
@@ -36,6 +37,7 @@ import Tracy.Anim ()
 import Tracy.Tracers
 import Tracy.AccelSchemes
 import Tracy.Samplers
+import Tracy.Transformations
 
 type LoadM a = EitherT String IO a
 
@@ -76,15 +78,28 @@ objectFromDesc fn (Mesh (MeshFile path) m) = do
     theMesh <- mesh mData <$> materialFromDesc fn m
     return [theMesh]
 objectFromDesc fn (Grid os) = single $ grid <$> (concat <$> sequenceA (objectFromDesc fn <$> os))
-objectFromDesc fn (Instances oDesc pairs) = do
-    let mkInstance o (mMatrix, mMat) =
-            case mMat of
-                Nothing -> return $ inst mMatrix Nothing o
-                Just mDesc -> inst mMatrix <$> (Just <$> materialFromDesc fn mDesc) <*> (return o)
+objectFromDesc fn (Instances oDesc is) = do
     v <- objectFromDesc fn oDesc
+    ids <- sequenceA $ instanceDataFromDesc fn <$> is
     case v of
-        [o] -> sequenceA (mkInstance o <$> pairs)
+        [o] -> return $ (\(t, m) -> inst t m o) <$> ids
         _ -> error "Error: Instances of (multiple) Instances not allowed"
+
+instanceDataFromDesc :: Int -> InstanceDesc -> LoadM (Transformation, Maybe Material)
+instanceDataFromDesc fn (ID tDesc mDesc) = do
+    mResult <- case mDesc of
+                   Nothing -> return Nothing
+                   Just md -> Just <$> materialFromDesc fn md
+    ts <- sequenceA (transformationFromDesc <$> tDesc)
+    return (mconcat ts, mResult)
+
+transformationFromDesc :: TransformationDesc -> LoadM Transformation
+transformationFromDesc (Translate x y z) = return $ translate x y z
+transformationFromDesc (Scale x y z) = return $ scale x y z
+transformationFromDesc (ScaleUni f) = return $ scaleUni f
+transformationFromDesc (RotateX v) = return $ rotateX v
+transformationFromDesc (RotateY v) = return $ rotateY v
+transformationFromDesc (RotateZ v) = return $ rotateZ v
 
 lightsFromDesc :: Int -> [LightDesc] -> LoadM [Light]
 lightsFromDesc fn ls = sequenceA (lightFromDesc fn <$> ls)
