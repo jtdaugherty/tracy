@@ -39,7 +39,8 @@ library
     ply-loader >= 0.4,
     yaml,
     aeson,
-    aeson-pretty
+    aeson-pretty,
+    text
 
   C-Sources:
     cbits/average.c

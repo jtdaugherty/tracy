@@ -4,7 +4,7 @@ accel: NoScheme
 camera:
     eye:
         const: V3 0 100 300
-    look: V3 0 0 0
+    lookAt: V3 0 0 0
     up: V3 0 1 0
     exposure: 1.0
     zoom: 1.0
@@ -18,7 +18,7 @@ world:
     viewPlane:
         hres: 800
         vres: 800
-        pixelsize: 1.0
+        pixelSize: 1.0
         gamma: 1.0
         inverseGamma: 1.0
         maxDepth: 10
@@ -27,6 +27,7 @@ world:
     shadows: true
 
     ambient:
+        type: ambient
         color: Colour 1 1 1
         strength: 1
 
@@ -35,7 +36,7 @@ world:
           shadows: true
           strength: 1
           color: Colour 1 1 1
-          dir: V3 -500 500 500
+          position: V3 -500 500 500
 
     objects:
         - type: sphere

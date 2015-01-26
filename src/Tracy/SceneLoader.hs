@@ -5,8 +5,6 @@ module Tracy.SceneLoader
   where
 
 import qualified Data.Yaml as Y
-import qualified Data.ByteString.Lazy.Char8 as BS8
-import Data.Aeson.Encode.Pretty (encodePretty)
 
 import Tracy.Types
 
@@ -15,4 +13,4 @@ loadScene path = do
     result <- Y.decodeFileEither path
     case result of
         Left e -> print e
-        Right (v::Y.Object) -> putStrLn $ BS8.unpack $ encodePretty v
+        Right (v::SceneDesc) -> print v
