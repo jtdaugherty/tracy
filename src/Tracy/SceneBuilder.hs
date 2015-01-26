@@ -130,7 +130,6 @@ tracerFromDesc :: TracerDesc -> LoadM Tracer
 tracerFromDesc RayCastTracer = return rayCastTracer
 tracerFromDesc PathTracer = return pathTracer
 tracerFromDesc AreaLightTracer = return areaLightTracer
-tracerFromDesc WhittedTracer = return whittedTracer
 
 v2SamplerFromDesc :: V2SamplerDesc -> LoadM (Sampler (Double, Double))
 v2SamplerFromDesc Regular = return regular

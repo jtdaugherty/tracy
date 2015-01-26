@@ -281,7 +281,6 @@ data Tracer =
 data TracerDesc =
     RayCastTracer
   | AreaLightTracer
-  | WhittedTracer
   | PathTracer
     deriving (Eq, Show, Generic, Read)
 
