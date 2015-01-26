@@ -431,7 +431,7 @@ instance Y.FromJSON AccelSchemeDesc where
     parseJSON (Y.String s) = parseReadsT s "Invalid AccelSchemeDesc value"
     parseJSON _ = fail "Expected string for AccelSchemeDesc"
 
-instance Y.FromJSON (V3 Float) where
+instance Y.FromJSON (V3 Double) where
     parseJSON (Y.String s) = parseReadsT s "Invalid V3 value"
     parseJSON _ = fail "Expected string for V3"
 
@@ -442,9 +442,9 @@ instance Y.FromJSON AnimV3 where
         -- V3LerpRotY (Int, Int) (V3 Float) Float
     parseJSON _ = fail "Expected object for AnimV3"
 
-instance Y.FromJSON AnimFloat where
+instance Y.FromJSON AnimDouble where
     parseJSON (Y.Object v) =
-        FloatVal <$> v Y..: "const"
+        DoubleVal <$> v Y..: "const"
         -- FloatLerp (Int, Int) (Float, Float)
     parseJSON _ = fail "Expected object for AnimV3"
 
