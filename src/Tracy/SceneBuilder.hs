@@ -5,6 +5,8 @@ module Tracy.SceneBuilder
 
 import Control.Applicative
 import Control.Lens ((^.))
+import Control.Monad.Trans (liftIO)
+import Control.Monad.Trans.Either
 import Data.Traversable (sequenceA)
 import Linear (V3)
 
@@ -35,14 +37,19 @@ import Tracy.Tracers
 import Tracy.AccelSchemes
 import Tracy.Samplers
 
-sceneFromDesc :: SceneDesc -> Int -> Either String (Scene ThinLens)
-sceneFromDesc sd fn =
+type LoadM a = EitherT String IO a
+
+sceneFromDesc :: SceneDesc -> Int -> IO (Either String (Scene ThinLens))
+sceneFromDesc sd fn = runEitherT (runSceneFromDesc sd fn)
+
+runSceneFromDesc :: SceneDesc -> Int -> LoadM (Scene ThinLens)
+runSceneFromDesc sd fn =
     Scene <$> (worldFromDesc fn    $ sd^.sceneDescWorld)
           <*> (accelSchemeFromDesc $ sd^.sceneDescAccelScheme)
           <*> (cameraFromDesc fn   $ sd^.sceneDescCamera)
           <*> (tracerFromDesc      $ sd^.sceneDescTracer)
 
-worldFromDesc :: Int -> WorldDesc -> Either String World
+worldFromDesc :: Int -> WorldDesc -> LoadM World
 worldFromDesc fn wd =
     World <$> (pure               $ wd^.wdViewPlane)
           <*> (pure               $ wd^.wdBgColor)
@@ -51,74 +58,77 @@ worldFromDesc fn wd =
           <*> (lightFromDesc fn   $ wd^.wdAmbient)
           <*> (pure               $ wd^.wdWorldShadows)
 
-objectsFromDesc :: Int -> [ObjectDesc] -> Either String [Object]
+objectsFromDesc :: Int -> [ObjectDesc] -> LoadM [Object]
 objectsFromDesc fn os = concat <$> sequenceA (objectFromDesc fn <$> os)
 
-single :: Either a b -> Either a [b]
+single :: LoadM b -> LoadM [b]
 single v = (:[]) <$> v
 
-objectFromDesc :: Int -> ObjectDesc -> Either String [Object]
+objectFromDesc :: Int -> ObjectDesc -> LoadM [Object]
 objectFromDesc fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc fn m
 objectFromDesc fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc fn m
 objectFromDesc fn (Rectangle p0 a b m) = single $ rectangle p0 a b <$> materialFromDesc fn m
 objectFromDesc fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc fn m
 objectFromDesc fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc fn m
 objectFromDesc fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc fn m
-objectFromDesc fn (Mesh mDesc m) = single $ mesh mDesc <$> materialFromDesc fn m
+objectFromDesc fn (Mesh (MeshFile path) m) = do
+    mData <- liftIO $ loadMesh path
+    theMesh <- mesh mData <$> materialFromDesc fn m
+    return [theMesh]
 objectFromDesc fn (Grid os) = single $ grid <$> (concat <$> sequenceA (objectFromDesc fn <$> os))
-objectFromDesc fn (Instances oDesc pairs) =
+objectFromDesc fn (Instances oDesc pairs) = do
     let mkInstance o (mMatrix, mMat) =
             case mMat of
-                Nothing -> Right $ inst mMatrix Nothing o
-                Just mDesc -> inst mMatrix <$> (Just <$> materialFromDesc fn mDesc) <*> (pure o)
-    in case objectFromDesc fn oDesc of
-          Left e -> Left e
-          Right [o] -> sequenceA (mkInstance o <$> pairs)
-          Right _ -> error "Error: Instances of (multiple) Instances not allowed"
+                Nothing -> return $ inst mMatrix Nothing o
+                Just mDesc -> inst mMatrix <$> (Just <$> materialFromDesc fn mDesc) <*> (return o)
+    v <- objectFromDesc fn oDesc
+    case v of
+        [o] -> sequenceA (mkInstance o <$> pairs)
+        _ -> error "Error: Instances of (multiple) Instances not allowed"
 
-lightsFromDesc :: Int -> [LightDesc] -> Either String [Light]
+lightsFromDesc :: Int -> [LightDesc] -> LoadM [Light]
 lightsFromDesc fn ls = sequenceA (lightFromDesc fn <$> ls)
 
-lightFromDesc :: Int -> LightDesc -> Either String Light
-lightFromDesc _ (Ambient s c) = Right $ ambientLight s c
-lightFromDesc _ (AmbientOccluder c min_amt s) = Right $ ambientOccluder c min_amt s
-lightFromDesc _ (Point sh ls c loc) = Right $ pointLight sh ls c loc
+lightFromDesc :: Int -> LightDesc -> LoadM Light
+lightFromDesc _ (Ambient s c) = return $ ambientLight s c
+lightFromDesc _ (AmbientOccluder c min_amt s) = return $ ambientOccluder c min_amt s
+lightFromDesc _ (Point sh ls c loc) = return $ pointLight sh ls c loc
 lightFromDesc fn (Environment sh m) = environmentLight sh <$> (materialFromDesc fn m)
-lightFromDesc fn (Area sh oDesc p) =
-    case objectFromDesc fn oDesc of
-      Left e -> Left e
-      Right [o] -> Right $ areaLight sh o p
-      Right _ -> Left "Could not create area light from multiple objects"
+lightFromDesc fn (Area sh oDesc p) = do
+    v <- objectFromDesc fn oDesc
+    case v of
+      [o] -> return $ areaLight sh o p
+      _ -> fail "Could not create area light from multiple objects"
 
-accelSchemeFromDesc :: AccelSchemeDesc -> Either String AccelScheme
-accelSchemeFromDesc NoScheme = Right noScheme
-accelSchemeFromDesc GridScheme = Right gridScheme
+accelSchemeFromDesc :: AccelSchemeDesc -> LoadM AccelScheme
+accelSchemeFromDesc NoScheme = return noScheme
+accelSchemeFromDesc GridScheme = return gridScheme
 
-materialFromDesc :: Int -> MaterialDesc -> Either String Material
-materialFromDesc _ (Matte c) = Right $ matteFromColor c
-materialFromDesc _ (Phong c ks e) = Right $ phongFromColor c ks e
-materialFromDesc _ (Reflective c ks e cr kr) = Right $ reflective c ks e cr kr
-materialFromDesc _ (GlossyReflective c ks e cr kr er) = Right $ glossyReflective c ks e cr kr er
-materialFromDesc _ (Emissive c e) = Right $ emissive c e
+materialFromDesc :: Int -> MaterialDesc -> LoadM Material
+materialFromDesc _ (Matte c) = return $ matteFromColor c
+materialFromDesc _ (Phong c ks e) = return $ phongFromColor c ks e
+materialFromDesc _ (Reflective c ks e cr kr) = return $ reflective c ks e cr kr
+materialFromDesc _ (GlossyReflective c ks e cr kr er) = return $ glossyReflective c ks e cr kr er
+materialFromDesc _ (Emissive c e) = return $ emissive c e
 
-tracerFromDesc :: TracerDesc -> Either String Tracer
-tracerFromDesc RayCastTracer = Right rayCastTracer
-tracerFromDesc PathTracer = Right pathTracer
-tracerFromDesc AreaLightTracer = Right areaLightTracer
-tracerFromDesc WhittedTracer = Right whittedTracer
+tracerFromDesc :: TracerDesc -> LoadM Tracer
+tracerFromDesc RayCastTracer = return rayCastTracer
+tracerFromDesc PathTracer = return pathTracer
+tracerFromDesc AreaLightTracer = return areaLightTracer
+tracerFromDesc WhittedTracer = return whittedTracer
 
-v2SamplerFromDesc :: V2SamplerDesc -> Either String (Sampler (Double, Double))
-v2SamplerFromDesc Regular = Right regular
-v2SamplerFromDesc PureRandom = Right pureRandom
-v2SamplerFromDesc Jittered = Right jittered
-v2SamplerFromDesc MultiJittered = Right multiJittered
-v2SamplerFromDesc CorrelatedMultiJittered = Right correlatedMultiJittered
+v2SamplerFromDesc :: V2SamplerDesc -> LoadM (Sampler (Double, Double))
+v2SamplerFromDesc Regular = return regular
+v2SamplerFromDesc PureRandom = return pureRandom
+v2SamplerFromDesc Jittered = return jittered
+v2SamplerFromDesc MultiJittered = return multiJittered
+v2SamplerFromDesc CorrelatedMultiJittered = return correlatedMultiJittered
 v2SamplerFromDesc (UnitDisk sd) = (toUnitDisk <$>) <$> v2SamplerFromDesc sd
 
-v3SamplerFromDesc :: V3SamplerDesc -> Either String (Sampler (V3 Double))
+v3SamplerFromDesc :: V3SamplerDesc -> LoadM (Sampler (V3 Double))
 v3SamplerFromDesc (UnitHemi e sd) = (toUnitHemi e <$>) <$> v2SamplerFromDesc sd
 
-cameraFromDesc :: Int -> CameraDesc -> Either String (Camera ThinLens)
+cameraFromDesc :: Int -> CameraDesc -> LoadM (Camera ThinLens)
 cameraFromDesc fn cd@(ThinLensCamera { }) =
     thinLensCamera (animate fn $ cd^.thinLensEye)
                    (cd^.thinLensLookAt)

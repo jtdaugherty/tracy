@@ -299,9 +299,9 @@ data WorldDesc =
               }
     deriving (Eq, Show, Generic)
 
-data MeshDesc =
-    MeshDesc { meshDescVertices :: V.Vector (V3 Double, V3 Double)
-             , meshDescFaces :: [V.Vector Int]
+data MeshData =
+    MeshData { meshVertices :: V.Vector (V3 Double, V3 Double)
+             , meshFaces :: [V.Vector Int]
              }
     deriving (Eq, Show)
 
@@ -312,9 +312,13 @@ data ObjectDesc =
     | Triangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
     | Box (V3 Double) (V3 Double) MaterialDesc
     | Plane (V3 Double) (V3 Double) MaterialDesc
-    | Mesh MeshDesc MaterialDesc
+    | Mesh MeshSource MaterialDesc
     | Instances ObjectDesc [(Transformation, Maybe MaterialDesc)]
     | Grid [ObjectDesc]
+    deriving (Eq, Show, Generic)
+
+data MeshSource =
+    MeshFile FilePath
     deriving (Eq, Show, Generic)
 
 data LightDesc =
@@ -399,10 +403,11 @@ instance Serialize RenderConfig where
 instance Serialize Transformation where
 instance Serialize AnimV3 where
 instance Serialize AnimDouble where
+instance Serialize MeshSource where
 
-instance Serialize MeshDesc where
-    get = MeshDesc <$> (V.fromList <$> get) <*> get
-    put (MeshDesc vs fs) = put (V.toList vs) >> put fs
+instance Serialize MeshData where
+    get = MeshData <$> (V.fromList <$> get) <*> get
+    put (MeshData vs fs) = put (V.toList vs) >> put fs
 
 instance Y.FromJSON ViewPlane where
     parseJSON (Y.Object v) =

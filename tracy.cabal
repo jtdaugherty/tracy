@@ -40,7 +40,8 @@ library
     yaml,
     aeson,
     aeson-pretty,
-    text
+    text,
+    either
 
   C-Sources:
     cbits/average.c

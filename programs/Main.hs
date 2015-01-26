@@ -125,9 +125,7 @@ main = do
 
   case lookup toRender allScenes of
     Nothing -> putStrLn $ "No such scene: " ++ toRender
-    Just loadSceneDesc -> do
-        sceneDesc <- loadSceneDesc
-
+    Just sceneDesc -> do
         let renderCfg = defaultRenderConfig & sampleRoot .~ (argSampleRoot preCfg)
                                             & forceShadows .~ (argForceShadows preCfg)
 

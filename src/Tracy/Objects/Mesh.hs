@@ -5,6 +5,8 @@ module Tracy.Objects.Mesh
 
 import Control.Applicative
 import Control.Concurrent
+import Control.Lens
+import Control.Monad
 import Data.ByteString.Char8 hiding (putStrLn)
 import qualified Data.Vector as V
 import Linear
@@ -16,7 +18,7 @@ import Tracy.Types
 import Tracy.Objects.Grid
 import Tracy.Objects.Triangle
 
-loadMesh :: FilePath -> IO MeshDesc
+loadMesh :: FilePath -> IO MeshData
 loadMesh filename = do
     putStrLn $ "Loading mesh from " ++ filename ++ "..."
 
@@ -50,13 +52,13 @@ loadMesh filename = do
         -- Vector (Vector Scalar) -> Vector [Int] -> [[Int]]
         intFs = V.toList $ V.map ((toInt <$>)) fs
 
-    return $ MeshDesc vVecs intFs
+    return $ MeshData vVecs intFs
 
-mesh :: MeshDesc -> Material -> Object
-mesh mDesc m =
-    let tris = mkTri <$> meshDescFaces mDesc
-        mkTri is = let v0 = (meshDescVertices mDesc) V.! (is V.! 0)
-                       v1 = (meshDescVertices mDesc) V.! (is V.! 1)
-                       v2 = (meshDescVertices mDesc) V.! (is V.! 2)
+mesh :: MeshData -> Material -> Object
+mesh mData m =
+    let tris = mkTri <$> meshFaces mData
+        mkTri is = let v0 = (meshVertices mData) V.! (is V.! 0)
+                       v1 = (meshVertices mData) V.! (is V.! 1)
+                       v2 = (meshVertices mData) V.! (is V.! 2)
                    in triWithNormals v0 v1 v2 m
     in grid tris

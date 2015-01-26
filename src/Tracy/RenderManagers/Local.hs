@@ -52,7 +52,8 @@ localRenderManager jobReq jobResp = do
           reqEv <- readChan jobReq
           case reqEv of
               SetScene cfg sDesc fn -> do
-                  case sceneFromDesc sDesc fn of
+                  sResult <- sceneFromDesc sDesc fn
+                  case sResult of
                       Right s -> do
                           writeChan jobResp JobAck
                           gen <- createSystemRandom
