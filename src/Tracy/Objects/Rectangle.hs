@@ -12,17 +12,17 @@ import Tracy.Util
 import Tracy.Constants
 
 data Rect =
-    Rect { rectP0 :: V3 Float
-         , rectA :: V3 Float
-         , rectB :: V3 Float
+    Rect { rectP0 :: V3 Double
+         , rectA :: V3 Double
+         , rectB :: V3 Double
          , rectMaterial :: Material
-         , rectNormal :: V3 Float
-         , rectALen2 :: Float
-         , rectBLen2 :: Float
-         , rectInvArea :: Float
+         , rectNormal :: V3 Double
+         , rectALen2 :: Double
+         , rectBLen2 :: Double
+         , rectInvArea :: Double
          }
 
-rectangle :: V3 Float -> V3 Float -> V3 Float -> Material -> Object
+rectangle :: V3 Double -> V3 Double -> V3 Double -> Material -> Object
 rectangle p a b mat =
     let area = norm a * norm b
         r = Rect { rectP0 = p
@@ -48,16 +48,16 @@ rectAreaLight rect =
               , _objectPDF = rectPDF rect
               }
 
-rectSurfaceSample :: Rect -> TraceM (V3 Float)
+rectSurfaceSample :: Rect -> TraceM (V3 Double)
 rectSurfaceSample rect = do
     sample_point <- view tdObjectSurfaceSample
     return (rectP0 rect + (sample_point^._x *^ (rectA rect)) +
                           (sample_point^._y *^ (rectB rect)))
 
-rectGetNormal :: Rect -> V3 Float -> V3 Float
+rectGetNormal :: Rect -> V3 Double -> V3 Double
 rectGetNormal rect = const $ rectNormal rect
 
-rectPDF :: Rect -> LightDir -> Shade -> Float
+rectPDF :: Rect -> LightDir -> Shade -> Double
 rectPDF rect = const $ const $ rectInvArea rect
 
 rectBoundingBox :: Rect -> BBox
@@ -74,7 +74,7 @@ rectBoundingBox rect = BBox v0 v1
             ((max (p0^._y) (p0^._y + a^._y + b^._y)) + delta)
             ((max (p0^._z) (p0^._z + a^._z + b^._z)) + delta)
 
-rectHit :: Rect -> Ray -> Maybe (Shade, Float)
+rectHit :: Rect -> Ray -> Maybe (Shade, Double)
 rectHit rect ray =
     let t = ((rectP0 rect - ray^.origin) `dot` (rectNormal rect)) /
             ((ray^.direction) `dot` (rectNormal rect))

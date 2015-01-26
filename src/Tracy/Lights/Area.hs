@@ -12,7 +12,7 @@ import Linear
 import Tracy.Types
 import Tracy.Util
 
-areaLight :: Bool -> Object -> Maybe Float -> Light
+areaLight :: Bool -> Object -> Maybe Double -> Light
 areaLight sh o power =
     let ali = case o^.areaLightImpl of
                 Nothing -> error "Objects used with area lights must provide an area light implementation"
@@ -56,7 +56,7 @@ areaLightInShadow ld r = do
     let vs = filter (< ts - 0.01) $ catMaybes results
     return $ not $ null vs
 
-areaLightG :: LightDir -> Shade -> Float
+areaLightG :: LightDir -> Shade -> Double
 areaLightG ld sh =
     let ndotd = ((-1) *^ (ld^.lightNormal)) `dot` (ld^.lightDir)
         d2 = dSquared (ld^.lightSamplePoint) (sh^.localHitPoint)

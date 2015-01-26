@@ -12,7 +12,7 @@ import Linear
 
 import Tracy.Types
 
-translate :: Float -> Float -> Float -> Transformation
+translate :: Double -> Double -> Double -> Transformation
 translate x y z =
     Trans ( V4 r1 r2 r3 r4
           , V4 r1' r2' r3' r4
@@ -26,10 +26,10 @@ translate x y z =
       r2' = V4 0 1 0 (-y)
       r3' = V4 0 0 1 (-z)
 
-scaleUni :: Float -> Transformation
+scaleUni :: Double -> Transformation
 scaleUni f = scale f f f
 
-scale :: Float -> Float -> Float -> Transformation
+scale :: Double -> Double -> Double -> Transformation
 scale x y z =
     Trans ( V4 r1 r2 r3 r4
           , V4 r1' r2' r3' r4
@@ -43,16 +43,16 @@ scale x y z =
       r2' = V4 0 (1/y) 0 0
       r3' = V4 0 0 (1/z) 0
 
-rotateX :: Float -> Transformation
+rotateX :: Double -> Transformation
 rotateX a = Trans (rotX a, distribute $ rotX a)
 
-rotateY :: Float -> Transformation
+rotateY :: Double -> Transformation
 rotateY a = Trans (rotY a, distribute $ rotY a)
 
-rotateZ :: Float -> Transformation
+rotateZ :: Double -> Transformation
 rotateZ a = Trans (rotZ a, distribute $ rotZ a)
 
-rotX :: Float -> V4 (V4 Float)
+rotX :: Double -> V4 (V4 Double)
 rotX a = V4 r1 r2 r3 r4
   where
     r1 = V4 1 0 0 0
@@ -60,7 +60,7 @@ rotX a = V4 r1 r2 r3 r4
     r3 = V4 0 (sin a) (cos a) 0
     r4 = V4 0 0 0 1
 
-rotY :: Float -> V4 (V4 Float)
+rotY :: Double -> V4 (V4 Double)
 rotY a = V4 r1 r2 r3 r4
   where
     r1 = V4 (cos a) 0 (sin a) 0
@@ -68,7 +68,7 @@ rotY a = V4 r1 r2 r3 r4
     r3 = V4 (-1 * sin a) 0 (cos a) 0
     r4 = V4 0 0 0 1
 
-rotZ :: Float -> V4 (V4 Float)
+rotZ :: Double -> V4 (V4 Double)
 rotZ a = V4 r1 r2 r3 r4
   where
     r1 = V4 (cos a) (-1 * sin a) 0 0

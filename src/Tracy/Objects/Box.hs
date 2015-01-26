@@ -9,7 +9,7 @@ import Tracy.Types
 import Tracy.BoundingBox
 import Tracy.Util
 
-box :: V3 Float -> V3 Float -> Material -> Object
+box :: V3 Double -> V3 Double -> Material -> Object
 box p0 p1 m =
     let bbox = boundingBox p0 p1
     in Object { _objectMaterial = m
@@ -19,13 +19,13 @@ box p0 p1 m =
               , _areaLightImpl = Nothing
               }
 
-shadowHitBox :: BBox -> Ray -> Maybe Float
+shadowHitBox :: BBox -> Ray -> Maybe Double
 shadowHitBox bb r =
    case boundingBoxHit bb r of
        Nothing -> Nothing
        Just (_, _, t, _) -> Just t
 
-hitBox :: BBox -> Material -> Ray -> Maybe (Shade, Float)
+hitBox :: BBox -> Material -> Ray -> Maybe (Shade, Double)
 hitBox bbox m r =
     case boundingBoxHit bbox r of
         Nothing -> Nothing

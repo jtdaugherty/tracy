@@ -10,6 +10,7 @@ import qualified Data.Vector as V
 import Linear
 import PLY
 import PLY.Types
+import GHC.Float
 
 import Tracy.Types
 import Tracy.Objects.Grid
@@ -35,15 +36,15 @@ loadMesh filename = do
     fs <- takeMVar mv2
     putStrLn $ "  " ++ show (V.length fs) ++ " faces"
 
-    let toFloat (Sfloat f) = f
-        toFloat e = error $ "Could not get float from scalar: " ++ show e
+    let toDouble (Sfloat f) = float2Double f
+        toDouble e = error $ "Could not get float from scalar: " ++ show e
         toInt (Suint i) = fromEnum i
         toInt (Sint i) = i
         toInt e = error $ "Could not get int from scalar: " ++ show e
 
         vVecs = V.map mkVec vs
-        mkVec vals = ( V3 (toFloat $ vals V.! 0) (toFloat $ vals V.! 1) (toFloat $ vals V.! 2)
-                     , V3 (toFloat $ vals V.! 3) (toFloat $ vals V.! 4) (toFloat $ vals V.! 5)
+        mkVec vals = ( V3 (toDouble $ vals V.! 0) (toDouble $ vals V.! 1) (toDouble $ vals V.! 2)
+                     , V3 (toDouble $ vals V.! 3) (toDouble $ vals V.! 4) (toDouble $ vals V.! 5)
                      )
 
         -- Vector (Vector Scalar) -> Vector [Int] -> [[Int]]

@@ -13,7 +13,7 @@ import Tracy.Constants
 import Tracy.Util
 import Tracy.BoundingBox
 
-sphere :: V3 Float -> Float -> Material -> Object
+sphere :: V3 Double -> Double -> Material -> Object
 sphere p rad m =
     Object { _objectMaterial = m
            , _hit = hitSphere p rad m
@@ -22,7 +22,7 @@ sphere p rad m =
            , _areaLightImpl = Nothing
            }
 
-concaveSphere :: V3 Float -> Float -> Material -> Object
+concaveSphere :: V3 Double -> Double -> Material -> Object
 concaveSphere p rad m =
     Object { _objectMaterial = m
            , _hit = \r -> (\(sh, f) -> (sh & normal .~ (sh^.normal ^* (-1)), f)) <$> hitSphere p rad m r
@@ -31,17 +31,17 @@ concaveSphere p rad m =
            , _areaLightImpl = Nothing
            }
 
-sphereBBox :: V3 Float -> Float -> BBox
+sphereBBox :: V3 Double -> Double -> BBox
 sphereBBox p rad = boundingBox p0 p1
     where
       delta = 0.00001
       p0 = V3 (p^._x - rad - delta) (p^._y - rad - delta) (p^._z - rad - delta)
       p1 = V3 (p^._x + rad + delta) (p^._y + rad + delta) (p^._z + rad + delta)
 
-shadowHitSphere :: V3 Float -> Float -> Ray -> Maybe Float
+shadowHitSphere :: V3 Double -> Double -> Ray -> Maybe Double
 shadowHitSphere = _hitSphere
 
-_hitSphere :: V3 Float -> Float -> Ray -> Maybe Float
+_hitSphere :: V3 Double -> Double -> Ray -> Maybe Double
 _hitSphere p rad ray =
     let temp = ray^.origin - p
         a = (ray^.direction) `dot` (ray^.direction)
@@ -61,8 +61,8 @@ _hitSphere p rad ray =
                  then Just t2
                  else Nothing
 
-hitSphere :: V3 Float -> Float -> Material -> Ray
-          -> Maybe (Shade, Float)
+hitSphere :: V3 Double -> Double -> Material -> Ray
+          -> Maybe (Shade, Double)
 hitSphere p rad mat ray =
     let temp = ray^.origin - p
         makeShade tval = (sh, tval)

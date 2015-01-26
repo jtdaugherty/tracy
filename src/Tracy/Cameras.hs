@@ -10,13 +10,12 @@ import Data.Colour
 import qualified Data.Vector as V
 import qualified Data.Vector.Storable as SV
 import Linear
-import GHC.Float
 
 import Tracy.Types
 import Tracy.Util (max3)
 import Tracy.Samplers (toUnitHemi)
 
-camera :: V3 Float -> V3 Float -> V3 Float -> Float -> Float
+camera :: V3 Double -> V3 Double -> V3 Double -> Double -> Double
        -> a
        -> (CameraRenderer a)
        -> Camera a
@@ -26,15 +25,15 @@ camera eye look up exposure z dat render =
         v = w `cross` u
     in Camera u v w render dat exposure z eye
 
-thinLensCamera :: V3 Float -> V3 Float -> V3 Float -> Float
-               -> Float -> Float -> Float -> Float
-               -> Sampler (Float, Float)
+thinLensCamera :: V3 Double -> V3 Double -> V3 Double -> Double
+               -> Double -> Double -> Double -> Double
+               -> Sampler (Double, Double)
                -> Camera ThinLens
 thinLensCamera eye look up exposure z vpDist fpDist rad s =
     let thinLens = ThinLens rad vpDist fpDist thinLensRayDir s
     in camera eye look up exposure z thinLens thinLensRender
 
-thinLensRayDir :: Camera ThinLens -> V2 Float -> V2 Float -> V3 Float
+thinLensRayDir :: Camera ThinLens -> V2 Double -> V2 Double -> V3 Double
 thinLensRayDir cam pixelPoint lensPoint =
     let !f = cam^.cameraData^.lensFocalPlaneDistance
         !d = cam^.cameraData^.lensVPDistance
@@ -59,8 +58,8 @@ thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
   let !root = config^.sampleRoot
       !newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
-      !maxToOneDenom = grey (float2Double $ root * root)
-      !maxToOneExposure = grey (float2Double $ cam^.exposureTime)
+      !maxToOneDenom = grey (root * root)
+      !maxToOneExposure = grey (cam^.exposureTime)
       !vp = w^.viewPlane
       !row = toEnum theRow
       !colors = SV.generate (fromEnum $ vp^.hres) (getCol . toEnum)
@@ -75,7 +74,7 @@ thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
           in maxToOne ((V.sum (results col squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
               maxToOneExposure)
 
-      results :: Float -> V.Vector (Float, Float) -> V.Vector (Float, Float) -> V.Vector (Float, Float) -> V.Vector Color
+      results :: Double -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector Color
       results col pixelSamples diskSamples objectSamples =
           V.map (result col) (V.zip3 pixelSamples diskSamples objectSamples)
 

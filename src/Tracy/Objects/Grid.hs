@@ -25,7 +25,7 @@ grid os =
               , _areaLightImpl = Nothing
               }
 
-minCoords :: [Object] -> V3 Float
+minCoords :: [Object] -> V3 Double
 minCoords os =
     V3 (mx - epsilon) (my - epsilon) (mz - epsilon)
     where
@@ -35,7 +35,7 @@ minCoords os =
       my = minimum $ (\o -> (b o)^.bboxP0._y) <$> os
       mz = minimum $ (\o -> (b o)^.bboxP0._z) <$> os
 
-maxCoords :: [Object] -> V3 Float
+maxCoords :: [Object] -> V3 Double
 maxCoords os =
     V3 (mx + epsilon) (my + epsilon) (mz + epsilon)
     where
@@ -89,16 +89,16 @@ setupCells b os (nx, ny, nz) = mkCompounds $ foldr addObject M.empty os
 
       mkCompounds m = M.map (\objs -> compound objs undefined) m
 
-data St = St { txNext :: !Float
-             , tyNext :: !Float
-             , tzNext :: !Float
+data St = St { txNext :: !Double
+             , tyNext :: !Double
+             , tzNext :: !Double
              , ix :: !Int
              , iy :: !Int
              , iz :: !Int
              }
              deriving Show
 
-hitGrid :: (Int, Int, Int) -> BBox -> M.Map (Int, Int, Int) Object -> Ray -> Maybe (Shade, Float)
+hitGrid :: (Int, Int, Int) -> BBox -> M.Map (Int, Int, Int) Object -> Ray -> Maybe (Shade, Double)
 hitGrid (nx, ny, nz) !bbox m !ray =
     if t0 > t1
        then Nothing

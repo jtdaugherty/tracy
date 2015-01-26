@@ -11,13 +11,13 @@ import Linear
 import Tracy.Types
 import Tracy.Constants
 
-boundingBox :: V3 Float -> V3 Float -> BBox
+boundingBox :: V3 Double -> V3 Double -> BBox
 boundingBox p0 p1 =
     BBox { _bboxP0 = p0
          , _bboxP1 = p1
          }
 
-boundingBoxHit :: BBox -> Ray -> Maybe (Int, V3 Float, Float, V3 Float)
+boundingBoxHit :: BBox -> Ray -> Maybe (Int, V3 Double, Double, V3 Double)
 boundingBoxHit box ray =
     if t0 < t1 && t1 > epsilon
        then if t0 > epsilon
@@ -73,7 +73,7 @@ boundingBoxHit box ray =
                            then ((z0 - oz) * c, (z1 - oz) * c)
                            else ((z1 - oz) * c, (z0 - oz) * c)
 
-faceNormal :: Int -> V3 Float
+faceNormal :: Int -> V3 Double
 faceNormal 0 = V3 (-1) 0 0
 faceNormal 1 = V3 0 (-1) 0
 faceNormal 2 = V3 0 0 (-1)
@@ -82,7 +82,7 @@ faceNormal 4 = V3 0 1 0
 faceNormal 5 = V3 0 0 1
 faceNormal f = error $ "faceNormal: invalid face " ++ show f
 
-inside :: BBox -> V3 Float -> Bool
+inside :: BBox -> V3 Double -> Bool
 inside b p =
     p^._x > b^.bboxP0._x &&
     p^._x < b^.bboxP1._x &&

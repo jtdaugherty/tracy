@@ -21,11 +21,11 @@ compound os m =
            , _areaLightImpl = Nothing
            }
 
-hitCompound :: [Ray -> Maybe (Shade, Float)] -> Ray -> Maybe (Shade, Float)
+hitCompound :: [Ray -> Maybe (Shade, Double)] -> Ray -> Maybe (Shade, Double)
 hitCompound hitFuncs r =
     listToMaybe $ sortBy (comparing snd) $ catMaybes results
     where
       results = hitFuncs <*> pure r
 
-shadowHitCompound :: [Ray -> Maybe (Shade, Float)] -> Ray -> Maybe Float
+shadowHitCompound :: [Ray -> Maybe (Shade, Double)] -> Ray -> Maybe Double
 shadowHitCompound hitFuncs r = snd <$> hitCompound hitFuncs r

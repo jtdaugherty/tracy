@@ -51,7 +51,7 @@ pathTrace ray theDepth = do
                                  (sh & shadeRay .~ ray & depth .~ theDepth)
                                  pathTracer
 
-doHit :: Ray -> TraceM (Maybe (Shade, Float))
+doHit :: Ray -> TraceM (Maybe (Shade, Double))
 doHit r = do
     hitFuncs <- view tdWorldHitFuncs
     return $ listToMaybe $ sortBy (comparing snd) $ catMaybes $ hitFuncs <*> pure r

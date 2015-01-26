@@ -7,22 +7,21 @@ import Control.Applicative
 import Control.Lens
 import Data.Colour
 import Data.Maybe
-import GHC.Float
 import Linear
 
 import Tracy.Types
 
-ambientOccluder :: Color -> Color -> Float -> Light
+ambientOccluder :: Color -> Color -> Double -> Light
 ambientOccluder c min_amount ls =
     Light True ambOccDir (ambOccColor ls c min_amount) ambOccShadow ambOccG ambOccPDF
 
-ambOccG :: LightDir -> Shade -> Float
+ambOccG :: LightDir -> Shade -> Double
 ambOccG = const $ const 1.0
 
-ambOccPDF :: LightDir -> Shade -> Float
+ambOccPDF :: LightDir -> Shade -> Double
 ambOccPDF = const $ const 1.0
 
-ambOccUVW :: Shade -> (V3 Float, V3 Float, V3 Float)
+ambOccUVW :: Shade -> (V3 Double, V3 Double, V3 Double)
 ambOccUVW sh =
     let w = sh^.normal
         v = signorm $ w `cross` (V3 0.0072 1.0 0.0034)
@@ -45,7 +44,7 @@ ambOccShadow _ld r = do
     let results = (w^..objects.folded.shadow_hit) <*> pure r
     return $ (not . null) $ catMaybes results
 
-ambOccColor :: Float -> Color -> Color -> LightDir -> Shade -> TraceM Color
+ambOccColor :: Double -> Color -> Color -> LightDir -> Shade -> TraceM Color
 ambOccColor ls color min_amount _ld sh = do
     ld <- ambOccDir sh
 
@@ -55,5 +54,5 @@ ambOccColor ls color min_amount _ld sh = do
 
     shad <- ambOccShadow ld shadow_r
     return $ if shad
-             then min_amount * (grey $ float2Double ls) * color
-             else (grey $ float2Double ls) * color
+             then min_amount * (grey ls) * color
+             else (grey ls) * color

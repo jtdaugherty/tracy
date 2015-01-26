@@ -1,10 +1,10 @@
 module Tracy.Constants where
 
-epsilon :: Float
+epsilon :: Double
 epsilon = 0.001
 
-invPI :: Float
+invPI :: Double
 invPI = 1.0/pi
 
-hugeValue :: Float
+hugeValue :: Double
 hugeValue = 1.0e10

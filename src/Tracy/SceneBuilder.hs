@@ -107,7 +107,7 @@ tracerFromDesc PathTracer = Right pathTracer
 tracerFromDesc AreaLightTracer = Right areaLightTracer
 tracerFromDesc WhittedTracer = Right whittedTracer
 
-v2SamplerFromDesc :: V2SamplerDesc -> Either String (Sampler (Float, Float))
+v2SamplerFromDesc :: V2SamplerDesc -> Either String (Sampler (Double, Double))
 v2SamplerFromDesc Regular = Right regular
 v2SamplerFromDesc PureRandom = Right pureRandom
 v2SamplerFromDesc Jittered = Right jittered
@@ -115,7 +115,7 @@ v2SamplerFromDesc MultiJittered = Right multiJittered
 v2SamplerFromDesc CorrelatedMultiJittered = Right correlatedMultiJittered
 v2SamplerFromDesc (UnitDisk sd) = (toUnitDisk <$>) <$> v2SamplerFromDesc sd
 
-v3SamplerFromDesc :: V3SamplerDesc -> Either String (Sampler (V3 Float))
+v3SamplerFromDesc :: V3SamplerDesc -> Either String (Sampler (V3 Double))
 v3SamplerFromDesc (UnitHemi e sd) = (toUnitHemi e <$>) <$> v2SamplerFromDesc sd
 
 cameraFromDesc :: Int -> CameraDesc -> Either String (Camera ThinLens)

@@ -37,7 +37,7 @@ transLightImpl (Trans (tForward, tInverse)) ali =
               , _objectPDF = ali^.objectPDF
               }
 
-transBBox :: M44 Float -> BBox -> BBox
+transBBox :: M44 Double -> BBox -> BBox
 transBBox tForward box =
     let p0 = box^.bboxP0
         p1 = box^.bboxP1
@@ -63,15 +63,15 @@ transBBox tForward box =
 
     in BBox (V3 minX minY minZ) (V3 maxX maxY maxZ)
 
-(!*.) :: M44 Float -> V3 Float -> V3 Float
+(!*.) :: M44 Double -> V3 Double -> V3 Double
 m !*. v = toV3 $ m !* v'
     where
       v' = V4 (v^._x) (v^._y) (v^._z) 1
 
-instShadowHit :: M44 Float -> Material -> Object -> Ray -> Maybe Float
+instShadowHit :: M44 Double -> Material -> Object -> Ray -> Maybe Double
 instShadowHit matrix mat o r = snd <$> instHit matrix mat o r
 
-instHit :: M44 Float -> Material -> Object -> Ray -> Maybe (Shade, Float)
+instHit :: M44 Double -> Material -> Object -> Ray -> Maybe (Shade, Double)
 instHit matrix mat o r =
     let inv_ray = Ray { _origin = matrix !*. (r^.origin)
                       , _direction = toV3 $ matrix !* (toV4 $ r^.direction)

@@ -22,7 +22,7 @@ import Data.Vector.Cereal ()
 type Color = Colour
 
 data InfoEvent =
-      ISampleRoot Float
+      ISampleRoot Double
     | IFrameNum Int
     | IConnected String
     | IConnecting String
@@ -46,7 +46,7 @@ data DataEvent =
       DSceneName String
     | DNumBatches Int
     | DFrameNum Int
-    | DSampleRoot Float
+    | DSampleRoot Double
     | DBatchFinished (SV.Vector Colour)
     | DImageSize Int Int
     | DStarted
@@ -71,19 +71,19 @@ class Anim a b where
     animate :: Int -> a -> b
 
 data AnimV3 =
-      V3Val (V3 Float)
-    | V3Lerp (Int, Int) (V3 Float, V3 Float)
-    | V3LerpRotY (Int, Int) (V3 Float) Float
+      V3Val (V3 Double)
+    | V3Lerp (Int, Int) (V3 Double, V3 Double)
+    | V3LerpRotY (Int, Int) (V3 Double) Double
     deriving (Generic, Eq, Show)
 
-data AnimFloat =
-      FloatVal Float
-    | FloatLerp (Int, Int) (Float, Float)
+data AnimDouble =
+      DoubleVal Double
+    | DoubleLerp (Int, Int) (Double, Double)
     deriving (Generic, Eq, Show)
 
 -- A transformation is a pair of (forward transformation matrix, inverse
 -- transformation matrix).  Note the Monoid instance for this type.
-data Transformation = Trans !(M44 Float, M44 Float)
+data Transformation = Trans !(M44 Double, M44 Double)
     deriving (Eq, Read, Show, Generic)
 
 instance Monoid Transformation where
@@ -92,29 +92,29 @@ instance Monoid Transformation where
         Trans (f1 !*! f2, i2 !*! i1)
 
 data Shade =
-    Shade { _localHitPoint :: !(V3 Float)
-          , _normal :: !(V3 Float)
+    Shade { _localHitPoint :: !(V3 Double)
+          , _normal :: !(V3 Double)
           , _material :: Material
           , _shadeRay :: !Ray
           , _depth :: !Int
           }
 
 data Ray =
-    Ray { _origin :: !(V3 Float)
-        , _direction :: !(V3 Float)
+    Ray { _origin :: !(V3 Double)
+        , _direction :: !(V3 Double)
         }
     deriving (Show)
 
 data ObjectAreaLightImpl =
-    ObjectALI { _objectSurfaceSample :: TraceM (V3 Float)
-              , _objectGetNormal :: V3 Float -> V3 Float
-              , _objectPDF :: LightDir -> Shade -> Float
+    ObjectALI { _objectSurfaceSample :: TraceM (V3 Double)
+              , _objectGetNormal :: V3 Double -> V3 Double
+              , _objectPDF :: LightDir -> Shade -> Double
               }
 
 data Object =
     Object { _objectMaterial :: Material
-           , _hit :: Ray -> Maybe (Shade, Float)
-           , _shadow_hit :: Ray -> Maybe Float
+           , _hit :: Ray -> Maybe (Shade, Double)
+           , _shadow_hit :: Ray -> Maybe Double
            , _bounding_box :: !(Maybe BBox)
            , _areaLightImpl :: Maybe ObjectAreaLightImpl
            }
@@ -123,11 +123,11 @@ instance Show Object where
     show _ = "Object {...}"
 
 data ViewPlane =
-    ViewPlane { _hres :: Float
-              , _vres :: Float
-              , _pixelSize :: Float
-              , _gamma :: Float
-              , _inverseGamma :: Float
+    ViewPlane { _hres :: Double
+              , _vres :: Double
+              , _pixelSize :: Double
+              , _gamma :: Double
+              , _inverseGamma :: Double
               , _maxDepth :: Int
               }
     deriving (Show, Eq, Generic)
@@ -154,21 +154,21 @@ data AccelScheme =
                 }
 
 data RenderConfig =
-    RenderConfig { _sampleRoot :: Float
+    RenderConfig { _sampleRoot :: Double
                  , _forceShadows :: Maybe Bool
                  }
                  deriving (Generic, Show)
 
 data BRDF =
-    BRDF { _brdfFunction :: Shade -> V3 Float -> V3 Float -> Color
-         , _brdfSampleF :: Shade -> V3 Float -> TraceM (Float, Color, V3 Float)
-         , _brdfRho ::  Shade -> V3 Float -> Color
+    BRDF { _brdfFunction :: Shade -> V3 Double -> V3 Double -> Color
+         , _brdfSampleF :: Shade -> V3 Double -> TraceM (Double, Color, V3 Double)
+         , _brdfRho ::  Shade -> V3 Double -> Color
          }
 
 data LightDir =
-    LD { _lightDir :: V3 Float
-       , _lightSamplePoint :: V3 Float
-       , _lightNormal :: V3 Float
+    LD { _lightDir :: V3 Double
+       , _lightSamplePoint :: V3 Double
+       , _lightNormal :: V3 Double
        }
 
 data Light =
@@ -176,8 +176,8 @@ data Light =
           , _lightDirection :: Shade -> TraceM LightDir
           , _lightColor :: LightDir -> Shade -> TraceM Color
           , _inLightShadow :: LightDir -> Ray -> TraceM Bool
-          , _lightG :: LightDir -> Shade -> Float
-          , _lightPDF :: LightDir -> Shade -> Float
+          , _lightG :: LightDir -> Shade -> Double
+          , _lightPDF :: LightDir -> Shade -> Double
           }
 
 data Material =
@@ -188,12 +188,12 @@ data Material =
              }
 
 data BBox =
-    BBox { _bboxP0 :: !(V3 Float)
-         , _bboxP1 :: !(V3 Float)
+    BBox { _bboxP0 :: !(V3 Double)
+         , _bboxP1 :: !(V3 Double)
          }
          deriving (Show)
 
-data Sampler a = Sampler (GenIO -> Float -> IO (V.Vector a))
+data Sampler a = Sampler (GenIO -> Double -> IO (V.Vector a))
 
 instance Functor Sampler where
     fmap f (Sampler g) = Sampler g'
@@ -204,9 +204,9 @@ instance Functor Sampler where
 
 data SampleData =
     SampleData { _numSets :: Int
-               , _squareSampleSets :: V.Vector (V.Vector (Float, Float))
-               , _diskSampleSets :: V.Vector (V.Vector (Float, Float))
-               , _objectSampleSets :: V.Vector (V.Vector (Float, Float))
+               , _squareSampleSets :: V.Vector (V.Vector (Double, Double))
+               , _diskSampleSets :: V.Vector (V.Vector (Double, Double))
+               , _objectSampleSets :: V.Vector (V.Vector (Double, Double))
                }
 
 type CameraRenderer a = Camera a
@@ -218,22 +218,22 @@ type CameraRenderer a = Camera a
                       -> SV.Vector Color
 
 data Camera a =
-    Camera { _cameraU :: V3 Float
-           , _cameraV :: V3 Float
-           , _cameraW :: V3 Float
+    Camera { _cameraU :: V3 Double
+           , _cameraV :: V3 Double
+           , _cameraW :: V3 Double
            , _cameraRenderWorld :: CameraRenderer a
            , _cameraData :: a
-           , _exposureTime :: Float
-           , _cameraZoomFactor :: Float
-           , _cameraEyePoint :: V3 Float
+           , _exposureTime :: Double
+           , _cameraZoomFactor :: Double
+           , _cameraEyePoint :: V3 Double
            }
 
 data ThinLens =
-    ThinLens { _lensRadius :: Float
-             , _lensVPDistance :: Float
-             , _lensFocalPlaneDistance :: Float
-             , _lensRayDir :: Camera ThinLens -> V2 Float -> V2 Float -> V3 Float
-             , _lensSampler :: Sampler (Float, Float)
+    ThinLens { _lensRadius :: Double
+             , _lensVPDistance :: Double
+             , _lensFocalPlaneDistance :: Double
+             , _lensRayDir :: Camera ThinLens -> V2 Double -> V2 Double -> V3 Double
+             , _lensSampler :: Sampler (Double, Double)
              }
 
 data V2SamplerDesc = Regular
@@ -244,18 +244,18 @@ data V2SamplerDesc = Regular
                    | UnitDisk V2SamplerDesc
                      deriving (Show, Eq, Generic)
 
-data V3SamplerDesc = UnitHemi Float V2SamplerDesc
+data V3SamplerDesc = UnitHemi Double V2SamplerDesc
                      deriving (Show, Eq, Generic)
 
 data TraceData =
-    TD { _tdHemiSample :: !(V3 Float)
-       , _tdHemiSampleExp :: Float -> V3 Float
-       , _tdDiskSample :: !(V2 Float)
-       , _tdSquareSample :: !(V2 Float)
-       , _tdObjectSurfaceSample :: !(V2 Float)
+    TD { _tdHemiSample :: !(V3 Double)
+       , _tdHemiSampleExp :: Double -> V3 Double
+       , _tdDiskSample :: !(V2 Double)
+       , _tdSquareSample :: !(V2 Double)
+       , _tdObjectSurfaceSample :: !(V2 Double)
        , _tdWorld :: World
-       , _tdWorldHitFuncs :: [Ray -> Maybe (Shade, Float)]
-       , _tdWorldShadowHitFuncs :: [Ray -> Maybe Float]
+       , _tdWorldHitFuncs :: [Ray -> Maybe (Shade, Double)]
+       , _tdWorldShadowHitFuncs :: [Ray -> Maybe Double]
        }
 
 type TraceM a = Reader TraceData a
@@ -298,48 +298,48 @@ data WorldDesc =
     deriving (Eq, Show, Generic)
 
 data MeshDesc =
-    MeshDesc { meshDescVertices :: V.Vector (V3 Float, V3 Float)
+    MeshDesc { meshDescVertices :: V.Vector (V3 Double, V3 Double)
              , meshDescFaces :: [V.Vector Int]
              }
     deriving (Eq, Show)
 
 data ObjectDesc =
-      Sphere (V3 Float) Float MaterialDesc
-    | ConcaveSphere (V3 Float) Float MaterialDesc
-    | Rectangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
-    | Triangle (V3 Float) (V3 Float) (V3 Float) MaterialDesc
-    | Box (V3 Float) (V3 Float) MaterialDesc
-    | Plane (V3 Float) (V3 Float) MaterialDesc
+      Sphere (V3 Double) Double MaterialDesc
+    | ConcaveSphere (V3 Double) Double MaterialDesc
+    | Rectangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
+    | Triangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
+    | Box (V3 Double) (V3 Double) MaterialDesc
+    | Plane (V3 Double) (V3 Double) MaterialDesc
     | Mesh MeshDesc MaterialDesc
     | Instances ObjectDesc [(Transformation, Maybe MaterialDesc)]
     | Grid [ObjectDesc]
     deriving (Eq, Show, Generic)
 
 data LightDesc =
-      Ambient Float Color
-    | AmbientOccluder Color Color Float
-    | Point Bool Float Color (V3 Float)
-    | Area Bool ObjectDesc (Maybe Float)
+      Ambient Double Color
+    | AmbientOccluder Color Color Double
+    | Point Bool Double Color (V3 Double)
+    | Area Bool ObjectDesc (Maybe Double)
     | Environment Bool MaterialDesc
     deriving (Eq, Show, Generic)
 
 data MaterialDesc =
       Matte Color
-    | Phong Color Float Float
-    | Emissive Color Float
-    | Reflective Color Float Float Color Float
-    | GlossyReflective Color Float Float Color Float Float
+    | Phong Color Double Double
+    | Emissive Color Double
+    | Reflective Color Double Double Color Double
+    | GlossyReflective Color Double Double Color Double Double
     deriving (Eq, Show, Generic)
 
 data CameraDesc =
     ThinLensCamera { _thinLensEye :: AnimV3
-                   , _thinLensLookAt :: V3 Float
-                   , _thinLensUp :: V3 Float
-                   , _thinLensExposure :: Float
-                   , _thinLensZ :: Float
-                   , _thinLensVpDist :: Float
-                   , _thinLensFpDist :: Float
-                   , _thinLensRadius :: AnimFloat
+                   , _thinLensLookAt :: V3 Double
+                   , _thinLensUp :: V3 Double
+                   , _thinLensExposure :: Double
+                   , _thinLensZ :: Double
+                   , _thinLensVpDist :: Double
+                   , _thinLensFpDist :: Double
+                   , _thinLensRadius :: AnimDouble
                    , _thinLensSampler :: V2SamplerDesc
                    }
     deriving (Eq, Show, Generic)
@@ -396,7 +396,7 @@ instance Serialize JobResponse where
 instance Serialize RenderConfig where
 instance Serialize Transformation where
 instance Serialize AnimV3 where
-instance Serialize AnimFloat where
+instance Serialize AnimDouble where
 
 instance Serialize MeshDesc where
     get = MeshDesc <$> (V.fromList <$> get) <*> get

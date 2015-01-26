@@ -14,15 +14,15 @@ environmentLight :: Bool -> Material -> Light
 environmentLight sh m =
     Light sh envDir (envColor m) envShadow envG envPDF
 
-envG :: LightDir -> Shade -> Float
+envG :: LightDir -> Shade -> Double
 envG = const $ const 1.0
 
-envPDF :: LightDir -> Shade -> Float
+envPDF :: LightDir -> Shade -> Double
 envPDF ld sh =
     let ndotw = (sh^.normal) `dot` (ld^.lightDir)
     in ndotw / pi
 
-envUVW :: Shade -> (V3 Float, V3 Float, V3 Float)
+envUVW :: Shade -> (V3 Double, V3 Double, V3 Double)
 envUVW sh =
     let w = sh^.normal
         v = signorm $ (V3 0.0034 1 0.0071) `cross` w

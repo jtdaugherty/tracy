@@ -7,7 +7,6 @@ module Tracy.Materials.Matte
 import Control.Lens
 import Linear
 import Data.Colour
-import GHC.Float
 
 import Tracy.Types
 import Tracy.BRDF
@@ -35,10 +34,10 @@ mattePathShading diffBrdf sh tracer = do
                        }
 
     next <- (tracer^.doTrace) refl_ray ((sh^.depth) + 1)
-    return $ c * next * (grey $ float2Double $ ndotwi / pdf)
+    return $ c * next * (grey $ ndotwi / pdf)
 
 matteShading :: BRDF -> BRDF
-             -> (BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color)
+             -> (BRDF -> Light -> LightDir -> V3 Double -> Shade -> TraceM Color)
              -> Shade -> Tracer -> TraceM Color
 matteShading ambBrdf diffBrdf perLight sh _ = do
     w <- view tdWorld
@@ -70,16 +69,16 @@ matteShading ambBrdf diffBrdf perLight sh _ = do
     otherLs <- mapM getL $ w^.lights
     return $ baseL + sum otherLs
 
-lightContrib :: BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color
+lightContrib :: BRDF -> Light -> LightDir -> V3 Double -> Shade -> TraceM Color
 lightContrib diffBrdf light ld wo sh = do
     let wi = ld^.lightDir
         ndotwi = (sh^.normal) `dot` wi
 
     lColor <- (light^.lightColor) ld sh
     return $ (diffBrdf^.brdfFunction) sh wo wi *
-             lColor * (grey $ float2Double ndotwi)
+             lColor * (grey ndotwi)
 
-areaLightContrib :: BRDF -> Light -> LightDir -> V3 Float -> Shade -> TraceM Color
+areaLightContrib :: BRDF -> Light -> LightDir -> V3 Double -> Shade -> TraceM Color
 areaLightContrib diffBrdf light ld wo sh = do
     let wi = ld^.lightDir
         ndotwi = (sh^.normal) `dot` wi
@@ -90,7 +89,7 @@ areaLightContrib diffBrdf light ld wo sh = do
 
     let v =  (diffBrdf^.brdfFunction) sh wo wi *
              lColor *
-             (grey $ float2Double gValue) *
-             (grey $ float2Double ndotwi) /
-             (grey $ float2Double pdfValue)
+             (grey gValue) *
+             (grey ndotwi) /
+             (grey pdfValue)
     return v

@@ -31,7 +31,7 @@ defCamera =
                    1.0
                    500 -- vpDist
                    300 -- fpDist
-                   (FloatVal 0)
+                   (DoubleVal 0)
                    (UnitDisk CorrelatedMultiJittered)
 
 world :: [ObjectDesc] -> [LightDesc] -> WorldDesc
@@ -43,7 +43,7 @@ world os ls = WorldDesc { _wdViewPlane = defaultVp
                         , _wdWorldShadows = True
                         }
 
-worldOcc :: [ObjectDesc] -> [LightDesc] -> Float -> WorldDesc
+worldOcc :: [ObjectDesc] -> [LightDesc] -> Double -> WorldDesc
 worldOcc os ls ambStr = WorldDesc { _wdViewPlane = defaultVp
                                   , _wdObjects = os
                                   , _wdBgColor = cBlack
@@ -111,7 +111,7 @@ objectDemo =
          (defCamera & thinLensEye .~ (V3LerpRotY (1, 200) (V3 0 100 300) (2 * pi))
                     & thinLensVpDist .~ 590
                     & thinLensFpDist .~ 300
-                    & thinLensRadius .~ (FloatVal 5)
+                    & thinLensRadius .~ (DoubleVal 5)
                     & thinLensLookAt .~ (V3 0 0 0)
          )
          RayCastTracer
@@ -197,7 +197,7 @@ blurrySpheres =
              ]
     in SceneDesc (worldOcc sphereGrid ls 1 & wdWorldShadows .~ False)
                  GridScheme
-                 (defCamera & thinLensRadius .~ (FloatVal 10.0)
+                 (defCamera & thinLensRadius .~ (DoubleVal 10.0)
                             & thinLensLookAt .~ (V3 0 30 0)
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
@@ -211,7 +211,7 @@ loadCubeScene = do
         ls = [ Point True 1 cWhite (V3 (-10) 10 10)
              ]
     return $ SceneDesc (world [cObj] ls) NoScheme
-                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
+                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
                             & thinLensLookAt .~ (V3 0 0 0)
                             & thinLensVpDist .~ 200
                             & thinLensFpDist .~ 200
@@ -231,7 +231,7 @@ loadBunnyScene = do
              , Point True 1 cWhite (V3 5 0 2)
              ]
     return $ SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
+                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
                             & thinLensLookAt .~ (V3 0 0 2)
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300
@@ -278,7 +278,7 @@ loadTableScene = do
                               , sphereObj, a
                               , p_bottom, p_back, p_left, p_right, p_top, p_front
                               ] []) NoScheme
-                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
+                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
                             & thinLensLookAt .~ (V3 0 3 0)
                             & thinLensVpDist .~ 500
                             & thinLensFpDist .~ 500
@@ -295,7 +295,7 @@ loadDragonScene = do
         ls = [ Area True r Nothing
              ]
     return $ SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
+                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
                             & thinLensLookAt .~ (V3 0 0.15 0)
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300
@@ -310,7 +310,7 @@ loadMonkeyScene = do
         ls = [ Point True 1 cWhite (V3 (-10) 10 10)
              ]
     return $ SceneDesc (worldOcc [cObj] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ (FloatVal 0.0)
+                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
                             & thinLensLookAt .~ (V3 0 0 0)
                             & thinLensVpDist .~ 300
                             & thinLensFpDist .~ 300

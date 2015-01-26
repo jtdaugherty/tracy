@@ -21,25 +21,25 @@ import qualified Data.Vector as V
 
 import Tracy.Types
 
-offset :: Float
+offset :: Double
 offset = 2 ** (-33)
 
-runSampler :: Sampler a -> GenIO -> Float -> IO (V.Vector a)
+runSampler :: Sampler a -> GenIO -> Double -> IO (V.Vector a)
 runSampler (Sampler f) gen root = f gen root
 
-getRandomUnit :: GenIO -> IO Float
+getRandomUnit :: GenIO -> IO Double
 getRandomUnit gen = do
     v <- uniformR (0, 1) gen
     return $ v - offset
 
-pureRandom :: Sampler (Float, Float)
+pureRandom :: Sampler (Double, Double)
 pureRandom = Sampler $ \gen root ->
     V.replicateM (fromEnum $ root * root) $ do
       a <- getRandomUnit gen
       b <- getRandomUnit gen
       return (a, b)
 
-regular :: Sampler (Float, Float)
+regular :: Sampler (Double, Double)
 regular = Sampler $ \_ root -> do
   let slice = 1.0 / root
       ss = [ ((i+0.5)*slice, (j+0.5)*slice) |
@@ -48,7 +48,7 @@ regular = Sampler $ \_ root -> do
            ]
   return $ V.fromList ss
 
-jittered :: Sampler (Float, Float)
+jittered :: Sampler (Double, Double)
 jittered = Sampler $ \gen root -> do
   sampleArrs <- forM [0..root-1] $ \k ->
                 forM [0..root-1] $ \j ->
@@ -59,7 +59,7 @@ jittered = Sampler $ \gen root -> do
 
   return $ V.fromList $ concat sampleArrs
 
-multiJitteredBase :: GenIO -> Float -> IO [[(Float, Float)]]
+multiJitteredBase :: GenIO -> Double -> IO [[(Double, Double)]]
 multiJitteredBase gen root = do
   let r2 = root * root
   sampleArrs <- forM (zip [0..root-1] [root-1,root-2..0]) $ \(bigRow, littleCol) ->
@@ -73,7 +73,7 @@ multiJitteredBase gen root = do
 
   return sampleArrs
 
-multiJitteredInitial :: Sampler (Float, Float)
+multiJitteredInitial :: Sampler (Double, Double)
 multiJitteredInitial = Sampler $ \gen root -> V.fromList <$>
                        concat <$> multiJitteredBase gen root
 
@@ -91,21 +91,21 @@ shuffle gen xs = do
     mkNewArray :: Int -> [a] -> IO (IOArray Int a)
     mkNewArray n as = newListArray (1,n) as
 
-shuffleY :: GenIO -> Maybe [Int] -> [(Float, Float)] -> IO [(Float, Float)]
+shuffleY :: GenIO -> Maybe [Int] -> [(Double, Double)] -> IO [(Double, Double)]
 shuffleY gen mIdxs vals = do
     idxs <- case mIdxs of
               Nothing -> shuffle gen [0..length vals - 1]
               Just is -> return is
     return [ (fst $ vals !! idx, vx) | (idx, (_, vx)) <- zip idxs vals ]
 
-shuffleX :: GenIO -> Maybe [Int] -> [(Float, Float)] -> IO [(Float, Float)]
+shuffleX :: GenIO -> Maybe [Int] -> [(Double, Double)] -> IO [(Double, Double)]
 shuffleX gen mIdxs vals = do
     idxs <- case mIdxs of
               Nothing -> shuffle gen [0..length vals - 1]
               Just is -> return is
     return [ (vy, snd $ vals !! idx) | (idx, (vy, _)) <- zip idxs vals ]
 
-multiJittered :: Sampler (Float, Float)
+multiJittered :: Sampler (Double, Double)
 multiJittered = Sampler $ \gen root -> do
   samples <- multiJitteredBase gen root
 
@@ -114,7 +114,7 @@ multiJittered = Sampler $ \gen root -> do
 
   return $ V.fromList $ concat xShuffled
 
-correlatedMultiJittered :: Sampler (Float, Float)
+correlatedMultiJittered :: Sampler (Double, Double)
 correlatedMultiJittered = Sampler $ \gen root -> do
   samples <- multiJitteredBase gen root
 
@@ -126,7 +126,7 @@ correlatedMultiJittered = Sampler $ \gen root -> do
 
   return $ V.fromList $ concat xShuffled
 
-toUnitDisk :: (Float, Float) -> (Float, Float)
+toUnitDisk :: (Double, Double) -> (Double, Double)
 toUnitDisk (x, y) =
     let spx = 2.0 * x - 1.0
         spy = 2.0 * y - 1.0
@@ -140,7 +140,7 @@ toUnitDisk (x, y) =
         phi' = phi * (pi / 4.0)
     in (r * cos phi', r * sin phi')
 
-toUnitHemi :: Float -> (Float, Float) -> V3 Float
+toUnitHemi :: Double -> (Double, Double) -> V3 Double
 toUnitHemi e (x, y) =
     let pu = sin_theta * cos_phi
         pv = sin_theta * sin_phi

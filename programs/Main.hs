@@ -31,7 +31,7 @@ data Arg = Help
            deriving (Eq, Show)
 
 data PreConfig =
-    PreConfig { argSampleRoot :: Float
+    PreConfig { argSampleRoot :: Double
               , argAccelScheme :: Maybe AccelScheme
               , argCpuCount :: Int
               , argWorkBatches :: Int

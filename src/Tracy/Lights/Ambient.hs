@@ -4,19 +4,18 @@ module Tracy.Lights.Ambient
   where
 
 import Data.Colour
-import GHC.Float
 import Linear
 
 import Tracy.Types
 
-ambientLight :: Float -> Color -> Light
+ambientLight :: Double -> Color -> Light
 ambientLight ls c =
     Light False ambDir (ambColor ls c) ambShadow ambG ambPDF
 
-ambG :: LightDir -> Shade -> Float
+ambG :: LightDir -> Shade -> Double
 ambG = const $ const 1.0
 
-ambPDF :: LightDir -> Shade -> Float
+ambPDF :: LightDir -> Shade -> Double
 ambPDF = const $ const 1.0
 
 ambDir :: Shade -> TraceM LightDir
@@ -25,8 +24,8 @@ ambDir = const $ return $ LD { _lightDir = V3 0 0 0
                              , _lightNormal = V3 0 0 0
                              }
 
-ambColor :: Float -> Color -> LightDir -> Shade -> TraceM Color
-ambColor ls c = const $ const $ return $ grey (float2Double ls) * c
+ambColor :: Double -> Color -> LightDir -> Shade -> TraceM Color
+ambColor ls c = const $ const $ return $ grey ls * c
 
 ambShadow :: LightDir -> Ray -> TraceM Bool
 ambShadow = const $ const $ return False
