@@ -51,13 +51,6 @@ worldOcc os ls ambStr = WorldDesc { _wdViewPlane = defaultVp
                                   , _wdWorldShadows = True
                                   }
 
-oneSphere :: SceneDesc
-oneSphere =
-    let s = Sphere (V3 (-40) 0 0) 85.0 (Phong cRed 0.5 100)
-        ls = [ Point True 1 cWhite (V3 (-500) 500 500)
-             ]
-    in SceneDesc (world [s] ls) NoScheme defCamera RayCastTracer
-
 instancedSpheres :: SceneDesc
 instancedSpheres =
     let s = Sphere (V3 0 0 0) 40.0 (Phong cRed 0.5 100)
@@ -349,8 +342,7 @@ reflScene =
 
 allScenes :: [(String, SceneDesc)]
 allScenes =
-    [ ("one-sphere",      oneSphere)
-    , ("instanced-spheres", instancedSpheres)
+    [ ("instanced-spheres", instancedSpheres)
     , ("instanced-spheres-grid", instancedSpheresGrid)
     , ("object-demo",     objectDemo)
     , ("object-demo2",    objectDemoNoPoint)
