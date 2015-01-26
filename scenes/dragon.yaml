@@ -50,10 +50,13 @@ world:
         - type: mesh
           path: meshes/dragon.ply
           material:
-              type: phong
-              color: Colour 1 0 0
+              type: glossyReflective
               ks: 0.5
-              exp: 50
+              exp: 100
+              baseColor: Colour 1 0 0
+              reflectiveColor: Colour 1 1 1
+              kr: 0.5
+              expR: 70
         - type: plane
           origin: V3 0 0.002 0
           normal: V3 0 1 0
