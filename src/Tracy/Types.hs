@@ -590,7 +590,7 @@ instance Y.FromJSON ObjectDesc where
 instance Y.FromJSON InstanceDesc where
     parseJSON (Y.Object v) =
         ID <$> v Y..: "transform"
-           <*> v Y..: "material"
+           <*> v Y..:? "material"
     parseJSON _ = fail "Expected object for InstanceDesc"
 
 instance Y.FromJSON WorldDesc where
