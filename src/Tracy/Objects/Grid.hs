@@ -1,5 +1,9 @@
 {-# LANGUAGE ParallelListComp, BangPatterns #-}
-module Tracy.Objects.Grid where
+module Tracy.Objects.Grid
+  ( grid
+  , gridWithMaterial
+  )
+  where
 
 import Tracy.Types
 import Tracy.Constants
@@ -14,11 +18,19 @@ import qualified Data.Map as M
 import Linear
 
 grid :: [Object] -> Object
-grid os =
+grid os = grid_ os Nothing
+
+gridWithMaterial :: [Object] -> Material -> Object
+gridWithMaterial os m = grid_ os (Just m)
+
+grid_ :: [Object] -> Maybe Material -> Object
+grid_ os mMat =
     let bbox = boundingBox (minCoords os) (maxCoords os)
         dims = getDimensions os
         hitF = hitGrid dims bbox $ setupCells bbox os dims
-    in Object { _objectMaterial = error "should not use objectMaterial of grid"
+    in Object { _objectMaterial = case mMat of
+                                    Just m -> m
+                                    Nothing -> error "should not use objectMaterial of grid"
               , _hit = hitF
               , _shadow_hit = (snd <$>) . hitF
               , _bounding_box = Just bbox

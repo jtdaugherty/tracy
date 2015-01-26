@@ -59,4 +59,4 @@ mesh mData m =
                        v1 = (meshVertices mData) V.! (is V.! 1)
                        v2 = (meshVertices mData) V.! (is V.! 2)
                    in triWithNormals v0 v1 v2 m
-    in grid tris
+    in gridWithMaterial tris m
