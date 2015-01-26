@@ -4,3 +4,5 @@ cabal.sandbox.config
 *~
 *.bmp
 .*.swp
+.DS_Store
+cabal.config
