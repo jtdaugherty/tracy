@@ -462,7 +462,7 @@ instance Y.FromJSON AnimDouble where
     parseJSON (Y.Object v) =
         DoubleVal <$> v Y..: "const"
         -- FloatLerp (Int, Int) (Float, Float)
-    parseJSON _ = fail "Expected object for AnimV3"
+    parseJSON _ = fail "Expected object for AnimDouble"
 
 instance Y.FromJSON CameraDesc where
     parseJSON (Y.Object v) =
