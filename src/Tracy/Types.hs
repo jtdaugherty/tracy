@@ -428,6 +428,17 @@ parseReadsT t errMsg =
         [(v, "")] -> return v
         _ -> fail errMsg
 
+instance Read Colour where
+    readsPrec d r = readParen (d > app_prec) act r
+      where
+        app_prec = 10
+        act next = do
+            ("Colour", n1) <- lex next
+            (d1, n2) <- readsPrec (app_prec+1) n1
+            (d2, n3) <- readsPrec (app_prec+1) n2
+            (d3, n4) <- readsPrec (app_prec+1) n3
+            return (Colour d1 d2 d3, n4)
+
 instance Y.FromJSON TracerDesc where
     parseJSON (Y.String s) = parseReadsT s "Invalid TracerDesc value"
     parseJSON _ = fail "Expected string for TracerDesc"
@@ -475,7 +486,7 @@ instance Y.FromJSON V3SamplerDesc where
     parseJSON _ = fail "Expected string for V3SamplerDesc"
 
 instance Y.FromJSON Color where
-    parseJSON (Y.String _) = pure cBlack
+    parseJSON (Y.String s) = parseReadsT s "Invalid Colour value"
     parseJSON _ = fail "Expected string for Color value"
 
 instance Y.FromJSON MaterialDesc where
