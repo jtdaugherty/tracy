@@ -14,34 +14,34 @@ library
   Hs-Source-Dirs:      src
   GHC-Options:         -O2 -Wall -funbox-strict-fields
   build-depends:
-    base == 4.*,
     AC-Colour >= 1.1.6,
-    lens,
-    containers,
-    array,
-    linear,
-    bmp >= 1.2.4.1,
     GLUT,
-    bytestring,
-    time,
-    mtl,
-    distributive,
-    vector-binary-instances,
-    mwc-random,
-    deepseq,
-    vector,
-    parallel,
     OpenGL,
-    stm,
-    cereal,
-    zeromq4-haskell,
-    old-locale,
-    ply-loader >= 0.4,
-    yaml,
     aeson,
     aeson-pretty,
+    array,
+    base == 4.*,
+    bmp >= 1.2.4.1,
+    bytestring,
+    cereal,
+    containers,
+    deepseq,
+    distributive,
+    either,
+    lens,
+    linear,
+    mtl,
+    mwc-random,
+    old-locale,
+    parallel,
+    ply-loader >= 0.4,
+    stm,
     text,
-    either
+    time,
+    vector,
+    vector-binary-instances,
+    yaml,
+    zeromq4-haskell
 
   C-Sources:
     cbits/average.c
@@ -59,11 +59,11 @@ library
     Tracy.SceneBuilder
     Tracy.SceneLoader
     Tracy.Tracers
-    Tracy.Types
     Tracy.Transformations
+    Tracy.Types
     Tracy.Util
-    Tracy.DataHandlers.GUIHandler
     Tracy.DataHandlers.FileHandler
+    Tracy.DataHandlers.GUIHandler
     Tracy.InfoHandlers.ConsoleHandler
     Tracy.Lights.Ambient
     Tracy.Lights.AmbientOccluder
@@ -75,13 +75,13 @@ library
     Tracy.Materials.Phong
     Tracy.Objects.Box
     Tracy.Objects.Compound
-    Tracy.Objects.Instance
     Tracy.Objects.Grid
+    Tracy.Objects.Instance
+    Tracy.Objects.Mesh
     Tracy.Objects.Plane
     Tracy.Objects.Rectangle
     Tracy.Objects.Sphere
     Tracy.Objects.Triangle
-    Tracy.Objects.Mesh
     Tracy.RenderManagers.Local
     Tracy.RenderManagers.Network
 
@@ -99,8 +99,8 @@ executable tracy
   GHC-Options:         -O2 -Wall -threaded
   build-depends:
     base == 4.*,
-    tracy,
-    lens
+    lens,
+    tracy
 
 executable tracy-node
   Hs-Source-Dirs:      programs
@@ -108,23 +108,23 @@ executable tracy-node
   GHC-Options:         -O2 -Wall -threaded
   build-depends:
     base == 4.*,
-    tracy,
+    cereal,
     lens,
-    zeromq4-haskell,
-    cereal
+    tracy,
+    zeromq4-haskell
 
 executable tracy-debug-samplers
   Hs-Source-Dirs:      programs
   Main-is:             SamplerDebug.hs
   GHC-Options:         -Wall -threaded
   build-depends:
-    base == 4.*,
-    tracy,
     AC-Colour,
-    lens,
-    containers,
+    base == 4.*,
     bmp >= 1.2.4.1,
     bytestring,
-    vector,
+    containers,
+    lens,
+    mtl,
     mwc-random,
-    mtl
+    tracy,
+    vector
