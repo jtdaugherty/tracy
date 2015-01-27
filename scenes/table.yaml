@@ -1,0 +1,129 @@
+tracer: PathTracer
+accel: NoScheme
+camera:
+    eye:
+        type: const
+        value: V3 0 5 3.5
+    lookAt: V3 0 3 0
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 500
+    fpDist: 500
+    lensRadius:
+        type: const
+        value: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambientOccluder
+        color: Colour 1 1 1
+        strength: 1
+        minAmount: Colour 0 0 0
+
+    objects:
+        - type: rect
+          corner: V3 -2.5 8 0
+          over: V3 5 0 0
+          up: V3 0 0 5
+          material:
+              type: emissive
+              color: Colour 1 1 1
+              strength: 6
+        - type: sphere
+          center: V3 0.10225 4.449909 -1.18322
+          radius: 0.811
+          material:
+              type: reflective
+              baseColor: Colour 0.3 0.3 0.3
+              ks: 0.9
+              exp: 1000
+              reflectiveColor: Colour 1 1 1
+              reflectiveStrength: 0.9
+        - type: mesh
+          path: meshes/table.ply
+          material:
+              type: phong
+              color: Colour 0.392 0.28627 0
+              ks: 0.5
+              exp: 100
+        - type: mesh
+          path: meshes/monkey2.ply
+          material:
+              type: glossyReflective
+              baseColor: Colour 0 1 1
+              ks: 0.7
+              exp: 10
+              reflectiveColor: Colour 1 1 1
+              kr: 0.7
+              expR: 100
+        - type: mesh
+          path: meshes/torus.ply
+          material:
+              type: reflective
+              baseColor: Colour 1 0.7 0.7
+              ks: 0.9
+              exp: 1000
+              reflectiveColor: Colour 1 0.7 0.7
+              reflectiveStrength: 0.7
+        - type: mesh
+          path: meshes/ico1.ply
+          material:
+              type: matte
+              color: Colour 1 1 0
+        - type: mesh
+          path: meshes/chairLeft.ply
+          material:
+              type: phong
+              color: Colour 1 0.3098 0
+              ks: 1.0
+              exp: 100000
+        - type: mesh
+          path: meshes/chairRight.ply
+          material:
+              type: phong
+              color: Colour 1 0.3098 0
+              ks: 1.0
+              exp: 100000
+        - type: mesh
+          path: meshes/plane_back.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/plane_front.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/plane_bottom.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/plane_top.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/plane_left.ply
+          material:
+              type: matte
+              color: Colour 0.26275 0.592157 0.878431
+        - type: mesh
+          path: meshes/plane_right.ply
+          material:
+              type: matte
+              color: Colour 0.26275 0.592157 0.878431
