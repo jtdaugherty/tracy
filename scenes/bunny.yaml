@@ -1,0 +1,76 @@
+tracer: RayCastTracer
+accel: NoScheme
+camera:
+    eye:
+        type: const
+        value: V3 -6 -3 3
+    lookAt: V3 0 0 2
+    up: V3 0 0 1
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 300
+    fpDist: 300
+    lensRadius:
+        type: const
+        value: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambientOccluder
+        color: Colour 1 1 1
+        strength: 1
+        minAmount: Colour 0 0 0
+
+    lights:
+        - type: point
+          strength: 1
+          shadows: true
+          color: Colour 1 1 1
+          position: V3 -5 5 5
+        - type: point
+          strength: 1
+          shadows: true
+          color: Colour 1 1 1
+          position: V3 5 5 5
+        - type: point
+          strength: 1
+          shadows: true
+          color: Colour 1 1 1
+          position: V3 5 -5 5
+        - type: point
+          strength: 1
+          shadows: true
+          color: Colour 1 1 1
+          position: V3 5 -5 -5
+        - type: point
+          strength: 1
+          shadows: true
+          color: Colour 1 1 1
+          position: V3 5 0 2
+
+    objects:
+        - type: mesh
+          path: meshes/bunny.ply
+          material:
+              type: phong
+              ks: 0.5
+              exp: 100
+              color: Colour 1 1 1
+        - type: plane
+          origin: V3 0 0 0.1
+          normal: V3 0 0 1
+          material:
+              type: matte
+              color: Colour 0 1 0

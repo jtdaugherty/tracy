@@ -49,26 +49,6 @@ worldOcc os ls ambStr = WorldDesc { _wdViewPlane = defaultVp
                                   , _wdWorldShadows = True
                                   }
 
-bunnyScene :: SceneDesc
-bunnyScene =
-    let cObj = Mesh (MeshFile "meshes/bunny.ply") $ Phong cWhite 0.5 100
-        p = Plane (V3 0 0 0.1) (V3 0 0 1) (Matte cGreen)
-        ls = [ Point True 1 cWhite (V3 (-5) 5 5)
-             , Point True 1 cWhite (V3 5 5 5)
-             , Point True 1 cWhite (V3 5 (-5) 5)
-             , Point True 1 cWhite (V3 5 (-5) (-5))
-             , Point True 1 cWhite (V3 5 0 2)
-             ]
-    in SceneDesc (worldOcc [cObj, p] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
-                            & thinLensLookAt .~ (V3 0 0 2)
-                            & thinLensVpDist .~ 300
-                            & thinLensFpDist .~ 300
-                            & thinLensUp     .~ (V3 0 0 1)
-                            & thinLensEye    .~ (V3Val $ V3 (-6) (-3) 3)
-                            )
-                 RayCastTracer
-
 tableScene :: SceneDesc
 tableScene =
     let tableObj =  Mesh (MeshFile "meshes/table.ply") $ Phong (Colour (100.0/255.0) (73.0/255.0) 0) 0.5 100
@@ -165,8 +145,7 @@ reflScene =
 
 allScenes :: [(String, SceneDesc)]
 allScenes =
-    [ ("bunny",           bunnyScene)
-    , ("table",           tableScene)
+    [ ("table",           tableScene)
     , ("monkey",          monkeyScene)
     , ("rectangles",      rectangles)
     , ("area-light",      areaLightScene)
