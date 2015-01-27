@@ -120,34 +120,10 @@ areaLightScene =
              ]
     in SceneDesc (worldOcc [Grid [i1, i2, i3], p] ls 1) NoScheme defCamera AreaLightTracer
 
-reflScene :: SceneDesc
-reflScene =
-    let s = Sphere (V3 0 40 0) 40 (GlossyReflective cWhite 0 50 cWhite 0.9 50)
-        p = Plane (V3 0 0 0) (V3 0 1 0) (GlossyReflective cWhite 0.5 10 cWhite 1 100)
-
-        ss = Instances s [ ID [Translate (-90) 0 0]     (Just $ GlossyReflective cBlue    0.5 10 cWhite 0.8 10)
-                         , ID [Translate 0 0 0]         (Just $ GlossyReflective cWhite   0.8 50 cWhite 0.9 500)
-                         , ID [Translate 90 0 0]        (Just $ GlossyReflective cYellow  1 500 cWhite 0.8 100000)
-                         , ID [Translate (-90) 0 90]    (Just $ GlossyReflective cRed     0.5 10 cWhite 0.8 10)
-                         , ID [Translate 0 0 90]        (Just $ GlossyReflective cGreen   0.8 50 cWhite 0.9 500)
-                         , ID [Translate 90 0 90]       (Just $ GlossyReflective cMagenta 1 500 cWhite 0.8 100000)
-                         , ID [Translate (-90) 0 (-90)] (Just $ GlossyReflective cYellow  0.5 10 cWhite 0.9 10)
-                         , ID [Translate 0 0 (-90)]     (Just $ GlossyReflective cBlack   0.8 50 cWhite 0.9 500)
-                         , ID [Translate 90 0 (-90)]    (Just $ GlossyReflective cCyan    1 500 cWhite 0.9 100000)
-                         ]
-        r1 = Rectangle (V3 (-100) 300 0) (V3 200 0 0) (V3 0.0 30.901697 95.10565) (Emissive cWhite 3)
-        ls = [ Area True r1 $ Just 200000
-             ]
-    in SceneDesc (worldOcc [Grid [ss, r1], p] ls 1) NoScheme
-                 (defCamera & thinLensEye .~ (V3LerpRotY (1, 200) (V3 200 250 250) (2 * pi))
-                 )
-                 AreaLightTracer
-
 allScenes :: [(String, SceneDesc)]
 allScenes =
     [ ("table",           tableScene)
     , ("monkey",          monkeyScene)
     , ("rectangles",      rectangles)
     , ("area-light",      areaLightScene)
-    , ("refl",            reflScene)
     ]

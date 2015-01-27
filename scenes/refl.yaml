@@ -1,0 +1,162 @@
+tracer: AreaLightTracer
+accel: NoScheme
+camera:
+    eye:
+        type: lerpRotY
+        fromFrame: 1
+        toFrame: 200
+        from: V3 200 250 250
+        angle: 6.283185
+    lookAt: V3 0 0 0
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 500
+    fpDist: 300
+    lensRadius:
+        type: const
+        value: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambientOccluder
+        color: Colour 1 1 1
+        strength: 1
+        minAmount: Colour 0 0 0
+
+    lights:
+        - type: area
+          shadows: true
+          invArea: 200000
+          object:
+              type: rect
+              corner: V3 -100 300 0
+              over: V3 200 0 0
+              up: V3 0.0 30.901697 95.10565
+              material:
+                  type: emissive
+                  color: Colour 1 1 1
+                  strength: 3
+
+    objects:
+        - type: rect
+          corner: V3 -100 300 0
+          over: V3 200 0 0
+          up: V3 0.0 30.901697 95.10565
+          material:
+              type: emissive
+              color: Colour 1 1 1
+              strength: 3
+        - type: plane
+          origin: V3 0 0 0
+          normal: V3 0 1 0
+          material:
+              type: glossyReflective
+              baseColor: Colour 1 1 1
+              ks: 0.5
+              exp: 10
+              reflectiveColor: Colour 1 1 1
+              kr: 1
+              expR: 100
+        - type: instances
+          master:
+              type: sphere
+              center: V3 0 40 0
+              radius: 40
+              material:
+                  type: matte
+                  color: Colour 1 1 1
+          objects:
+              - transform: [ Translate -90 0 0 ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 0 0 1
+                    ks: 0.5
+                    exp: 10
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.8
+                    expR: 10
+              - transform: [ Translate 0 0 0 ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 1 1 1
+                    ks: 0.8
+                    exp: 50
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.9
+                    expR: 500
+              - transform: [ Translate 90 0 0 ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 1 1 0
+                    ks: 1
+                    exp: 500
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.8
+                    expR: 100000
+              - transform: [ Translate (-90) 0 90 ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 1 0 0
+                    ks: 0.5
+                    exp: 10
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.8
+                    expR: 10
+              - transform: [ Translate 0 0 90 ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 0 1 0
+                    ks: 0.8
+                    exp: 50
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.9
+                    expR: 500
+              - transform: [ Translate 90 0 90 ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 1 0 1
+                    ks: 1
+                    exp: 500
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.8
+                    expR: 100000
+              - transform: [ Translate (-90) 0 (-90) ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 1 1 0
+                    ks: 0.5
+                    exp: 10
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.9
+                    expR: 10
+              - transform: [ Translate 0 0 (-90) ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 0 0 0
+                    ks: 0.8
+                    exp: 50
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.9
+                    expR: 500
+              - transform: [ Translate 90 0 (-90) ]
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 0 1 1
+                    ks: 1
+                    exp: 500
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.9
+                    expR: 100000
