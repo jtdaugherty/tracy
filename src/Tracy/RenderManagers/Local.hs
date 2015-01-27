@@ -51,9 +51,8 @@ localRenderManager jobReq jobResp = do
     let waitForJob = do
           reqEv <- readChan jobReq
           case reqEv of
-              SetScene cfg sDesc fn -> do
-                  sResult <- sceneFromDesc sDesc fn
-                  case sResult of
+              SetScene cfg sDesc mg fn -> do
+                  case sceneFromDesc sDesc mg fn of
                       Right s -> do
                           writeChan jobResp JobAck
                           gen <- createSystemRandom

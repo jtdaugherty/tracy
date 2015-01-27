@@ -19,6 +19,7 @@ consoleHandler chan = do
     leftWidth = 30
     output a b = putStrLn $ "  " ++ a ++ ":" ++ (replicate (leftWidth - length a) ' ') ++ b
     outputS a b = putStrLn $ "  " ++ a ++ ":" ++ (replicate (leftWidth - length a) ' ') ++ show b
+    output_ a = putStrLn $ "  " ++ a
     handleEvent = do
         ev <- readChan chan
         case ev of
@@ -36,6 +37,8 @@ consoleHandler chan = do
                                                  ]
                                 in output "Sampler root" msg
             IAccelScheme name -> output "Acceleration method" (show name)
+            ILoadedMeshes n -> outputS "Loaded meshes" n
+            ILoadingMeshes -> output_ "Loading meshes..."
             INumObjects n -> outputS "Objects" n
             IConnected s -> output "Connected to" s
             IConnecting s -> output "Connecting to" s

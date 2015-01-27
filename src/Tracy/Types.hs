@@ -7,6 +7,7 @@ import Control.Lens
 import Data.Serialize
 import Data.Time.Clock
 import Control.Monad.Reader
+import Data.Map (Map)
 import qualified Data.Vector.Storable as SV
 import qualified Data.Vector as V
 import GHC.Generics
@@ -39,6 +40,8 @@ data InfoEvent =
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
     | IImageSize Int Int
+    | ILoadedMeshes Int
+    | ILoadingMeshes
     | IStarted
     | IFinished
     | IShutdown
@@ -57,11 +60,13 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc Int
+      SetScene RenderConfig SceneDesc MeshGroup Int
     | RenderRequest
     | RenderFinished
     | Shutdown
     deriving (Generic, Show)
+
+type MeshGroup = Map MeshSource MeshData
 
 data JobResponse =
       JobError String
@@ -327,7 +332,7 @@ data InstanceDesc = ID [TransformationDesc] (Maybe MaterialDesc)
 
 data MeshSource =
     MeshFile FilePath
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Show, Generic, Ord)
 
 data LightDesc =
       Ambient Double Color
@@ -357,6 +362,31 @@ data CameraDesc =
                    , _thinLensSampler :: V2SamplerDesc
                    }
     deriving (Eq, Show, Generic)
+
+class HasMeshes a where
+    findMeshes :: a -> [MeshSource]
+
+instance HasMeshes a => HasMeshes [a] where
+    findMeshes = concat . (findMeshes <$>)
+
+instance HasMeshes ObjectDesc where
+    findMeshes (Mesh s _) = [s]
+    findMeshes (Instances o _) = findMeshes o
+    findMeshes (Grid os) = concat $ findMeshes <$> os
+    findMeshes _ = []
+
+instance HasMeshes LightDesc where
+    findMeshes (Area _ o _) = findMeshes o
+    findMeshes _ = []
+
+instance HasMeshes WorldDesc where
+    findMeshes w = concat [ findMeshes (_wdObjects w)
+                          , findMeshes (_wdAmbient w)
+                          , findMeshes (_wdLights w)
+                          ]
+
+instance HasMeshes SceneDesc where
+    findMeshes sd = findMeshes $ _sceneDescWorld sd
 
 instance Serialize a => Serialize (V3 a) where
     get = V3 <$> get <*> get <*> get

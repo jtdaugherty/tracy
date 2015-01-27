@@ -5,10 +5,9 @@ module Tracy.SceneBuilder
 
 import Control.Applicative
 import Control.Lens ((^.))
-import Control.Monad.Trans (liftIO)
-import Control.Monad.Trans.Either
 import Data.Traversable (sequenceA)
 import Data.Monoid
+import qualified Data.Map as M
 import Linear (V3)
 
 import Tracy.Types
@@ -39,47 +38,49 @@ import Tracy.AccelSchemes
 import Tracy.Samplers
 import Tracy.Transformations
 
-type LoadM a = EitherT String IO a
+type LoadM a = Either String a
 
-sceneFromDesc :: SceneDesc -> Int -> IO (Either String (Scene ThinLens))
-sceneFromDesc sd fn = runEitherT (runSceneFromDesc sd fn)
+sceneFromDesc :: SceneDesc -> MeshGroup -> Int -> Either String (Scene ThinLens)
+sceneFromDesc sd mg fn = runSceneFromDesc sd mg fn
 
-runSceneFromDesc :: SceneDesc -> Int -> LoadM (Scene ThinLens)
-runSceneFromDesc sd fn =
-    Scene <$> (worldFromDesc fn    $ sd^.sceneDescWorld)
-          <*> (accelSchemeFromDesc $ sd^.sceneDescAccelScheme)
-          <*> (cameraFromDesc fn   $ sd^.sceneDescCamera)
-          <*> (tracerFromDesc      $ sd^.sceneDescTracer)
+runSceneFromDesc :: SceneDesc -> MeshGroup -> Int -> LoadM (Scene ThinLens)
+runSceneFromDesc sd mg fn =
+    Scene <$> (worldFromDesc mg fn    $ sd^.sceneDescWorld)
+          <*> (accelSchemeFromDesc    $ sd^.sceneDescAccelScheme)
+          <*> (cameraFromDesc fn      $ sd^.sceneDescCamera)
+          <*> (tracerFromDesc         $ sd^.sceneDescTracer)
 
-worldFromDesc :: Int -> WorldDesc -> LoadM World
-worldFromDesc fn wd =
-    World <$> (pure               $ wd^.wdViewPlane)
-          <*> (pure               $ wd^.wdBgColor)
-          <*> (objectsFromDesc fn $ wd^.wdObjects)
-          <*> (lightsFromDesc fn  $ wd^.wdLights)
-          <*> (lightFromDesc fn   $ wd^.wdAmbient)
-          <*> (pure               $ wd^.wdWorldShadows)
+worldFromDesc :: MeshGroup -> Int -> WorldDesc -> LoadM World
+worldFromDesc mg fn wd =
+    World <$> (pure                  $ wd^.wdViewPlane)
+          <*> (pure                  $ wd^.wdBgColor)
+          <*> (objectsFromDesc mg fn $ wd^.wdObjects)
+          <*> (lightsFromDesc mg fn  $ wd^.wdLights)
+          <*> (lightFromDesc mg fn   $ wd^.wdAmbient)
+          <*> (pure                  $ wd^.wdWorldShadows)
 
-objectsFromDesc :: Int -> [ObjectDesc] -> LoadM [Object]
-objectsFromDesc fn os = concat <$> sequenceA (objectFromDesc fn <$> os)
+objectsFromDesc :: MeshGroup -> Int -> [ObjectDesc] -> LoadM [Object]
+objectsFromDesc mg fn os = concat <$> sequenceA (objectFromDesc mg fn <$> os)
 
 single :: LoadM b -> LoadM [b]
 single v = (:[]) <$> v
 
-objectFromDesc :: Int -> ObjectDesc -> LoadM [Object]
-objectFromDesc fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc fn m
-objectFromDesc fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc fn m
-objectFromDesc fn (Rectangle p0 a b m) = single $ rectangle p0 a b <$> materialFromDesc fn m
-objectFromDesc fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc fn m
-objectFromDesc fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc fn m
-objectFromDesc fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc fn m
-objectFromDesc fn (Mesh (MeshFile path) m) = do
-    mData <- liftIO $ loadMesh path
+objectFromDesc :: MeshGroup -> Int -> ObjectDesc -> LoadM [Object]
+objectFromDesc _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc fn m
+objectFromDesc _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc fn m
+objectFromDesc _ fn (Rectangle p0 a b m) = single $ rectangle p0 a b <$> materialFromDesc fn m
+objectFromDesc _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc fn m
+objectFromDesc _ fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc fn m
+objectFromDesc _ fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc fn m
+objectFromDesc mg fn (Mesh src m) = do
+    mData <- case M.lookup src mg of
+               Just md -> return md
+               Nothing -> fail $ "Could not find preloaded mesh for " ++ show src
     theMesh <- mesh mData <$> materialFromDesc fn m
     return [theMesh]
-objectFromDesc fn (Grid os) = single $ grid <$> (concat <$> sequenceA (objectFromDesc fn <$> os))
-objectFromDesc fn (Instances oDesc is) = do
-    v <- objectFromDesc fn oDesc
+objectFromDesc mg fn (Grid os) = single $ grid <$> (concat <$> sequenceA (objectFromDesc mg fn <$> os))
+objectFromDesc mg fn (Instances oDesc is) = do
+    v <- objectFromDesc mg fn oDesc
     ids <- sequenceA $ instanceDataFromDesc fn <$> is
     case v of
         [o] -> return $ (\(t, m) -> inst t m o) <$> ids
@@ -101,16 +102,16 @@ transformationFromDesc (RotateX v) = return $ rotateX v
 transformationFromDesc (RotateY v) = return $ rotateY v
 transformationFromDesc (RotateZ v) = return $ rotateZ v
 
-lightsFromDesc :: Int -> [LightDesc] -> LoadM [Light]
-lightsFromDesc fn ls = sequenceA (lightFromDesc fn <$> ls)
+lightsFromDesc :: MeshGroup -> Int -> [LightDesc] -> LoadM [Light]
+lightsFromDesc mg fn ls = sequenceA (lightFromDesc mg fn <$> ls)
 
-lightFromDesc :: Int -> LightDesc -> LoadM Light
-lightFromDesc _ (Ambient s c) = return $ ambientLight s c
-lightFromDesc _ (AmbientOccluder c min_amt s) = return $ ambientOccluder c min_amt s
-lightFromDesc _ (Point sh ls c loc) = return $ pointLight sh ls c loc
-lightFromDesc fn (Environment sh m) = environmentLight sh <$> (materialFromDesc fn m)
-lightFromDesc fn (Area sh oDesc p) = do
-    v <- objectFromDesc fn oDesc
+lightFromDesc :: MeshGroup -> Int -> LightDesc -> LoadM Light
+lightFromDesc _ _ (Ambient s c) = return $ ambientLight s c
+lightFromDesc _ _ (AmbientOccluder c min_amt s) = return $ ambientOccluder c min_amt s
+lightFromDesc _ _ (Point sh ls c loc) = return $ pointLight sh ls c loc
+lightFromDesc _ fn (Environment sh m) = environmentLight sh <$> (materialFromDesc fn m)
+lightFromDesc mg fn (Area sh oDesc p) = do
+    v <- objectFromDesc mg fn oDesc
     case v of
       [o] -> return $ areaLight sh o p
       _ -> fail "Could not create area light from multiple objects"

@@ -1,11 +1,14 @@
+{-# LANGUAGE BangPatterns #-}
 module Tracy.Main where
 
 import Control.Lens
 import Control.Concurrent
 import Data.Time.Clock
 import System.Exit
+import qualified Data.Map as M
 
 import Tracy.Types
+import Tracy.Objects.Mesh (loadMeshes)
 
 defaultRenderConfig :: RenderConfig
 defaultRenderConfig =
@@ -45,6 +48,13 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.hres)
                                (fromEnum $ w^.wdViewPlane.vres)
 
+  writeChan iChan ILoadingMeshes
+
+  -- Preload meshes
+  !mg <- loadMeshes s
+
+  writeChan iChan $ ILoadedMeshes $ M.size mg
+
   t1 <- getCurrentTime
   writeChan iChan $ IStartTime t1
 
@@ -58,7 +68,7 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   _ <- forkIO (renderManager reqChan respChan)
 
   -- Set the scene
-  writeChan reqChan $ SetScene renderCfg s frameNum
+  writeChan reqChan $ SetScene renderCfg s mg frameNum
 
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests

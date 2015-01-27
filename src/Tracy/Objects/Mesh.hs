@@ -1,12 +1,16 @@
 module Tracy.Objects.Mesh
   ( mesh
   , loadMesh
+  , loadMeshes
   ) where
 
 import Control.Applicative
 import Control.Concurrent
-import Data.ByteString.Char8 hiding (putStrLn)
+import Control.Monad (forM)
+import Data.List (nub)
+import Data.ByteString.Char8
 import qualified Data.Vector as V
+import qualified Data.Map as Map
 import Linear
 import PLY
 import PLY.Types
@@ -16,10 +20,14 @@ import Tracy.Types
 import Tracy.Objects.Grid
 import Tracy.Objects.Triangle
 
-loadMesh :: FilePath -> IO MeshData
-loadMesh filename = do
-    putStrLn $ "Loading mesh from " ++ filename ++ "..."
+loadMeshes :: (HasMeshes a) => a -> IO MeshGroup
+loadMeshes v =
+    Map.fromList <$>
+    (forM (nub $ findMeshes v) $ \p ->
+        (,) <$> (pure p) <*> loadMesh p)
 
+loadMesh :: MeshSource -> IO MeshData
+loadMesh (MeshFile filename) = do
     mv1 <- newEmptyMVar
     mv2 <- newEmptyMVar
 
@@ -32,9 +40,7 @@ loadMesh filename = do
       putMVar mv2 fs
 
     vs <- takeMVar mv1
-    putStrLn $ "  " ++ show (V.length vs) ++ " vertices"
     fs <- takeMVar mv2
-    putStrLn $ "  " ++ show (V.length fs) ++ " faces"
 
     let toDouble (Sfloat f) = float2Double f
         toDouble e = error $ "Could not get float from scalar: " ++ show e
