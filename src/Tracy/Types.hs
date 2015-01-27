@@ -130,9 +130,6 @@ data Object =
            , _areaLightImpl :: Maybe ObjectAreaLightImpl
            }
 
-instance Show Object where
-    show _ = "Object {...}"
-
 data ViewPlane =
     ViewPlane { _hres :: Double
               , _vres :: Double
