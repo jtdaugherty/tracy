@@ -81,20 +81,6 @@ tableScene =
                             )
                  PathTracer
 
-monkeyScene :: SceneDesc
-monkeyScene =
-    let cObj = Mesh (MeshFile "meshes/monkey.ply") $ Phong cWhite 0.5 50
-        ls = [ Point True 1 cWhite (V3 (-10) 10 10)
-             ]
-    in SceneDesc (worldOcc [cObj] ls 1) NoScheme
-                 (defCamera & thinLensRadius .~ (DoubleVal 0.0)
-                            & thinLensLookAt .~ (V3 0 0 0)
-                            & thinLensVpDist .~ 300
-                            & thinLensFpDist .~ 300
-                            & thinLensEye    .~ (V3Val $ V3 0 0 4)
-                            )
-                 RayCastTracer
-
 rectangles :: SceneDesc
 rectangles =
     let r1 = Rectangle (V3 10 0 0) (V3 100 0 0) (V3 0 130 0)     (Phong cBlue  0.5 50)
@@ -123,7 +109,6 @@ areaLightScene =
 allScenes :: [(String, SceneDesc)]
 allScenes =
     [ ("table",           tableScene)
-    , ("monkey",          monkeyScene)
     , ("rectangles",      rectangles)
     , ("area-light",      areaLightScene)
     ]
