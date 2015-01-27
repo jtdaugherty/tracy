@@ -6,12 +6,14 @@ Features:
 
  * Basic idealized primitives:
    - Triangles
-   - Spheres
-   - Cubes
+   - Spheres (and concave spheres with inverted normals for scene
+     lighting)
+   - Boxes
    - Planes
    - Rectangles
- * Triangle meshes
-   - Flat shading
+   - Triangle meshes
+ * Triangle mesh shading:
+   - Flat
    - Smooth shading (if vertex normals are available in mesh data)
  * Triangle mesh file formats:
    - PLY
@@ -32,14 +34,20 @@ Features:
  * Light source types:
    - Ambient
    - Point (with hard shadows)
-   - Area lights (supported geometry: rectangles)
+   - Area lights (supported geometry: rectangles with area-light tracer,
+     any geometry with path tracer)
    - Environment lights
  * User interface:
    - Console output with status information
    - Live GUI with progressive rendering
+ * Scene representation:
+   - YAML-based file format
+   - Network (de)serialization
  * Animation:
-   - Supports linear interpolation of float values, rotational
-     interpolation of vectors for some object fields
+   - Renders a selected frame from an animation sequence (frames can be
+     stitched into movies using external tools; see `scripts/`)
+   - Linear interpolation of float values, rotational interpolation of
+     vectors for some object fields
  * Engine:
    - Multi-core rendering via Haskell's `parMap` evaluation strategy
    - Multi-host rendering (run `tracy -d tcp://slave:9000` on the master,
