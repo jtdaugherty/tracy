@@ -43,7 +43,7 @@ data PreConfig =
 defaultPreConfig :: IO PreConfig
 defaultPreConfig = do
     n <- getNumProcessors
-    return $ PreConfig { argSampleRoot = 4
+    return $ PreConfig { argSampleRoot = 1
                        , argAccelScheme = Nothing
                        , argCpuCount = n
                        , argWorkBatches = 1
