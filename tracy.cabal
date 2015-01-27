@@ -58,7 +58,6 @@ library
     Tracy.Samplers
     Tracy.SceneBuilder
     Tracy.SceneLoader
-    Tracy.Scenes
     Tracy.Tracers
     Tracy.Types
     Tracy.Transformations
