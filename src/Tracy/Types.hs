@@ -649,7 +649,6 @@ makeLenses ''TraceData
 makeLenses ''LightDir
 makeLenses ''ObjectAreaLightImpl
 makeLenses ''SampleData
-
 makeLenses ''SceneDesc
 makeLenses ''WorldDesc
 makeLenses ''CameraDesc
