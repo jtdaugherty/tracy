@@ -1,4 +1,4 @@
-tracer: RayCastTracer
+tracer: AreaLightTracer
 accel: NoScheme
 camera:
     eye:
@@ -44,7 +44,7 @@ world:
               material:
                   type: emissive
                   color: Colour 1 1 1
-                  strength: 2
+                  strength: 200
 
     objects:
         - type: mesh
