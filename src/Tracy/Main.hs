@@ -55,12 +55,6 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
 
   writeChan iChan $ ILoadedMeshes $ M.size mg
 
-  t1 <- getCurrentTime
-  writeChan iChan $ IStartTime t1
-
-  writeChan dChan DStarted
-  writeChan iChan IStarted
-
   reqChan <- newChan
   respChan <- newChan
 
@@ -69,6 +63,12 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
 
   -- Set the scene
   writeChan reqChan $ SetScene renderCfg s mg frameNum
+
+  t1 <- getCurrentTime
+  writeChan iChan $ IStartTime t1
+
+  writeChan dChan DStarted
+  writeChan iChan IStarted
 
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests
