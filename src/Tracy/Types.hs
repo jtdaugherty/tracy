@@ -617,7 +617,7 @@ instance Y.FromJSON WorldDesc where
         WorldDesc <$> v Y..: "viewPlane"
                   <*> v Y..: "bgColor"
                   <*> v Y..: "objects"
-                  <*> v Y..: "lights"
+                  <*> (v Y..: "lights" <|> pure [])
                   <*> v Y..: "ambient"
                   <*> v Y..: "shadows"
     parseJSON _ = fail "Expected object for WorldDesc"
