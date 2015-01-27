@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 module Tracy.Objects.Plane where
 
 import Control.Lens
@@ -21,9 +22,12 @@ shadowHitPlane = _hitPlane
 
 _hitPlane :: V3 Double -> V3 Double -> Ray -> Maybe Double
 _hitPlane o n r =
-    let t = ((o - (r^.origin)) `dot` n) / ((r^.direction) `dot` n)
-    in if t > epsilon
-       then Just t else Nothing
+    let t = ((o - (r^.origin)) `dot` n) / denom
+        !denom = (r^.direction) `dot` n
+    in if denom == 0
+       then Nothing
+       else if t > epsilon
+            then Just t else Nothing
 
 hitPlane :: V3 Double -> V3 Double -> Material -> Ray -> Maybe (Shade, Double)
 hitPlane o n m ray =
