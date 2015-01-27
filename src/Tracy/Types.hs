@@ -624,9 +624,11 @@ instance Y.FromJSON ObjectDesc where
                                 <*> v Y..: "up"
                                 <*> v Y..: "material"
             "grid" -> Grid <$> v Y..: "objects"
+            "concaveSphere" -> ConcaveSphere <$> v Y..: "center"
+                                             <*> v Y..: "radius"
+                                             <*> v Y..: "material"
             t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')
 
-    -- ConcaveSphere (V3 Float) Float MaterialDesc
     parseJSON _ = fail "Expected object for ObjectDesc"
 
 instance Y.FromJSON MeshSource where

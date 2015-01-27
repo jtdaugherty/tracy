@@ -1,0 +1,78 @@
+tracer: PathTracer
+accel: NoScheme
+camera:
+    eye:
+        type: const
+        value: V3 -100 100 300
+    lookAt: V3 0 50 0
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 500
+    fpDist: 500
+    lensRadius:
+        type: const
+        value: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambient
+        color: Colour 1 1 1
+        strength: 1
+
+    objects:
+        # Light source
+        - type: concaveSphere
+          center: V3 0 0 0
+          radius: 10000
+          material:
+              type: emissive
+              strength: 1
+              color: Colour 1 0.9765 0.67059
+        - type: plane
+          origin: V3 0 0 0
+          normal: V3 0 1 0
+          material:
+              type: matte
+              color: Colour 0.6 0.6 1
+        - type: sphere
+          center: V3 -100 40 -10
+          radius: 40
+          material:
+              type: matte
+              color: Colour 1 0.5098 0
+        - type: sphere
+          center: V3 100 40 -10
+          radius: 40
+          material:
+              type: matte
+              color: Colour 0 0.74902 1
+        - type: rect
+          corner: V3 -150 0 -50
+          over: V3 300 0 0
+          up: V3 0 200 0
+          material:
+              type: matte
+              color: Colour 0.8 0.8 0.8
+        - type: sphere
+          center: V3 0 50 0
+          radius: 50
+          material:
+              type: reflective
+              baseColor: Colour 0.7 0.7 1
+              ks: 0.7
+              exp: 100
+              reflectiveColor: Colour 1 1 1
+              reflectiveStrength: 0.8
