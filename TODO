@@ -14,6 +14,10 @@
   * Make more samplers configurable rather than hard-coding in the
     rendering setup process
 
+- Bugs
+  * Rectangles get shadowed on the reverse side when nearby objects cast
+    shadows on the front-facing (normal) side
+
 - Effects
   * Refraction
   * Textures
