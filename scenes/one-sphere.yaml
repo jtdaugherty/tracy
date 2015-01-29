@@ -23,7 +23,7 @@ world:
         squareSampler: CorrelatedMultiJittered
 
     bgColor: Colour 0 0 0
-    shadows: true
+    shadows: false
 
     ambient:
         type: ambient
