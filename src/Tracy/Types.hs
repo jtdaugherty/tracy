@@ -356,8 +356,8 @@ data CameraDesc =
                    , _thinLensUp :: V3 Double
                    , _thinLensExposure :: Double
                    , _thinLensZ :: Double
-                   , _thinLensVpDist :: Double
-                   , _thinLensFpDist :: Double
+                   , _thinLensVpDist :: AnimDouble
+                   , _thinLensFpDist :: AnimDouble
                    , _thinLensRadius :: AnimDouble
                    , _thinLensSampler :: V2SamplerDesc
                    }
@@ -531,8 +531,8 @@ instance Y.FromJSON CameraDesc where
                        <*> v Y..: "up"
                        <*> v Y..: "exposure"
                        <*> v Y..: "zoom"
-                       <*> v Y..: "vpDist"
-                       <*> v Y..: "fpDist"
+                       <*> ((DoubleVal <$> v Y..: "vpDist") <|> (v Y..: "vpDist"))
+                       <*> ((DoubleVal <$> v Y..: "fpDist") <|> (v Y..: "fpDist"))
                        <*> ((DoubleVal <$> v Y..: "lensRadius") <|> (v Y..: "lensRadius"))
                        <*> v Y..: "lensSampler"
     parseJSON _ = fail "Expected object for CameraDesc"
