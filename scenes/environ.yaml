@@ -2,8 +2,11 @@ tracer: PathTracer
 accel: NoScheme
 camera:
     eye:
-        type: const
-        value: V3 -100 100 300
+        type: lerpRotY
+        fromFrame: 1
+        toFrame: 200
+        from: V3 -100 100 300
+        angle: 6.2831853 # 2 pi
     lookAt: V3 0 50 0
     up: V3 0 1 0
     exposure: 1.0
