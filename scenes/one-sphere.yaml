@@ -2,7 +2,7 @@ tracer: RayCastTracer
 accel: NoScheme
 
 camera:
-    eye: V3 0 100 300
+    eye: V3 0 0 300
     lookAt: V3 0 0 0
     up: V3 0 1 0
     exposure: 1.0
@@ -39,7 +39,7 @@ world:
 
     objects:
         - type: sphere
-          center: V3 -40 0 0
+          center: V3 0 0 0
           radius: 85.0
           material:
               type: phong
