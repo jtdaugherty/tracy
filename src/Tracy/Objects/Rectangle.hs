@@ -20,10 +20,11 @@ data Rect =
          , rectALen2 :: Double
          , rectBLen2 :: Double
          , rectInvArea :: Double
+         , rectDoubleSided :: Bool
          }
 
-rectangle :: V3 Double -> V3 Double -> V3 Double -> Material -> Object
-rectangle p a b mat =
+rectangle :: V3 Double -> V3 Double -> V3 Double -> Bool -> Material -> Object
+rectangle p a b dbl mat =
     let area = norm a * norm b
         r = Rect { rectP0 = p
                  , rectA = a
@@ -33,6 +34,7 @@ rectangle p a b mat =
                  , rectALen2 = norm a ** 2
                  , rectBLen2 = norm b ** 2
                  , rectInvArea = 1 / area
+                 , rectDoubleSided = dbl
                  }
     in Object { _objectMaterial = mat
               , _hit = rectHit r
@@ -54,8 +56,13 @@ rectSurfaceSample rect = do
     return (rectP0 rect + (sample_point^._x *^ (rectA rect)) +
                           (sample_point^._y *^ (rectB rect)))
 
-rectGetNormal :: Rect -> V3 Double -> V3 Double
-rectGetNormal rect = const $ rectNormal rect
+rectGetNormal :: Rect -> Shade -> V3 Double -> V3 Double
+rectGetNormal rect sh =
+    const $ if rectDoubleSided rect
+            then if (sh^.normal) `dot` (rectNormal rect) < 0
+                 then -1 *^ (rectNormal rect)
+                 else rectNormal rect
+            else rectNormal rect
 
 rectPDF :: Rect -> LightDir -> Shade -> Double
 rectPDF rect = const $ const $ rectInvArea rect
@@ -76,16 +83,19 @@ rectBoundingBox rect = BBox v0 v1
 
 rectHit :: Rect -> Ray -> Maybe (Shade, Double)
 rectHit rect ray =
-    let t = ((rectP0 rect - ray^.origin) `dot` (rectNormal rect)) /
-            ((ray^.direction) `dot` (rectNormal rect))
+    let t = ((rectP0 rect - ray^.origin) `dot` newNormal) /
+            ((ray^.direction) `dot` newNormal)
         p = ray^.origin + (t *^ ray^.direction)
         d = p - rectP0 rect
         ddota = d `dot` (rectA rect)
         ddotb = d `dot` (rectB rect)
         sh = defaultShade { _localHitPoint = p
-                          , _normal = rectNormal rect
+                          , _normal = newNormal
                           , _material = rectMaterial rect
                           }
+        newNormal = if rectDoubleSided rect
+                    then flipNormal (ray^.direction) (rectNormal rect)
+                    else rectNormal rect
     in if t <= epsilon ||
           (ddota < 0 || ddota > rectALen2 rect) ||
           (ddotb < 0 || ddotb > rectBLen2 rect)

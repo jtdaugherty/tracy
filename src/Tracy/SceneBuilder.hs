@@ -68,7 +68,7 @@ single v = (:[]) <$> v
 objectFromDesc :: MeshGroup -> Int -> ObjectDesc -> LoadM [Object]
 objectFromDesc _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc fn m
 objectFromDesc _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc fn m
-objectFromDesc _ fn (Rectangle p0 a b m) = single $ rectangle p0 a b <$> materialFromDesc fn m
+objectFromDesc _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc fn m
 objectFromDesc _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc fn m
 objectFromDesc _ fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc fn m
 objectFromDesc _ fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc fn m

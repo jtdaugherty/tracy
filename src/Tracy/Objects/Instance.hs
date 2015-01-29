@@ -28,12 +28,12 @@ transLightImpl (Trans (tForward, tInverse)) ali =
     ObjectALI { _objectSurfaceSample = do
                   s <- ali^.objectSurfaceSample
                   return $ tForward !*. s
-              , _objectGetNormal = \sh ->
+              , _objectGetNormal = \sh sample ->
                   -- XXX need to verify that this is supposed to be the
                   -- transpose of the inverse rather than the forward
                   -- transformation
                   signorm $ toV3 $ (distribute tInverse) !*
-                    (toV4 $ (ali^.objectGetNormal) sh)
+                    (toV4 $ (ali^.objectGetNormal) sh sample)
               , _objectPDF = ali^.objectPDF
               }
 

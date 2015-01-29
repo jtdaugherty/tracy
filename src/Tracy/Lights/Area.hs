@@ -34,7 +34,7 @@ areaLightDir :: ObjectAreaLightImpl -> Shade -> TraceM LightDir
 areaLightDir ali sh = do
     oSample <- ali^.objectSurfaceSample
     let wi = signorm $ oSample - sh^.localHitPoint
-        oNormal = (ali^.objectGetNormal) oSample
+        oNormal = (ali^.objectGetNormal) sh oSample
 
     return $ LD { _lightDir = wi
                 , _lightSamplePoint = oSample

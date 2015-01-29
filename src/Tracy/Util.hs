@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ForeignFunctionInterface, BangPatterns #-}
 module Tracy.Util
   ( max3
   , min3
@@ -8,6 +8,7 @@ module Tracy.Util
   , dSquared
   , toV3
   , toV4
+  , flipNormal
 
   , createMergeBuffer
   , mergeBatches
@@ -27,6 +28,10 @@ import Foreign.C.Types
 import Foreign.Ptr
 
 import Tracy.Types
+
+{-# INLINE flipNormal #-}
+flipNormal :: V3 Double -> V3 Double -> V3 Double
+flipNormal !dir !n = if dir `dot` n > 0 then -1 *^ n else n
 
 getColorBytes :: Colour -> B.ByteString
 getColorBytes (Colour r g b) =

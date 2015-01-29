@@ -41,6 +41,7 @@ world:
               corner: V3 0 1 0
               over: V3 0.1 0 0
               up: V3 0 0 0.1
+              doubleSided: false
               material:
                   type: emissive
                   color: Colour 1 1 1

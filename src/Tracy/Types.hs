@@ -123,7 +123,7 @@ data Ray =
 
 data ObjectAreaLightImpl =
     ObjectALI { _objectSurfaceSample :: TraceM (V3 Double)
-              , _objectGetNormal :: V3 Double -> V3 Double
+              , _objectGetNormal :: Shade -> V3 Double -> V3 Double
               , _objectPDF :: LightDir -> Shade -> Double
               }
 
@@ -318,7 +318,7 @@ data MeshData =
 data ObjectDesc =
       Sphere (V3 Double) Double MaterialDesc
     | ConcaveSphere (V3 Double) Double MaterialDesc
-    | Rectangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
+    | Rectangle (V3 Double) (V3 Double) (V3 Double) Bool MaterialDesc
     | Triangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
     | Box (V3 Double) (V3 Double) MaterialDesc
     | Plane (V3 Double) (V3 Double) MaterialDesc
@@ -622,6 +622,7 @@ instance Y.FromJSON ObjectDesc where
             "rect" -> Rectangle <$> v Y..: "corner"
                                 <*> v Y..: "over"
                                 <*> v Y..: "up"
+                                <*> (v Y..: "doubleSided" <|> pure True)
                                 <*> v Y..: "material"
             "grid" -> Grid <$> v Y..: "objects"
             "concaveSphere" -> ConcaveSphere <$> v Y..: "center"
