@@ -1,18 +1,14 @@
 tracer: RayCastTracer
 accel: NoScheme
 camera:
-    eye:
-        type: const
-        value: V3 -6 -3 3
+    eye: V3 -6 -3 3
     lookAt: V3 0 0 2
     up: V3 0 0 1
     exposure: 1.0
     zoom: 1.0
     vpDist: 300
     fpDist: 300
-    lensRadius:
-        type: const
-        value: 0
+    lensRadius: 0
     lensSampler: UnitDisk CorrelatedMultiJittered
 
 world:

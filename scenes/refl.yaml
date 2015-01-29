@@ -13,9 +13,7 @@ camera:
     zoom: 1.0
     vpDist: 500
     fpDist: 300
-    lensRadius:
-        type: const
-        value: 0
+    lensRadius: 0
     lensSampler: UnitDisk CorrelatedMultiJittered
 
 world:

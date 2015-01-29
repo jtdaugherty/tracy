@@ -1,18 +1,14 @@
 tracer: PathTracer
 accel: NoScheme
 camera:
-    eye:
-        type: const
-        value: V3 0 5 3.5
+    eye: V3 0 5 3.5
     lookAt: V3 0 3 0
     up: V3 0 1 0
     exposure: 1.0
     zoom: 1.0
     vpDist: 500
     fpDist: 500
-    lensRadius:
-        type: const
-        value: 0
+    lensRadius: 0
     lensSampler: UnitDisk CorrelatedMultiJittered
 
 world:

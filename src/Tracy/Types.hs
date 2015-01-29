@@ -526,14 +526,14 @@ instance Y.FromJSON AnimDouble where
 
 instance Y.FromJSON CameraDesc where
     parseJSON (Y.Object v) =
-        ThinLensCamera <$> v Y..: "eye"
+        ThinLensCamera <$> ((V3Val <$> v Y..: "eye") <|> (v Y..: "eye"))
                        <*> v Y..: "lookAt"
                        <*> v Y..: "up"
                        <*> v Y..: "exposure"
                        <*> v Y..: "zoom"
                        <*> v Y..: "vpDist"
                        <*> v Y..: "fpDist"
-                       <*> v Y..: "lensRadius"
+                       <*> ((DoubleVal <$> v Y..: "lensRadius") <|> (v Y..: "lensRadius"))
                        <*> v Y..: "lensSampler"
     parseJSON _ = fail "Expected object for CameraDesc"
 
