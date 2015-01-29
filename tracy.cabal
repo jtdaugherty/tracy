@@ -72,6 +72,7 @@ library
     Tracy.Lights.Point
     Tracy.Materials.Emissive
     Tracy.Materials.Matte
+    Tracy.Materials.Mix
     Tracy.Materials.Phong
     Tracy.Objects.Box
     Tracy.Objects.Compound

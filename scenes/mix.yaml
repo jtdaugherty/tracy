@@ -1,0 +1,106 @@
+aliases:
+    - &glossy
+      type: glossyReflective
+      baseColor: Colour 1 0 0
+      ks: 0.7
+      exp: 10
+      reflectiveColor: Colour 1 1 1
+      kr: 1
+      expR: 0.05
+    - &refl
+      type: glossyReflective
+      baseColor: Colour 1 1 0
+      ks: 0.7
+      exp: 1000
+      reflectiveColor: Colour 1 0 1
+      kr: 1
+      expR: 50
+    - &mat
+      type: mix
+      amount: 0.0
+      first:
+          *glossy
+      second:
+          *refl
+    - &sphere
+      type: sphere
+      center: V3 0 0 0
+      radius: 50
+      material:
+          *mat
+
+tracer: PathTracer
+accel: NoScheme
+camera:
+    eye:
+        type: lerpRotY
+        fromFrame: 1
+        toFrame: 200
+        from: V3 0 100 400
+        angle: 6.2831853 # 2 pi
+    lookAt: V3 0 50 0
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 500
+    fpDist: 500
+    lensRadius: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambient
+        color: Colour 1 1 1
+        strength: 1
+
+    objects:
+        # Light source
+        - type: concaveSphere
+          center: V3 0 0 0
+          radius: 10000
+          material:
+              type: emissive
+              strength: 1
+              color: Colour 1 1 1
+        - type: plane
+          origin: V3 0 0 0
+          normal: V3 0 1 0
+          material:
+              type: matte
+              color: Colour 0.6 0.6 0.6
+        - <<: *sphere
+          center: V3 -210 50 0
+          material:
+              <<: *mat
+              amount: 1
+        - <<: *sphere
+          center: V3 -105 50 0
+          material:
+              <<: *mat
+              amount: 0.75
+        - <<: *sphere
+          center: V3 0 50 0
+          material:
+              <<: *mat
+              amount: 0.5
+        - <<: *sphere
+          center: V3 105 50 0
+          material:
+              <<: *mat
+              amount: 0.25
+        - <<: *sphere
+          center: V3 210 50 0
+          material:
+              <<: *mat
+              amount: 0

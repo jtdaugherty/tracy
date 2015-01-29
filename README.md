@@ -24,6 +24,7 @@ Features:
    - Matte
    - Perfect specular reflection
    - Glossy specular reflection
+   - Mix (blended materials)
  * Object instancing
  * Object transformations
  * Global illumation:
@@ -74,8 +75,8 @@ Area lights:
 Perfect and glossy specular reflection:
 ![demo6](/demos/demo6.png)
 
-Table and chairs:
-![demo7](/demos/demo7.png)
-
 Table and chairs, path-traced:
 ![demo8](/demos/demo8.png)
+
+Blended materials:
+![demo9](/demos/demo9.png)
