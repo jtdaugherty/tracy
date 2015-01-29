@@ -6,15 +6,10 @@ aliases:
       exp: 10
       reflectiveColor: Colour 1 1 1
       kr: 1
-      expR: 0.05
+      expR: 1
     - &refl
-      type: glossyReflective
-      baseColor: Colour 1 1 0
-      ks: 0.7
-      exp: 1000
-      reflectiveColor: Colour 1 0 1
-      kr: 1
-      expR: 50
+      type: matte
+      color: Colour 0.5 0.5 1
     - &mat
       type: mix
       amount: 0.0
