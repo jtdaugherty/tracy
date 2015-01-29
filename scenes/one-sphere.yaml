@@ -16,7 +16,7 @@ world:
     viewPlane:
         hres: 800
         vres: 800
-        pixelSize: 1.0
+        pixelSize: 0.5
         gamma: 1.0
         inverseGamma: 1.0
         maxDepth: 10
@@ -28,12 +28,12 @@ world:
     ambient:
         type: ambient
         color: Colour 1 1 1
-        strength: 1
+        strength: 0.2
 
     lights:
         - type: point
           shadows: true
-          strength: 1
+          strength: 3
           color: Colour 1 1 1
           position: V3 -500 500 500
 
@@ -45,4 +45,4 @@ world:
               type: phong
               color: Colour 1 0 0
               ks: 0.5
-              exp: 100
+              exp: 50
