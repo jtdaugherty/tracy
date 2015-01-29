@@ -40,13 +40,13 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   writeChan iChan $ INumObjects $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
   writeChan iChan $ INumBatches numBatches
-  writeChan iChan $ IImageSize (fromEnum $ w^.wdViewPlane.hres)
-                               (fromEnum $ w^.wdViewPlane.vres)
+  writeChan iChan $ IImageSize (fromEnum $ w^.wdViewPlane.vpHres)
+                               (fromEnum $ w^.wdViewPlane.vpVres)
 
   writeChan dChan $ DNumBatches numBatches
   writeChan dChan $ DSampleRoot $ renderCfg^.sampleRoot
-  writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.hres)
-                               (fromEnum $ w^.wdViewPlane.vres)
+  writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.vpHres)
+                               (fromEnum $ w^.wdViewPlane.vpVres)
 
   writeChan iChan ILoadingMeshes
 

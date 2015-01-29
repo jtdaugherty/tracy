@@ -50,6 +50,7 @@ world:
         gamma: 1.0
         inverseGamma: 1.0
         maxDepth: 10
+        squareSampler: CorrelatedMultiJittered
 
     bgColor: Colour 0 0 0
     shadows: true

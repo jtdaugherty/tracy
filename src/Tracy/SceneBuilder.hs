@@ -53,12 +53,22 @@ runSceneFromDesc sd mg fn =
 
 worldFromDesc :: MeshGroup -> Int -> WorldDesc -> LoadM World
 worldFromDesc mg fn wd =
-    World <$> (pure                  $ wd^.wdViewPlane)
+    World <$> (viewPlaneFromDesc fn  $ wd^.wdViewPlane)
           <*> (pure                  $ wd^.wdBgColor)
           <*> (objectsFromDesc mg fn $ wd^.wdObjects)
           <*> (lightsFromDesc mg fn  $ wd^.wdLights)
           <*> (lightFromDesc mg fn   $ wd^.wdAmbient)
           <*> (pure                  $ wd^.wdWorldShadows)
+
+viewPlaneFromDesc :: Int -> ViewPlaneDesc -> LoadM ViewPlane
+viewPlaneFromDesc _ vpd =
+    ViewPlane (vpd^.vpHres)
+        (vpd^.vpVres)
+        (vpd^.vpPixelSize)
+        (vpd^.vpGamma)
+        (vpd^.vpInverseGamma)
+        (vpd^.vpMaxDepth)
+        <$> (v2SamplerFromDesc $ vpd^.vpSquareSampler)
 
 objectsFromDesc :: MeshGroup -> Int -> [ObjectDesc] -> LoadM [Object]
 objectsFromDesc mg fn os = concat <$> sequenceA (objectFromDesc mg fn <$> os)

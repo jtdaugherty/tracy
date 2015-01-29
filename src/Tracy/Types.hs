@@ -142,7 +142,19 @@ data ViewPlane =
               , _gamma :: Double
               , _inverseGamma :: Double
               , _maxDepth :: Int
+              , _squareSampler :: Sampler (Double, Double)
               }
+    deriving (Generic)
+
+data ViewPlaneDesc =
+    ViewPlaneDesc { _vpHres :: Double
+                  , _vpVres :: Double
+                  , _vpPixelSize :: Double
+                  , _vpGamma :: Double
+                  , _vpInverseGamma :: Double
+                  , _vpMaxDepth :: Int
+                  , _vpSquareSampler :: V2SamplerDesc
+                  }
     deriving (Show, Eq, Generic)
 
 data World =
@@ -300,7 +312,7 @@ data AccelSchemeDesc =
     deriving (Eq, Show, Generic, Read)
 
 data WorldDesc =
-    WorldDesc { _wdViewPlane :: ViewPlane
+    WorldDesc { _wdViewPlane :: ViewPlaneDesc
               , _wdBgColor :: Color
               , _wdObjects :: [ObjectDesc]
               , _wdLights :: [LightDesc]
@@ -437,7 +449,7 @@ instance Serialize AccelSchemeDesc where
 instance Serialize TransformationDesc where
 instance Serialize InstanceDesc where
 instance Serialize TracerDesc where
-instance Serialize ViewPlane where
+instance Serialize ViewPlaneDesc where
 instance Serialize JobRequest where
 instance Serialize JobResponse where
 instance Serialize RenderConfig where
@@ -450,14 +462,15 @@ instance Serialize MeshData where
     get = MeshData <$> (V.fromList <$> get) <*> get
     put (MeshData vs fs) = put (V.toList vs) >> put fs
 
-instance Y.FromJSON ViewPlane where
+instance Y.FromJSON ViewPlaneDesc where
     parseJSON (Y.Object v) =
-        ViewPlane <$> v Y..: "hres"
-                  <*> v Y..: "vres"
-                  <*> v Y..: "pixelSize"
-                  <*> v Y..: "gamma"
-                  <*> v Y..: "inverseGamma"
-                  <*> v Y..: "maxDepth"
+        ViewPlaneDesc <$> v Y..: "hres"
+                      <*> v Y..: "vres"
+                      <*> v Y..: "pixelSize"
+                      <*> v Y..: "gamma"
+                      <*> v Y..: "inverseGamma"
+                      <*> v Y..: "maxDepth"
+                      <*> v Y..: "squareSampler"
     parseJSON _ = fail "Expected object for ViewPlane"
 
 readsT :: (Read a) => T.Text -> [(a, String)]
@@ -683,6 +696,7 @@ makeLenses ''TraceData
 makeLenses ''LightDir
 makeLenses ''ObjectAreaLightImpl
 makeLenses ''SampleData
+makeLenses ''ViewPlaneDesc
 makeLenses ''SceneDesc
 makeLenses ''WorldDesc
 makeLenses ''CameraDesc
