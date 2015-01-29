@@ -69,18 +69,20 @@ thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
           let !squareSampleSet = (sampleData^.squareSampleSets) V.! sampleIndex
               !diskSampleSet = (sampleData^.diskSampleSets) V.! sampleIndex
               !objectSampleSet = (sampleData^.objectSampleSets) V.! sampleIndex
+              !pixelSampleSet = (sampleData^.pixelSampleSets) V.! sampleIndex
               !sampleIndex = sampleIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
 
-          in maxToOne ((V.sum (results col squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
+          in maxToOne ((V.sum (results col pixelSampleSet squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
               maxToOneExposure)
 
-      results :: Double -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector Color
-      results col pixelSamples diskSamples objectSamples =
-          V.map (result col) (V.zip3 pixelSamples diskSamples objectSamples)
+      results :: Double -> V.Vector (Double, Double) -> V.Vector (Double, Double)
+              -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector Color
+      results col pixelSamples squareSamples diskSamples objectSamples =
+          V.map (result col) (V.zip4 pixelSamples squareSamples diskSamples objectSamples)
 
-      result col ((sx, sy), (dx, dy), (ox, oy)) =
-          let !x = newPixSize * (col - (0.5 * vp^.hres) + sx)
-              !y = newPixSize * (row - (0.5 * vp^.vres) + sy)
+      result col ((px, py), (sx, sy), (dx, dy), (ox, oy)) =
+          let !x = newPixSize * (col - (0.5 * vp^.hres) + px)
+              !y = newPixSize * (row - (0.5 * vp^.vres) + py)
 
               !lx = dx * cam^.cameraData.lensRadius
               !ly = dy * cam^.cameraData.lensRadius

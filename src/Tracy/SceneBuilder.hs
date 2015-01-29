@@ -68,7 +68,7 @@ viewPlaneFromDesc _ vpd =
         (vpd^.vpGamma)
         (vpd^.vpInverseGamma)
         (vpd^.vpMaxDepth)
-        <$> (v2SamplerFromDesc $ vpd^.vpSquareSampler)
+        <$> (v2SamplerFromDesc $ vpd^.vpPixelSampler)
 
 objectsFromDesc :: MeshGroup -> Int -> [ObjectDesc] -> LoadM [Object]
 objectsFromDesc mg fn os = concat <$> sequenceA (objectFromDesc mg fn <$> os)

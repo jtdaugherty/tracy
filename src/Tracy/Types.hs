@@ -142,7 +142,7 @@ data ViewPlane =
               , _gamma :: Double
               , _inverseGamma :: Double
               , _maxDepth :: Int
-              , _squareSampler :: Sampler (Double, Double)
+              , _pixelSampler :: Sampler (Double, Double)
               }
     deriving (Generic)
 
@@ -153,7 +153,7 @@ data ViewPlaneDesc =
                   , _vpGamma :: Double
                   , _vpInverseGamma :: Double
                   , _vpMaxDepth :: Int
-                  , _vpSquareSampler :: V2SamplerDesc
+                  , _vpPixelSampler :: V2SamplerDesc
                   }
     deriving (Show, Eq, Generic)
 
@@ -229,6 +229,7 @@ instance Functor Sampler where
 
 data SampleData =
     SampleData { _numSets :: Int
+               , _pixelSampleSets :: V.Vector (V.Vector (Double, Double))
                , _squareSampleSets :: V.Vector (V.Vector (Double, Double))
                , _diskSampleSets :: V.Vector (V.Vector (Double, Double))
                , _objectSampleSets :: V.Vector (V.Vector (Double, Double))
@@ -470,7 +471,7 @@ instance Y.FromJSON ViewPlaneDesc where
                       <*> v Y..: "gamma"
                       <*> v Y..: "inverseGamma"
                       <*> v Y..: "maxDepth"
-                      <*> v Y..: "squareSampler"
+                      <*> v Y..: "pixelSampler"
     parseJSON _ = fail "Expected object for ViewPlane"
 
 readsT :: (Read a) => T.Text -> [(a, String)]

@@ -15,7 +15,8 @@ import Tracy.ChunkRender
 
 localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig -> Scene ThinLens -> GenIO -> IO ()
 localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
-    let sqSampler = builtScene^.sceneWorld.viewPlane.squareSampler
+    let pxSampler = builtScene^.sceneWorld.viewPlane.pixelSampler
+        sqSampler = correlatedMultiJittered
         diskSampler = builtScene^.sceneCamera.cameraData.lensSampler
         theNumSets = fromEnum $ 10 * builtScene^.sceneWorld.viewPlane.hres
         aScheme = builtScene^.sceneAccelScheme
@@ -31,11 +32,12 @@ localSetSceneAndRender jobReq jobResp cfg builtScene rng = do
           case ev of
               RenderRequest -> do
                   -- Generate sample data for square and disk samplers
+                  pSamplesVec <- V.generateM theNumSets $ const $ runSampler pxSampler rng (cfg^.sampleRoot)
                   sSamplesVec <- V.generateM theNumSets $ const $ runSampler sqSampler rng (cfg^.sampleRoot)
                   dSamplesVec <- V.generateM theNumSets $ const $ runSampler diskSampler rng (cfg^.sampleRoot)
                   oSamplesVec <- V.generateM theNumSets $ const $ runSampler sqSampler rng (cfg^.sampleRoot)
 
-                  let sampleData = SampleData theNumSets sSamplesVec dSamplesVec oSamplesVec
+                  let sampleData = SampleData theNumSets pSamplesVec sSamplesVec dSamplesVec oSamplesVec
 
                   ch <- renderChunk cfg rng scene tracer sampleData
                   writeChan jobResp $ BatchFinished ch
