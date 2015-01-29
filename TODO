@@ -15,6 +15,7 @@
     rendering setup process
 
 - Effects
+  * Mixed materials
   * Refraction
   * Textures
     * Procedural
