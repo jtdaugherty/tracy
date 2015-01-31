@@ -23,11 +23,12 @@ mkSamplerGroup gen name s =
 
 allGroups :: GenIO -> [Benchmark]
 allGroups gen =
-    [ mkSamplerGroup gen "regular" regular
-    , mkSamplerGroup gen "pureRandom" pureRandom
-    , mkSamplerGroup gen "jittered" jittered
-    , mkSamplerGroup gen "multiJittered" multiJittered
-    , mkSamplerGroup gen "correlatedMultiJittered" correlatedMultiJittered
+    [ bgroup "samplers" [ mkSamplerGroup gen "regular" regular
+                        , mkSamplerGroup gen "pureRandom" pureRandom
+                        , mkSamplerGroup gen "jittered" jittered
+                        , mkSamplerGroup gen "multiJittered" multiJittered
+                        , mkSamplerGroup gen "correlatedMultiJittered" correlatedMultiJittered
+                        ]
     , bench "toUnitHemi" $ nf (toUnitHemi 1) (0.5, 0.5)
     , bgroup "toUnitDisk" [ bench "center" $ nf toUnitDisk (0.5, 0.5)
                           , bench "UL" $ nf toUnitDisk (-0.2, 0.2)
