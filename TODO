@@ -3,6 +3,8 @@
 
 - Performance
   * Implement bounding volume hierarchy support
+  * Generate vectors of random values in Samplers.hs to improve
+    performance, test sample setup time in Main.hs
 
 - Sampling
   * Make sampler-debug more useful (e.g. take side length options,
