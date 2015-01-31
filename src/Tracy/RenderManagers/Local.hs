@@ -57,7 +57,6 @@ localRenderManager jobReq jobResp = do
                               theNumSets = fromEnum $ 10 * s^.sceneWorld.viewPlane.hres
                               seed = toSeed seedV
 
-                          writeChan jobResp JobAck
                           rng <- restore seed
 
                           -- Generate sample data for square and disk samplers
@@ -76,6 +75,7 @@ localRenderManager jobReq jobResp = do
                                                     uniformR (0, sampleData^.numSets - 1) rng
                                                     )
                                                     )
+                          writeChan jobResp SetSceneAck
 
                           localSetSceneAndRender jobReq jobResp cfg s sampleData sampleIndexMap
                       Left e -> writeChan jobResp $ JobError e

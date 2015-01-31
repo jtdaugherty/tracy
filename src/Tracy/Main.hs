@@ -3,7 +3,10 @@ module Tracy.Main where
 
 import Control.Lens
 import Control.Concurrent
+import Control.Monad (when)
+import Data.IORef
 import Data.Time.Clock
+import Data.Maybe (isNothing)
 import System.Exit
 import System.Random.MWC
 import qualified Data.Map as M
@@ -87,14 +90,10 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
   -- Set the scene
   writeChan reqChan $ SetScene renderCfg s mg frameNum rngSeedV rowRanges
 
-  t1 <- getCurrentTime
-  writeChan iChan $ IStartTime t1
-
-  writeChan dChan DStarted
-  writeChan iChan IStarted
-
   -- Send the rendering requests
   mapM_ (writeChan reqChan) requests
+
+  startTime <- newIORef Nothing
 
   -- Wait for the responses
   let collector numFinished = do
@@ -104,7 +103,25 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
                 putStrLn $ "Yikes! Error in render thread: " ++ msg
                 exitSuccess
             JobAck -> collector numFinished
+            SetSceneAck -> do
+                t <- readIORef startTime
+                -- XXX this starts the clock on the first ack, but if
+                -- we're using multiple network nodes, it would be nice
+                -- to start the clock only when _all_ of them have
+                -- ack'd.
+                when (isNothing t) $ do
+                      t1 <- getCurrentTime
+                      writeChan iChan $ IStartTime t1
+                      writeChan iChan IStarted
+                      writeChan dChan DStarted
+                      writeIORef startTime $ Just t1
+
+                collector numFinished
             ChunkFinished rowRange rs -> do
+                -- If we get here and startTime is Nothing, that's a
+                -- bug; how could we have finished a chunk if we hadn't
+                -- gotten at least one scene ack?
+                Just t1 <- readIORef startTime
                 t <- getCurrentTime
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
                                              (length requests - (numFinished + 1))
@@ -118,6 +135,7 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
 
   collector 0
 
+  Just t1 <- readIORef startTime
   t2 <- getCurrentTime
 
   writeChan dChan DFinished

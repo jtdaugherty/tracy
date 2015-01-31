@@ -115,5 +115,6 @@ main = do
 
                 case resp of
                     JobAck -> return ()
+                    SetSceneAck -> putStrLn "Done setting up scene, ready to render"
                     ChunkFinished _ _ -> putStrLn $ "Finished chunk"
                     JobError e -> putStrLn $ "Job error: " ++ e

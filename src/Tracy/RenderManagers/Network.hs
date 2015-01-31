@@ -19,28 +19,16 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
 
       let worker = do
             ev <- readChan jobReq
+            send sock [] $ encode ev
+            reply <- receive sock
+            case decode reply of
+                Left e -> writeChan jobResp $ JobError e
+                Right r -> writeChan jobResp r
             case ev of
-                SetScene _ _ _ _ _ _ -> do
-                    send sock [] $ encode ev
-                    _ <- receive sock
-                    worker
-                RenderRequest _ _ -> do
-                    _ <- send sock [] $ encode ev
-                    reply <- receive sock
-                    case decode reply of
-                        Left e -> writeChan jobResp $ JobError e
-                        Right r -> writeChan jobResp r
-                    readyNotify
-                    worker
-                RenderFinished -> do
-                    send sock [] $ encode RenderFinished
-                    _ <- receive sock
-                    readyNotify
-                    worker
-                Shutdown -> do
-                    send sock [] $ encode Shutdown
-                    _ <- receive sock
-                    return ()
+                SetScene _ _ _ _ _ _ -> readyNotify >> worker
+                RenderRequest _ _ -> readyNotify >> worker
+                RenderFinished -> worker
+                Shutdown -> return ()
 
       worker
 

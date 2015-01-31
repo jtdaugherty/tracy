@@ -72,6 +72,7 @@ type MeshGroup = Map MeshSource MeshData
 data JobResponse =
       JobError String
     | ChunkFinished (Int, Int) (SV.Vector Colour)
+    | SetSceneAck
     | JobAck
     deriving (Generic)
 
