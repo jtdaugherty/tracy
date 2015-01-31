@@ -6,7 +6,6 @@ module Tracy.ChunkRender
   where
 
 import Control.Lens
-import Numeric.Lens
 import Control.Parallel.Strategies
 import Control.DeepSeq
 import Data.Colour
@@ -24,14 +23,13 @@ renderChunk :: RenderConfig
             -> SampleData
             -> [V.Vector Int]
             -> (Int, Int)
+            -> (Int, Int)
             -> IO (SV.Vector Color)
-renderChunk cfg s tracer sampleData sampleSetIndices sampleRange = do
+renderChunk cfg s tracer sampleData sampleSetIndices sampleRange (startRow, stopRow) = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
       renderer = cam^.cameraRenderWorld
-      chunkRows = [start..stop]
-      start = 0
-      stop = s^.sceneWorld.viewPlane.vres.subtracting 1.from enum
+      chunkRows = [startRow..stopRow]
       worker p = renderer cam cfg w tracer sampleData p sampleRange
 
   let r = parMap (rpar `dot` rdeepseq) worker (zip chunkRows sampleSetIndices)
