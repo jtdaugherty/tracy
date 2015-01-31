@@ -15,6 +15,8 @@ defaultRenderConfig :: RenderConfig
 defaultRenderConfig =
     RenderConfig { _sampleRoot = 4
                  , _forceShadows = Nothing
+                 , _samplesPerChunk = 1
+                 , _rowsPerChunk = 100
                  }
 
 render :: String
@@ -27,8 +29,6 @@ render :: String
        -> IO ()
 render sceneName renderCfg s frameNum renderManager iChan dChan = do
   let w = s^.sceneDescWorld
-      rowsPerBatch = 100 -- fromEnum $ w^.wdViewPlane.vpVres
-      samplesPerBatch = 1 -- fromEnum $ (renderCfg^.sampleRoot) ** 2
       allRows = [0..fromEnum (w^.wdViewPlane.vpVres-1)]
       allSampleIndices = [0..fromEnum (((renderCfg^.sampleRoot) ** 2) - 1)]
 
@@ -40,8 +40,8 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
             current = take n rs
             rest = drop n rs
 
-      rowRanges = ranges rowsPerBatch allRows
-      sampleRanges = ranges samplesPerBatch allSampleIndices
+      rowRanges = ranges (renderCfg^.rowsPerChunk) allRows
+      sampleRanges = ranges (renderCfg^.samplesPerChunk) allSampleIndices
 
       requests = [ RenderRequest rowRange sampleRange
                  | sampleRange <- sampleRanges

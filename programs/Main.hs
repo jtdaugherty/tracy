@@ -24,6 +24,8 @@ data Arg = Help
          | NoShadows
          | Shadows
          | CPUs String
+         | SamplesPerChunk String
+         | RowsPerChunk String
          | UseGUI
          | RenderNode String
          | FrameNum String
@@ -36,6 +38,8 @@ data PreConfig =
               , argFrameNum :: Int
               , argForceShadows :: Maybe Bool
               , argRenderNodes :: [String]
+              , argSamplesPerChunk :: Int
+              , argRowsPerChunk :: Int
               }
 
 defaultPreConfig :: IO PreConfig
@@ -47,6 +51,8 @@ defaultPreConfig = do
                        , argForceShadows = Nothing
                        , argRenderNodes = []
                        , argFrameNum = 1
+                       , argSamplesPerChunk = 1
+                       , argRowsPerChunk = 100
                        }
 
 mkOpts :: IO [OptDescr Arg]
@@ -64,6 +70,10 @@ mkOpts = do
              ("Render on NODE (specify once for each node)")
            , Option "f" ["frame"] (ReqArg FrameNum "NUM")
              ("Render animation sequence frame number NUM")
+           , Option "R" ["rows-per-chunk"] (ReqArg RowsPerChunk "COUNT")
+             "Rows per chunk"
+           , Option "S" ["samples-per-chunk"] (ReqArg SamplesPerChunk "COUNT")
+             "Samples per chunk"
            ]
 
 updateConfig :: PreConfig -> Arg -> IO PreConfig
@@ -73,6 +83,14 @@ updateConfig c (SampleRoot s) = return $ c { argSampleRoot = read s }
 updateConfig c NoShadows = return $ c { argForceShadows = Just True }
 updateConfig c Shadows = return $ c { argForceShadows = Just False }
 updateConfig c (RenderNode n) = return $ c { argRenderNodes = n : argRenderNodes c }
+updateConfig c (SamplesPerChunk s) =
+    case reads s of
+        [(f, _)] -> return $ c { argSamplesPerChunk = f }
+        _ -> usage >> exitFailure
+updateConfig c (RowsPerChunk s) =
+    case reads s of
+        [(f, _)] -> return $ c { argRowsPerChunk = f }
+        _ -> usage >> exitFailure
 updateConfig c (FrameNum s) =
     case reads s of
         [(f, _)] -> return $ c { argFrameNum = f }
@@ -120,6 +138,8 @@ main = do
       Right sceneDesc -> do
         let renderCfg = defaultRenderConfig & sampleRoot .~ (argSampleRoot preCfg)
                                             & forceShadows .~ (argForceShadows preCfg)
+                                            & samplesPerChunk .~ (argSamplesPerChunk preCfg)
+                                            & rowsPerChunk .~ (argRowsPerChunk preCfg)
 
         iChan <- newChan
         dChan <- newChan

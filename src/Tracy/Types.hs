@@ -182,6 +182,8 @@ data AccelScheme =
 data RenderConfig =
     RenderConfig { _sampleRoot :: Double
                  , _forceShadows :: Maybe Bool
+                 , _samplesPerChunk :: Int
+                 , _rowsPerChunk :: Int
                  }
                  deriving (Generic, Show)
 
