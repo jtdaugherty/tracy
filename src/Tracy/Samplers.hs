@@ -47,12 +47,14 @@ regular = Sampler $ \_ root -> do
 
 jittered :: Sampler (Double, Double)
 jittered = Sampler $ \gen root -> do
+  vs <- uniformVector gen (fromEnum $ root * root)
+
   sampleArrs <- forM [0..root-1] $ \k ->
                 forM [0..root-1] $ \j ->
                     do
-                      a <- getRandomUnit gen
-                      b <- getRandomUnit gen
-                      return ((k + a) / root, (j + b) / root)
+                      return ( (k + vs V.! (fromEnum k)) / root
+                             , (j + vs V.! (fromEnum j)) / root
+                             )
 
   return $ V.fromList $ concat sampleArrs
 
