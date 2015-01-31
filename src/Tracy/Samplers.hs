@@ -49,12 +49,13 @@ jittered :: Sampler (Double, Double)
 jittered = Sampler $ \gen root -> do
   vs <- uniformVector gen (fromEnum $ root * root)
 
-  let sampleArrs = [ ( (k + vs V.! (fromEnum k)) / root
-                     , (j + vs V.! (fromEnum j)) / root
-                     )
-                   | j <- [0..root-1]
-                   , k <- [0..root-1]
-                   ]
+  let sampleArrs = do
+        j <- [0..root-1]
+        k <- [0..root-1]
+        let !t = vs V.! (fromEnum $ k * root + j)
+        return ( (k + fst t) / root
+               , (j + snd t) / root
+               )
 
   return $ V.fromList sampleArrs
 
