@@ -24,7 +24,6 @@ data Arg = Help
          | NoShadows
          | Shadows
          | CPUs String
-         | Batches String
          | UseGUI
          | RenderNode String
          | FrameNum String
@@ -34,7 +33,6 @@ data PreConfig =
     PreConfig { argSampleRoot :: Double
               , argAccelScheme :: Maybe AccelScheme
               , argCpuCount :: Int
-              , argWorkBatches :: Int
               , argFrameNum :: Int
               , argForceShadows :: Maybe Bool
               , argRenderNodes :: [String]
@@ -46,7 +44,6 @@ defaultPreConfig = do
     return $ PreConfig { argSampleRoot = 1
                        , argAccelScheme = Nothing
                        , argCpuCount = n
-                       , argWorkBatches = 1
                        , argForceShadows = Nothing
                        , argRenderNodes = []
                        , argFrameNum = 1
@@ -56,17 +53,15 @@ mkOpts :: IO [OptDescr Arg]
 mkOpts = do
     maxc <- getNumProcessors
     return [ Option "h" ["help"] (NoArg Help) "This help output"
-           , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "ROOT^2 samples per batch"
+           , Option "r" ["aa-sample-root"] (ReqArg SampleRoot "ROOT") "ROOT^2 samples per pixel"
            , Option "n" ["force-no-shadows"] (NoArg NoShadows) "Force shadows off"
            , Option "s" ["force-shadows"] (NoArg Shadows) "Force shadows on"
            , Option "c" ["cpu-count"] (ReqArg CPUs "COUNT")
              ("Use COUNT CPUs for rendering in parallel (default, max: " ++ show maxc ++ ")")
-           , Option "b" ["batches"] (ReqArg Batches "COUNT")
-             ("Render COUNT batches of samples per frame")
            , Option "g" ["gui"] (NoArg UseGUI)
              ("Show the rendering in a GUI as it completes")
            , Option "d" ["distribute"] (ReqArg RenderNode "NODE")
-             ("Render batches on NODE (specify once for each node)")
+             ("Render on NODE (specify once for each node)")
            , Option "f" ["frame"] (ReqArg FrameNum "NUM")
              ("Render animation sequence frame number NUM")
            ]
@@ -81,10 +76,6 @@ updateConfig c (RenderNode n) = return $ c { argRenderNodes = n : argRenderNodes
 updateConfig c (FrameNum s) =
     case reads s of
         [(f, _)] -> return $ c { argFrameNum = f }
-        _ -> usage >> exitFailure
-updateConfig c (Batches s) =
-    case reads s of
-        [(cnt, _)] -> return $ c { argWorkBatches = cnt }
         _ -> usage >> exitFailure
 updateConfig c (CPUs s) = do
     case reads s of
@@ -138,7 +129,7 @@ main = do
                       else networkRenderManager (argRenderNodes preCfg) iChan
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender (argWorkBatches preCfg) renderCfg sceneDesc (argFrameNum preCfg) manager iChan dChan
+        _ <- forkIO $ render toRender renderCfg sceneDesc (argFrameNum preCfg) manager iChan dChan
 
         case UseGUI `elem` os of
             False -> do

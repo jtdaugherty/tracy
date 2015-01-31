@@ -32,7 +32,6 @@ guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
   DSceneName sceneName <- readChan chan
   DFrameNum frameNum <- readChan chan
-  DNumBatches _ <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
   DRowRanges rowRanges <- readChan chan
@@ -68,12 +67,12 @@ guiHandler chan = do
   let work sampleCounts = do
         ev <- readChan chan
         case ev of
-            DBatchFinished (startRow, stopRow) rs -> do
+            DChunkFinished (startRow, stopRow) rs -> do
                 let numSamples = sampleCounts M.! startRow
                     startIndex = startRow * cols
                     stopIndex = ((stopRow + 1) * cols) - 1
 
-                mergeBatches numSamples startRow combinedArray rs
+                mergeChunks numSamples startRow combinedArray rs
 
                 forM_ [startIndex..stopIndex] $ \i -> do
                     val <- peekElemOff (castPtr combinedPtr) i

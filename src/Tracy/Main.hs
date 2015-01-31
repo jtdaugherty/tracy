@@ -18,7 +18,6 @@ defaultRenderConfig =
                  }
 
 render :: String
-       -> Int
        -> RenderConfig
        -> SceneDesc
        -> Int
@@ -26,7 +25,7 @@ render :: String
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
-render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
+render sceneName renderCfg s frameNum renderManager iChan dChan = do
   let w = s^.sceneDescWorld
       rowsPerBatch = 100 -- fromEnum $ w^.wdViewPlane.vpVres
       samplesPerBatch = 1 -- fromEnum $ (renderCfg^.sampleRoot) ** 2
@@ -59,11 +58,9 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
   writeChan iChan $ INumObjects $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
-  writeChan iChan $ INumBatches numBatches
   writeChan iChan $ IImageSize (fromEnum $ w^.wdViewPlane.vpHres)
                                (fromEnum $ w^.wdViewPlane.vpVres)
 
-  writeChan dChan $ DNumBatches numBatches
   writeChan dChan $ DSampleRoot $ renderCfg^.sampleRoot
   writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.vpHres)
                                (fromEnum $ w^.wdViewPlane.vpVres)
@@ -107,13 +104,13 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
                 putStrLn $ "Yikes! Error in render thread: " ++ msg
                 exitSuccess
             JobAck -> collector numFinished
-            BatchFinished rowRange rs -> do
+            ChunkFinished rowRange rs -> do
                 t <- getCurrentTime
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
                                              (length requests - (numFinished + 1))
 
-                writeChan iChan $ IBatchFinished (numFinished + 1) (length requests) remainingTime
-                writeChan dChan $ DBatchFinished rowRange rs
+                writeChan iChan $ IChunkFinished (numFinished + 1) (length requests) remainingTime
+                writeChan dChan $ DChunkFinished rowRange rs
 
                 if numFinished + 1 == length requests then
                    writeChan reqChan RenderFinished >> writeChan reqChan Shutdown else

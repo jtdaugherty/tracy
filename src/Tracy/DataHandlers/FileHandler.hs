@@ -23,7 +23,6 @@ fileHandler :: FilePath -> Chan DataEvent -> IO ()
 fileHandler filename chan = do
   DSceneName _ <- readChan chan
   DFrameNum _ <- readChan chan
-  DNumBatches batches <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
   DRowRanges rowRanges <- readChan chan
@@ -37,10 +36,10 @@ fileHandler filename chan = do
   let work = do
       ev <- readChan chan
       case ev of
-          DBatchFinished rowRange rs -> do
+          DChunkFinished rowRange rs -> do
             let startRow = fst rowRange
             m <- readIORef ref
-            mergeBatches (m M.! startRow) startRow merged rs
+            mergeChunks (m M.! startRow) startRow merged rs
             writeIORef ref $ M.alter (\(Just v) -> Just (v + 1)) startRow m
             work
           DFinished -> return ()

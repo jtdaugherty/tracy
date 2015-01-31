@@ -11,7 +11,7 @@ module Tracy.Util
   , flipNormal
 
   , createMergeBuffer
-  , mergeBatches
+  , mergeChunks
   , vectorFromMergeBuffer
   ) where
 
@@ -73,8 +73,8 @@ createMergeBuffer rows cols = do
     p <- mallocArray (3 * rows * cols)
     return (rows, cols, p)
 
-mergeBatches :: Int -> Int -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
-mergeBatches numSamples startRow (_, cols, merged) newData = do
+mergeChunks :: Int -> Int -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
+mergeChunks numSamples startRow (_, cols, merged) newData = do
     SV.unsafeWith newData $ \p ->
         c_running_average
           (fromIntegral numSamples)

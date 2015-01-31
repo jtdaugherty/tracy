@@ -45,12 +45,11 @@ consoleHandler chan = do
             IShadows val -> output "Shadows" (if val then "yes" else "no")
             IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
             INumCPUs n -> outputS "Using CPUs" n
-            INumBatches n -> outputS "Batches" n
             IStartTime t -> outputS "Start time" t
             IFinishTime t -> outputS "Finish time" t
             ITotalTime t -> outputS "Total time" t
             IStarted -> return ()
-            IBatchFinished finished total t ->
+            IChunkFinished finished total t ->
                     let totalSecs = fromEnum t `div` 1000000000000
                         h = totalSecs `div` 3600
                         m = (totalSecs `mod` 3600) `div` 60
@@ -62,7 +61,7 @@ consoleHandler chan = do
                                           , show s
                                           , "s"
                                           ]
-                    in output "Finished batch" (concat [ show finished, "/", show total, ", ", totalStr , " remaining" ])
+                    in output "Finished chunk" (concat [ show finished, "/", show total, ", ", totalStr , " remaining" ])
             IFinished -> return ()
             IShutdown -> putStrLn "  Done."
         if ev == IShutdown then

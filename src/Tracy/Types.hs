@@ -36,8 +36,7 @@ data InfoEvent =
     | INumObjects Int
     | IShadows Bool
     | INumCPUs Int
-    | INumBatches Int
-    | IBatchFinished Int Int NominalDiffTime
+    | IChunkFinished Int Int NominalDiffTime
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
@@ -51,10 +50,9 @@ data InfoEvent =
 
 data DataEvent =
       DSceneName String
-    | DNumBatches Int
     | DFrameNum Int
     | DSampleRoot Double
-    | DBatchFinished (Int, Int) (SV.Vector Colour)
+    | DChunkFinished (Int, Int) (SV.Vector Colour)
     | DImageSize Int Int
     | DRowRanges [(Int, Int)]
     | DStarted
@@ -73,7 +71,7 @@ type MeshGroup = Map MeshSource MeshData
 
 data JobResponse =
       JobError String
-    | BatchFinished (Int, Int) (SV.Vector Colour)
+    | ChunkFinished (Int, Int) (SV.Vector Colour)
     | JobAck
     deriving (Generic)
 

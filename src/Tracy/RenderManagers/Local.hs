@@ -35,7 +35,7 @@ localSetSceneAndRender jobReq jobResp cfg builtScene sampleData sampleIndexMap =
               RenderRequest rowRange sampleRange -> do
                   let !sampleIndices = sampleIndexMap M.! (fst rowRange)
                   ch <- renderChunk cfg scene tracer sampleData sampleIndices sampleRange rowRange
-                  writeChan jobResp $ BatchFinished rowRange ch
+                  writeChan jobResp $ ChunkFinished rowRange ch
                   processRequests
               RenderFinished -> do
                   writeChan jobResp JobAck
