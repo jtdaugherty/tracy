@@ -1,7 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 module Tracy.Main where
 
-import Control.Applicative
 import Control.Lens
 import Control.Concurrent
 import Data.Time.Clock
@@ -30,35 +29,25 @@ render :: String
 render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   let w = s^.sceneDescWorld
       rowsPerBatch = 100 -- fromEnum $ w^.wdViewPlane.vpVres
-      samplesPerBatch = fromEnum $ (renderCfg^.sampleRoot) ** 2
+      samplesPerBatch = 1 -- fromEnum $ (renderCfg^.sampleRoot) ** 2
       allRows = [0..fromEnum (w^.wdViewPlane.vpVres-1)]
       allSampleIndices = [0..fromEnum (((renderCfg^.sampleRoot) ** 2) - 1)]
 
-      sampleRequests :: (Int, Int) -> [Int] -> [JobRequest]
-      sampleRequests _ [] = []
-      sampleRequests rowRange is = RenderRequest rowRange (firstI, lastI) : nextRs
+      ranges _ [] = []
+      ranges n rs = (f, l) : ranges n rest
           where
-            firstI = head current
-            lastI = head $ reverse current
-            current = take samplesPerBatch is
-            rest = drop samplesPerBatch is
-            nextRs = sampleRequests rowRange rest
+            f = head current
+            l = head $ reverse current
+            current = take n rs
+            rest = drop n rs
 
-      reqs' :: (Int, Int) -> [JobRequest]
-      reqs' (firstRow, lastRow) = sampleRequests (firstRow, lastRow) allSampleIndices
+      rowRanges = ranges rowsPerBatch allRows
+      sampleRanges = ranges samplesPerBatch allSampleIndices
 
-      reqs :: [Int] -> [JobRequest]
-      reqs rs = concat (reqs' <$> rowRanges rs)
-
-      rowRanges [] = []
-      rowRanges rs = (firstRow, lastRow) : rowRanges rest
-          where
-            firstRow = head current
-            lastRow = head $ reverse current
-            current = take rowsPerBatch rs
-            rest = drop rowsPerBatch rs
-
-      requests = reqs allRows
+      requests = [ RenderRequest rowRange sampleRange
+                 | sampleRange <- sampleRanges
+                 , rowRange <- rowRanges
+                 ]
 
   writeChan iChan $ ISceneName sceneName
   writeChan iChan $ IFrameNum frameNum
@@ -78,7 +67,7 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   writeChan dChan $ DSampleRoot $ renderCfg^.sampleRoot
   writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.vpHres)
                                (fromEnum $ w^.wdViewPlane.vpVres)
-  writeChan dChan $ DRowRanges $ rowRanges allRows
+  writeChan dChan $ DRowRanges rowRanges
 
   writeChan iChan ILoadingMeshes
 
@@ -98,10 +87,8 @@ render sceneName numBatches renderCfg s frameNum renderManager iChan dChan = do
   rngSeed <- save gen
   let rngSeedV = fromSeed rngSeed
 
-  print requests
-
   -- Set the scene
-  writeChan reqChan $ SetScene renderCfg s mg frameNum rngSeedV (rowRanges allRows)
+  writeChan reqChan $ SetScene renderCfg s mg frameNum rngSeedV rowRanges
 
   t1 <- getCurrentTime
   writeChan iChan $ IStartTime t1
