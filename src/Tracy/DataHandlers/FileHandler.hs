@@ -6,7 +6,6 @@ module Tracy.DataHandlers.FileHandler
   where
 
 import Control.Applicative
-import Control.Monad
 import Control.Concurrent.Chan
 import Data.IORef
 import qualified Data.Map as M
@@ -35,14 +34,20 @@ fileHandler filename chan = do
 
   ref <- newIORef $ M.fromList $ zip (fst <$> rowRanges) $ repeat 0
 
-  forM_ [0..length rowRanges - 1] $ \_ -> do
-      DBatchFinished rowRange rs <- readChan chan
-      let startRow = fst rowRange
-      m <- readIORef ref
-      mergeBatches (m M.! startRow) startRow merged rs
-      writeIORef ref $ M.alter (\(Just v) -> Just (v + 1)) startRow m
+  let work = do
+      ev <- readChan chan
+      case ev of
+          DBatchFinished rowRange rs -> do
+            let startRow = fst rowRange
+            m <- readIORef ref
+            mergeBatches (m M.! startRow) startRow merged rs
+            writeIORef ref $ M.alter (\(Just v) -> Just (v + 1)) startRow m
+            work
+          DFinished -> return ()
+          _ -> error "FileHandler: unexpected event!"
 
-  DFinished <- readChan chan
+  work
+
   DShutdown <- readChan chan
 
   vec <- vectorFromMergeBuffer merged
