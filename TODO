@@ -1,8 +1,4 @@
 - General
-  * get rid of "batches", re-implement progressive rendering so that
-    samples from within a batch get delivered as they are finished.
-    E.g., instead of delivering 64 samples in 4 batches of r^2 = 16
-    samples per batch, deliver them one at a time at r^2 = 64 samples
   * Support rendering frame sequences on multiple hosts
 
 - Performance
@@ -15,7 +11,6 @@
     rendering setup process
 
 - Effects
-  * Mixed materials
   * Refraction
   * Textures
     * Procedural
