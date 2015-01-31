@@ -1,11 +1,17 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Main where
 
 import Criterion.Main
-import Control.DeepSeq (NFData)
+import Control.DeepSeq (NFData(..))
+import Linear (V3(V3))
 import System.Random.MWC
 
 import Tracy.Types
 import Tracy.Samplers
+
+instance NFData (V3 Double) where
+    rnf (V3 a b c) = a `seq` b `seq` c `seq` ()
 
 mkSamplerGroup :: (NFData a) => GenIO -> String -> Sampler a -> Benchmark
 mkSamplerGroup gen name s =
@@ -23,4 +29,10 @@ main = do
                 , mkSamplerGroup gen "jittered" jittered
                 , mkSamplerGroup gen "multiJittered" multiJittered
                 , mkSamplerGroup gen "correlatedMultiJittered" correlatedMultiJittered
+                , bench "toUnitHemi" $ nf (toUnitHemi 1) (0.5, 0.5)
+                , bench "toUnitDiskCenter" $ nf toUnitDisk (0.5, 0.5)
+                , bench "toUnitDiskUL" $ nf toUnitDisk (-0.2, 0.2)
+                , bench "toUnitDiskLL" $ nf toUnitDisk (-0.2, -0.2)
+                , bench "toUnitDiskUR" $ nf toUnitDisk (0.2, 0.2)
+                , bench "toUnitDiskLR" $ nf toUnitDisk (0.2, -0.2)
                 ]

@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 module Tracy.Samplers
   ( regular
   , jittered
@@ -33,11 +34,7 @@ getRandomUnit gen = do
     return $ v - offset
 
 pureRandom :: Sampler (Double, Double)
-pureRandom = Sampler $ \gen root ->
-    V.replicateM (fromEnum $ root * root) $ do
-      a <- getRandomUnit gen
-      b <- getRandomUnit gen
-      return (a, b)
+pureRandom = Sampler $ \gen root -> uniformVector gen (fromEnum $ root * root)
 
 regular :: Sampler (Double, Double)
 regular = Sampler $ \_ root -> do
@@ -130,14 +127,14 @@ toUnitDisk :: (Double, Double) -> (Double, Double)
 toUnitDisk (x, y) =
     let spx = 2.0 * x - 1.0
         spy = 2.0 * y - 1.0
-        (r, phi) = if spx > -spy
-                   then if spx > spy
-                        then ( spx, spy / spx)
-                        else ( spy, 2 - (spx / spy) )
-                   else if spx < spy
-                        then ( -spx, 4 + spy / spx )
-                        else ( -spy, if spy /= 0 then 6 - (spx / spy) else 0 )
-        phi' = phi * (pi / 4.0)
+        !(r, phi) = if spx > -spy
+                    then if spx > spy
+                         then ( spx, spy / spx)
+                         else ( spy, 2 - (spx / spy) )
+                    else if spx < spy
+                         then ( -spx, 4 + spy / spx )
+                         else ( -spy, if spy /= 0 then 6 - (spx / spy) else 0 )
+        !phi' = phi * (pi / 4.0)
     in (r * cos phi', r * sin phi')
 
 toUnitHemi :: Double -> (Double, Double) -> V3 Double
