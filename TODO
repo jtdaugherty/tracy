@@ -5,12 +5,25 @@
   * Implement bounding volume hierarchy support
   * Generate vectors of random values in Samplers.hs to improve
     performance, test sample setup time in Main.hs
+  * Factor out Local.hs sample setup code for benchmarking
+  * Benchmark individual samplers and hit functions with criterion;
+    create tool to run all benchmarks and generate a report for
+    comparison (e.g. during toolchain upgrades, etc.)
+  * Use uniform vectors in samplers and in sample index generation in
+    Local.hs instead of uniformR (benchmark to test the difference)
+  * Conditional exporting via CPP for benchmarking? (Will also need
+    conditional exporting to use scene builder functions to supply test
+    cases since we won't want to build an entire scene)
+  * Use vectors instead of lists in some internal sampler operations
+    (e.g. shuffling using lists and !! will be slow)
 
 - Sampling
   * Make sampler-debug more useful (e.g. take side length options,
     optionally emit sample values)
   * Make more samplers configurable rather than hard-coding in the
-    rendering setup process
+    rendering setup process. Done so far: lens sampler, pixel sampler;
+    to do next: square sampler, object sampler (currently object uses
+    square)
 
 - Effects
   * Refraction
