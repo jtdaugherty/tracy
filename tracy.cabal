@@ -10,6 +10,10 @@ category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.8
 
+Flag bench
+    Description:     Build with benchmarking support
+    Default:         False
+
 library
   Hs-Source-Dirs:      src
   GHC-Options:         -O2 -Wall -funbox-strict-fields
@@ -93,6 +97,49 @@ executable tracy-loader
   build-depends:
     base == 4.*,
     tracy
+
+executable tracy-bench
+  Hs-Source-Dirs:      programs,src
+  Main-is:             BenchMain.hs
+  GHC-Options:         -O2 -Wall -threaded
+
+  if flag(bench)
+    Buildable:     True
+  else
+    Buildable:     False
+
+  CPP-Options: -DBENCH
+
+  build-depends:
+    criterion,
+    AC-Colour >= 1.1.6,
+    GLUT,
+    OpenGL,
+    aeson,
+    aeson-pretty,
+    array,
+    base == 4.*,
+    bmp >= 1.2.4.1,
+    bytestring,
+    cereal,
+    containers,
+    deepseq,
+    distributive,
+    either,
+    lens,
+    linear,
+    mtl,
+    mwc-random,
+    old-locale,
+    parallel,
+    ply-loader >= 0.4,
+    stm,
+    text,
+    time,
+    vector,
+    vector-binary-instances,
+    yaml,
+    zeromq4-haskell
 
 executable tracy
   Hs-Source-Dirs:      programs
