@@ -8,6 +8,8 @@ module Tracy.DataHandlers.FileHandler
 import Control.Applicative
 import Control.Monad
 import Control.Concurrent.Chan
+import Data.IORef
+import qualified Data.Map as M
 import qualified Data.ByteString as B
 import Codec.BMP
 import qualified Data.Vector.Storable as SV
@@ -25,14 +27,20 @@ fileHandler filename chan = do
   DNumBatches batches <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
+  DRowRanges rowRanges <- readChan chan
 
   DStarted <- readChan chan
 
   merged <- createMergeBuffer rows cols
 
-  forM_ [0..batches-1] $ \batchNum -> do
-      DBatchFinished rs <- readChan chan
-      mergeBatches batchNum merged rs
+  ref <- newIORef $ M.fromList $ zip (fst <$> rowRanges) $ repeat 0
+
+  forM_ [0..length rowRanges - 1] $ \_ -> do
+      DBatchFinished rowRange rs <- readChan chan
+      let startRow = fst rowRange
+      m <- readIORef ref
+      mergeBatches (m M.! startRow) startRow merged rs
+      writeIORef ref $ M.alter (\(Just v) -> Just (v + 1)) startRow m
 
   DFinished <- readChan chan
   DShutdown <- readChan chan

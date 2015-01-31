@@ -55,10 +55,10 @@ maxToOne (Colour r g b) = Colour r' g' b'
                      else (r, g, b)
 
 thinLensRender :: CameraRenderer ThinLens
-thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
-  let !root = config^.sampleRoot
-      !newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
-      !maxToOneDenom = grey (root * root)
+thinLensRender cam _ w tracer sampleData (theRow, sampleSetIndices) sampleRange =
+  let !newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
+      !maxToOneDenom = grey $ toEnum $ V.length sampleIndicies
+      !sampleIndicies = V.fromList [fst sampleRange .. snd sampleRange]
       !maxToOneExposure = grey (cam^.exposureTime)
       !vp = w^.viewPlane
       !row = toEnum theRow
@@ -66,11 +66,11 @@ thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
       !hitFuncs = w^..objects.folded.hit
       !shadowHitFuncs = w^..objects.folded.shadow_hit
       getCol col =
-          let !squareSampleSet = (sampleData^.squareSampleSets) V.! sampleIndex
-              !diskSampleSet = (sampleData^.diskSampleSets) V.! sampleIndex
-              !objectSampleSet = (sampleData^.objectSampleSets) V.! sampleIndex
-              !pixelSampleSet = (sampleData^.pixelSampleSets) V.! sampleIndex
-              !sampleIndex = sampleIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
+          let !squareSampleSet = (sampleData^.squareSampleSets) V.! sampleSetIndex
+              !diskSampleSet = (sampleData^.diskSampleSets) V.! sampleSetIndex
+              !objectSampleSet = (sampleData^.objectSampleSets) V.! sampleSetIndex
+              !pixelSampleSet = (sampleData^.pixelSampleSets) V.! sampleSetIndex
+              !sampleSetIndex = sampleSetIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
 
           in maxToOne ((V.sum (results col pixelSampleSet squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
               maxToOneExposure)
@@ -78,9 +78,13 @@ thinLensRender cam config w tracer sampleData (theRow, sampleIndices) =
       results :: Double -> V.Vector (Double, Double) -> V.Vector (Double, Double)
               -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector Color
       results col pixelSamples squareSamples diskSamples objectSamples =
-          V.map (result col) (V.zip4 pixelSamples squareSamples diskSamples objectSamples)
+          V.map (\idx -> result col (pixelSamples V.! idx)
+                                    (squareSamples V.! idx)
+                                    (diskSamples V.! idx)
+                                    (objectSamples V.! idx)
+                ) sampleIndicies
 
-      result col ((px, py), (sx, sy), (dx, dy), (ox, oy)) =
+      result col (px, py) (sx, sy) (dx, dy) (ox, oy) =
           let !x = newPixSize * (col - (0.5 * vp^.hres) + px)
               !y = newPixSize * (row - (0.5 * vp^.vres) + py)
 

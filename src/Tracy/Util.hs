@@ -73,13 +73,13 @@ createMergeBuffer rows cols = do
     p <- mallocArray (3 * rows * cols)
     return (rows, cols, p)
 
-mergeBatches :: Int -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
-mergeBatches numSamples (rows, cols, merged) newData =
+mergeBatches :: Int -> Int -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
+mergeBatches numSamples startRow (_, cols, merged) newData = do
     SV.unsafeWith newData $ \p ->
         c_running_average
           (fromIntegral numSamples)
-          (fromIntegral $ 3 * rows * cols)
-          merged
+          (fromIntegral $ 3 * SV.length newData)
+          (plusPtr merged $ startRow * cols * 3 * (sizeOf (0::Double)))
           (castPtr p)
 
 vectorFromMergeBuffer :: (Int, Int, Ptr Double) -> IO (SV.Vector Color)

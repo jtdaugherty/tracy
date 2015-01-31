@@ -10,10 +10,12 @@ import Control.Monad.Reader
 import Data.Map (Map)
 import qualified Data.Vector.Storable as SV
 import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as VU
 import GHC.Generics
 import Linear
 import Data.Colour
 import Data.Monoid
+import Data.Word
 import System.Random.MWC
 import Foreign.Storable
 import Foreign.C.Types
@@ -52,16 +54,17 @@ data DataEvent =
     | DNumBatches Int
     | DFrameNum Int
     | DSampleRoot Double
-    | DBatchFinished (SV.Vector Colour)
+    | DBatchFinished (Int, Int) (SV.Vector Colour)
     | DImageSize Int Int
+    | DRowRanges [(Int, Int)]
     | DStarted
     | DFinished
     | DShutdown
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc MeshGroup Int
-    | RenderRequest
+      SetScene RenderConfig SceneDesc MeshGroup Int (VU.Vector Word32) [(Int, Int)]
+    | RenderRequest (Int, Int) (Int, Int)
     | RenderFinished
     | Shutdown
     deriving (Generic, Show)
@@ -70,7 +73,7 @@ type MeshGroup = Map MeshSource MeshData
 
 data JobResponse =
       JobError String
-    | BatchFinished (SV.Vector Colour)
+    | BatchFinished (Int, Int) (SV.Vector Colour)
     | JobAck
     deriving (Generic)
 
@@ -241,6 +244,7 @@ type CameraRenderer a = Camera a
                       -> Tracer
                       -> SampleData
                       -> (Int, V.Vector Int)
+                      -> (Int, Int)
                       -> SV.Vector Color
 
 data Camera a =

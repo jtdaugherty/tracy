@@ -3,9 +3,11 @@ module Tracy.DataHandlers.GUIHandler
   )
   where
 
+import Control.Applicative
 import Control.Concurrent.Chan
 import Control.Concurrent (forkIO)
 import Control.Monad
+import qualified Data.Map as M
 import Data.IORef
 import Foreign (mallocArray)
 import Foreign.Storable
@@ -33,6 +35,7 @@ guiHandler chan = do
   DNumBatches _ <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize cols rows <- readChan chan
+  DRowRanges rowRanges <- readChan chan
 
   ref <- newIORef $ MyState cols rows
   redrawRef <- newIORef False
@@ -62,26 +65,32 @@ guiHandler chan = do
 
   combinedArray@(_, _, combinedPtr) <- createMergeBuffer rows cols
 
-  let work numSamples = do
+  let work sampleCounts = do
         ev <- readChan chan
         case ev of
-            DBatchFinished rs -> do
-                mergeBatches numSamples combinedArray rs
+            DBatchFinished (startRow, stopRow) rs -> do
+                let numSamples = sampleCounts M.! startRow
+                    startIndex = startRow * cols
+                    stopIndex = ((stopRow + 1) * cols) - 1
 
-                forM_ [0..rows*cols-1] $ \i -> do
+                mergeBatches numSamples startRow combinedArray rs
+
+                forM_ [startIndex..stopIndex] $ \i -> do
                     val <- peekElemOff (castPtr combinedPtr) i
                     pokeElemOff imageArray i $ toColor3 val
 
                 writeIORef redrawRef True
-                work (numSamples + 1)
+                work $
+                  M.alter (\(Just v) -> Just (v + 1)) startRow sampleCounts
 
             DFinished -> return ()
             DShutdown -> return ()
-            _ -> work numSamples
+            _ -> work sampleCounts
 
   _ <- forkIO $ do
+    let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat (0::Int)
     DStarted <- readChan chan
-    work (0 :: Int)
+    work sCountMap
     vec <- vectorFromMergeBuffer combinedArray
     writeImage vec rows cols (buildFilename sceneName frameNum)
 
