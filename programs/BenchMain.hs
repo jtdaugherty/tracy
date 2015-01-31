@@ -30,9 +30,10 @@ main = do
                 , mkSamplerGroup gen "multiJittered" multiJittered
                 , mkSamplerGroup gen "correlatedMultiJittered" correlatedMultiJittered
                 , bench "toUnitHemi" $ nf (toUnitHemi 1) (0.5, 0.5)
-                , bench "toUnitDiskCenter" $ nf toUnitDisk (0.5, 0.5)
-                , bench "toUnitDiskUL" $ nf toUnitDisk (-0.2, 0.2)
-                , bench "toUnitDiskLL" $ nf toUnitDisk (-0.2, -0.2)
-                , bench "toUnitDiskUR" $ nf toUnitDisk (0.2, 0.2)
-                , bench "toUnitDiskLR" $ nf toUnitDisk (0.2, -0.2)
+                , bgroup "toUnitDisk" [ bench "center" $ nf toUnitDisk (0.5, 0.5)
+                                      , bench "UL" $ nf toUnitDisk (-0.2, 0.2)
+                                      , bench "LL" $ nf toUnitDisk (-0.2, -0.2)
+                                      , bench "UR" $ nf toUnitDisk (0.2, 0.2)
+                                      , bench "LR" $ nf toUnitDisk (0.2, -0.2)
+                                      ]
                 ]
