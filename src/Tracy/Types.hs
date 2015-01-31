@@ -43,6 +43,7 @@ data InfoEvent =
     | IImageSize Int Int
     | ILoadedMeshes Int
     | ILoadingMeshes
+    | ISettingScene
     | IStarted
     | IFinished
     | IShutdown

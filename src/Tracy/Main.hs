@@ -88,6 +88,7 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
   let rngSeedV = fromSeed rngSeed
 
   -- Set the scene
+  writeChan iChan ISettingScene
   writeChan reqChan $ SetScene renderCfg s mg frameNum rngSeedV rowRanges
 
   -- Send the rendering requests
@@ -111,8 +112,8 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
                 -- ack'd.
                 when (isNothing t) $ do
                       t1 <- getCurrentTime
-                      writeChan iChan $ IStartTime t1
                       writeChan iChan IStarted
+                      writeChan iChan $ IStartTime t1
                       writeChan dChan DStarted
                       writeIORef startTime $ Just t1
 

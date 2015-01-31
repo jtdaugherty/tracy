@@ -48,7 +48,8 @@ consoleHandler chan = do
             IStartTime t -> outputS "Start time" t
             IFinishTime t -> outputS "Finish time" t
             ITotalTime t -> outputS "Total time" t
-            IStarted -> return ()
+            ISettingScene -> output_ "Setting up scene on nodes..."
+            IStarted -> output_ "Starting."
             IChunkFinished finished total t ->
                     let totalSecs = fromEnum t `div` 1000000000000
                         h = totalSecs `div` 3600
@@ -63,7 +64,7 @@ consoleHandler chan = do
                                           ]
                     in output "Finished chunk" (concat [ show finished, "/", show total, ", ", totalStr , " remaining" ])
             IFinished -> return ()
-            IShutdown -> putStrLn "  Done."
+            IShutdown -> output_ "Done."
         if ev == IShutdown then
            return False else
            return True
