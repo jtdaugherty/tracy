@@ -49,14 +49,14 @@ jittered :: Sampler (Double, Double)
 jittered = Sampler $ \gen root -> do
   vs <- uniformVector gen (fromEnum $ root * root)
 
-  sampleArrs <- forM [0..root-1] $ \k ->
-                forM [0..root-1] $ \j ->
-                    do
-                      return ( (k + vs V.! (fromEnum k)) / root
-                             , (j + vs V.! (fromEnum j)) / root
-                             )
+  let sampleArrs = [ ( (k + vs V.! (fromEnum k)) / root
+                     , (j + vs V.! (fromEnum j)) / root
+                     )
+                   | j <- [0..root-1]
+                   , k <- [0..root-1]
+                   ]
 
-  return $ V.fromList $ concat sampleArrs
+  return $ V.fromList sampleArrs
 
 multiJitteredBase :: GenIO -> Double -> IO [[(Double, Double)]]
 multiJitteredBase gen root = do
