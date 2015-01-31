@@ -10,7 +10,7 @@ import System.ZMQ4
 
 import Tracy.Types
 
-networkNodeThread :: String -> Chan InfoEvent -> Chan JobRequest -> Chan JobResponse -> IO () -> IO ()
+networkNodeThread :: String -> Chan InfoEvent -> Chan JobRequest -> Chan (String, JobResponse) -> IO () -> IO ()
 networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx -> do
     writeChan iChan $ IConnecting connStr
     withSocket ctx Req $ \sock -> do
@@ -22,8 +22,8 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
             send sock [] $ encode ev
             reply <- receive sock
             case decode reply of
-                Left e -> writeChan jobResp $ JobError e
-                Right r -> writeChan jobResp r
+                Left e -> writeChan jobResp (connStr, JobError e)
+                Right r -> writeChan jobResp (connStr, r)
             case ev of
                 SetScene _ _ _ _ _ _ -> readyNotify >> worker
                 RenderRequest _ _ -> readyNotify >> worker
@@ -32,7 +32,7 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
 
       worker
 
-networkRenderManager :: [String] -> Chan InfoEvent -> Chan JobRequest -> Chan JobResponse -> IO ()
+networkRenderManager :: [String] -> Chan InfoEvent -> Chan JobRequest -> Chan (String, JobResponse) -> IO ()
 networkRenderManager nodes iChan jobReq jobResp = do
     reqChans <- replicateM (length nodes) newChan
     readyChan <- newChan

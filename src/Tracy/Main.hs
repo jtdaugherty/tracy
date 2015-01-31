@@ -26,7 +26,7 @@ render :: String
        -> RenderConfig
        -> SceneDesc
        -> Int
-       -> (Chan JobRequest -> Chan JobResponse -> IO ())
+       -> (Chan JobRequest -> Chan (String, JobResponse) -> IO ())
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
@@ -99,12 +99,15 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
   -- Wait for the responses
   let collector numFinished = do
         resp <- readChan respChan
-        case resp of
+        let node = fst resp
+        case snd resp of
             JobError msg -> do
-                putStrLn $ "Yikes! Error in render thread: " ++ msg
+                putStrLn $ "Yikes! Error in render thread, node " ++ node ++ ": " ++ msg
                 exitSuccess
             JobAck -> collector numFinished
             SetSceneAck -> do
+                writeChan iChan $ INodeReady node
+
                 t <- readIORef startTime
                 -- XXX this starts the clock on the first ack, but if
                 -- we're using multiple network nodes, it would be nice

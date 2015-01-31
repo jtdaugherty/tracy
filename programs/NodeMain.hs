@@ -111,9 +111,9 @@ main = do
 
                 writeChan jobReq val
                 resp <- readChan jobResp
-                send sock [] $ encode resp
+                send sock [] $ encode $ snd resp
 
-                case resp of
+                case snd resp of
                     JobAck -> return ()
                     SetSceneAck -> putStrLn "Done setting up scene, ready to render"
                     ChunkFinished _ _ -> putStrLn $ "Finished chunk"

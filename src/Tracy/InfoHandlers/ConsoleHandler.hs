@@ -42,6 +42,7 @@ consoleHandler chan = do
             INumObjects n -> outputS "Objects" n
             IConnected s -> output "Connected to" s
             IConnecting s -> output "Connecting to" s
+            INodeReady s -> output "Node ready" s
             IShadows val -> output "Shadows" (if val then "yes" else "no")
             IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
             INumCPUs n -> outputS "Using CPUs" n

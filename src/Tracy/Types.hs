@@ -31,6 +31,7 @@ data InfoEvent =
     | IFrameNum Int
     | IConnected String
     | IConnecting String
+    | INodeReady String
     | ISceneName String
     | IAccelScheme AccelSchemeDesc
     | INumObjects Int

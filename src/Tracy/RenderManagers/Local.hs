@@ -17,7 +17,10 @@ import Tracy.SceneBuilder
 import Tracy.Samplers
 import Tracy.ChunkRender
 
-localSetSceneAndRender :: Chan JobRequest -> Chan JobResponse -> RenderConfig
+localNodeName :: String
+localNodeName = "<local>"
+
+localSetSceneAndRender :: Chan JobRequest -> Chan (String, JobResponse) -> RenderConfig
                        -> Scene ThinLens -> SampleData -> M.Map Int [V.Vector Int]
                        -> IO ()
 localSetSceneAndRender jobReq jobResp cfg builtScene sampleData sampleIndexMap = do
@@ -35,15 +38,17 @@ localSetSceneAndRender jobReq jobResp cfg builtScene sampleData sampleIndexMap =
               RenderRequest rowRange sampleRange -> do
                   let !sampleIndices = sampleIndexMap M.! (fst rowRange)
                   ch <- renderChunk cfg scene tracer sampleData sampleIndices sampleRange rowRange
-                  writeChan jobResp $ ChunkFinished rowRange ch
+                  writeChan jobResp (localNodeName, ChunkFinished rowRange ch)
                   processRequests
               RenderFinished -> do
-                  writeChan jobResp JobAck
-              _ -> writeChan jobResp $ JobError "Expected RenderRequest or RenderFinished, got unexpected event"
+                  writeChan jobResp (localNodeName, JobAck)
+              _ -> writeChan jobResp ( localNodeName
+                                     , JobError "Expected RenderRequest or RenderFinished, got unexpected event"
+                                     )
 
     processRequests
 
-localRenderManager :: Chan JobRequest -> Chan JobResponse -> IO ()
+localRenderManager :: Chan JobRequest -> Chan (String, JobResponse) -> IO ()
 localRenderManager jobReq jobResp = do
     let waitForJob = do
           reqEv <- readChan jobReq
@@ -75,14 +80,14 @@ localRenderManager jobReq jobResp = do
                                                     uniformR (0, sampleData^.numSets - 1) rng
                                                     )
                                                     )
-                          writeChan jobResp SetSceneAck
+                          writeChan jobResp (localNodeName, SetSceneAck)
 
                           localSetSceneAndRender jobReq jobResp cfg s sampleData sampleIndexMap
-                      Left e -> writeChan jobResp $ JobError e
+                      Left e -> writeChan jobResp (localNodeName, JobError e)
                   waitForJob
               Shutdown -> do
-                  writeChan jobResp JobAck
-              RenderFinished -> writeChan jobResp JobAck
-              _ -> writeChan jobResp $ JobError "Expected SetScene or Shutdown, got unexpected event"
+                  writeChan jobResp (localNodeName, JobAck)
+              RenderFinished -> writeChan jobResp (localNodeName, JobAck)
+              _ -> writeChan jobResp (localNodeName, JobError "Expected SetScene or Shutdown, got unexpected event")
 
     waitForJob
