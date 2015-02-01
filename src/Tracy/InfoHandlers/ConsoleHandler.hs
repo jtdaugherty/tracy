@@ -7,6 +7,7 @@ import Control.Concurrent.Chan
 import Control.Monad
 -- Import this module to get an orphan instance of Show for UTCTime :(
 import Data.Time.LocalTime ()
+import System.IO
 
 import Tracy.Types
 
@@ -56,6 +57,7 @@ consoleHandler chan = do
                         h = totalSecs `div` 3600
                         m = (totalSecs `mod` 3600) `div` 60
                         s = (totalSecs `mod` 3600) `mod` 60
+                        perc = fromEnum $ 100.0 * (toEnum finished/(toEnum total)::Double)
                         totalStr = concat [ show h
                                           , "h "
                                           , show m
@@ -63,7 +65,12 @@ consoleHandler chan = do
                                           , show s
                                           , "s"
                                           ]
-                    in output "Finished chunk" (concat [ show finished, "/", show total, ", ", totalStr , " remaining" ])
+                    in do
+                        putStr $ "  Rendering...                   " ++
+                          (concat [ show perc, "% (", totalStr , " remaining)     \r" ])
+                        when (finished == total) $ putStrLn ""
+                        hFlush stdout
+
             IFinished -> return ()
             IShutdown -> output_ "Done."
         if ev == IShutdown then
