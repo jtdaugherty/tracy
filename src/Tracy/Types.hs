@@ -182,11 +182,17 @@ data AccelScheme =
                 , _schemeApply :: World -> World
                 }
 
+data RenderMode =
+    BreadthFirst
+    | DepthFirst
+    deriving (Eq, Generic, Show)
+
 data RenderConfig =
     RenderConfig { _sampleRoot :: Double
                  , _forceShadows :: Maybe Bool
                  , _samplesPerChunk :: Int
                  , _rowsPerChunk :: Int
+                 , _renderMode :: RenderMode
                  }
                  deriving (Generic, Show)
 
@@ -445,6 +451,7 @@ instance Storable Colour where
       where
         q = castPtr p
 
+instance Serialize RenderMode where
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where
 instance Serialize V2SamplerDesc where

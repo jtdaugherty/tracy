@@ -20,6 +20,7 @@ defaultRenderConfig =
                  , _forceShadows = Nothing
                  , _samplesPerChunk = 1
                  , _rowsPerChunk = 100
+                 , _renderMode = DepthFirst
                  }
 
 render :: String
@@ -46,10 +47,15 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
       rowRanges = ranges (renderCfg^.rowsPerChunk) allRows
       sampleRanges = ranges (renderCfg^.samplesPerChunk) allSampleIndices
 
-      requests = [ RenderRequest rowRange sampleRange
-                 | sampleRange <- sampleRanges
-                 , rowRange <- rowRanges
-                 ]
+      requests = if renderCfg^.renderMode == BreadthFirst
+                 then [ RenderRequest rowRange sampleRange
+                      | sampleRange <- sampleRanges
+                      , rowRange <- rowRanges
+                      ]
+                 else [ RenderRequest rowRange sampleRange
+                      | rowRange <- rowRanges
+                      , sampleRange <- sampleRanges
+                      ]
 
   writeChan iChan $ ISceneName sceneName
   writeChan iChan $ IFrameNum frameNum

@@ -29,6 +29,8 @@ data Arg = Help
          | UseGUI
          | RenderNode String
          | FrameNum String
+         | ModeDepthFirst
+         | ModeBreadthFirst
            deriving (Eq, Show)
 
 data PreConfig =
@@ -40,6 +42,7 @@ data PreConfig =
               , argRenderNodes :: [String]
               , argSamplesPerChunk :: Int
               , argRowsPerChunk :: Int
+              , argRenderMode :: RenderMode
               }
 
 defaultPreConfig :: IO PreConfig
@@ -53,6 +56,7 @@ defaultPreConfig = do
                        , argFrameNum = 1
                        , argSamplesPerChunk = 1
                        , argRowsPerChunk = 100
+                       , argRenderMode = DepthFirst
                        }
 
 mkOpts :: IO [OptDescr Arg]
@@ -74,6 +78,10 @@ mkOpts = do
              "Rows per chunk"
            , Option "S" ["samples-per-chunk"] (ReqArg SamplesPerChunk "COUNT")
              "Samples per chunk"
+           , Option "B" ["breadth-first"] (NoArg ModeBreadthFirst)
+             "Render chunks breadth-first"
+           , Option "D" ["depth-first"] (NoArg ModeDepthFirst)
+             "Render chunks depth-first"
            ]
 
 updateConfig :: PreConfig -> Arg -> IO PreConfig
@@ -82,6 +90,8 @@ updateConfig c UseGUI = return c
 updateConfig c (SampleRoot s) = return $ c { argSampleRoot = read s }
 updateConfig c NoShadows = return $ c { argForceShadows = Just True }
 updateConfig c Shadows = return $ c { argForceShadows = Just False }
+updateConfig c ModeDepthFirst = return $ c { argRenderMode = DepthFirst }
+updateConfig c ModeBreadthFirst = return $ c { argRenderMode = BreadthFirst }
 updateConfig c (RenderNode n) = return $ c { argRenderNodes = n : argRenderNodes c }
 updateConfig c (SamplesPerChunk s) =
     case reads s of
@@ -140,6 +150,7 @@ main = do
                                             & forceShadows .~ (argForceShadows preCfg)
                                             & samplesPerChunk .~ (argSamplesPerChunk preCfg)
                                             & rowsPerChunk .~ (argRowsPerChunk preCfg)
+                                            & renderMode .~ (argRenderMode preCfg)
 
         iChan <- newChan
         dChan <- newChan
