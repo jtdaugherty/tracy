@@ -59,7 +59,7 @@ localRenderManager jobReq jobResp = do
                           let pxSampler = s^.sceneWorld.viewPlane.pixelSampler
                               sqSampler = correlatedMultiJittered
                               diskSampler = s^.sceneCamera.cameraData.lensSampler
-                              theNumSets = fromEnum $ 10 * s^.sceneWorld.viewPlane.hres
+                              theNumSets = fromEnum $ s^.sceneWorld.viewPlane.hres
                               seed = toSeed seedV
 
                           rng <- restore seed
