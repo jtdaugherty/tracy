@@ -1,6 +1,3 @@
-- General
-  * Support rendering frame sequences on multiple hosts
-
 - Performance
   * Implement bounding volume hierarchy support
   * Generate vectors of random values in Samplers.hs to improve
@@ -24,15 +21,13 @@
   * Textures
     * Procedural
     * Image-based
-  * Global illumination technique(s)
-  * Mesh rendering features
-    * Vertex colors & interpolation? Affect material shading &
-      properties?
-    * Consider triangulation for faces with 4 vertices
+  * More global illumination techniques (bidir path tracing, metropolis
+    light transport)
 
 - Animation
   * animate more things, add more animated value types
+  * Support rendering frame sequences on multiple hosts
+  * Support showing successive frames in GUI for multi-frame renderings?
 
 - GUI
   * Keystroke to trigger a reload scenes from disk and re-render
-  * Support showing successive frames for multi-frame renderings?
