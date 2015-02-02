@@ -24,6 +24,10 @@
   * More global illumination techniques (bidir path tracing, metropolis
     light transport)
 
+- Other
+  * Support applying transformations to single objects (implicitly
+    convert to instance list internally)
+
 - Animation
   * animate more things, add more animated value types
   * Support rendering frame sequences on multiple hosts
