@@ -27,6 +27,12 @@ Features:
    - Mix (blended materials)
  * Object instancing
  * Object transformations
+ * Samplers:
+   - Regular
+   - Random
+   - Jittered
+   - Multi-jittered
+   - Correlated Multi-jittered
  * Global illumation:
    - Ambient occlusion (approximation technique)
    - Path-tracing support
