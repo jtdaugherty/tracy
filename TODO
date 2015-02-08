@@ -21,8 +21,6 @@
 - Effects
   * Materials:
     * Blinn
-    * "Add" shader: instead of mixture with scaling factor, just add two
-      materials together
   * Refraction
   * Textures
     * Procedural
