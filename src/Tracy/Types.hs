@@ -657,36 +657,44 @@ instance Y.FromJSON TransformationDesc where
     parseJSON _ = fail "Expected string for Transformation"
 
 instance Y.FromJSON ObjectDesc where
-    parseJSON (Y.Object v) = do
-        t <- v Y..: "type"
-        case t of
-            "sphere" -> Sphere <$> v Y..: "center"
-                               <*> v Y..: "radius"
-                               <*> v Y..: "material"
-            "plane" -> Plane <$> v Y..: "origin"
-                             <*> v Y..: "normal"
-                             <*> v Y..: "material"
-            "box" -> Box <$> v Y..: "from"
-                         <*> v Y..: "to"
-                         <*> v Y..: "material"
-            "tri" -> Triangle <$> v Y..: "v1"
-                              <*> v Y..: "v2"
-                              <*> v Y..: "v3"
-                              <*> v Y..: "material"
-            "instances" -> Instances <$> v Y..: "master"
+    parseJSON (Y.Object v) = parseInstances <|> parseGrid <|> parseObject
+        where
+          parseInstances = Instances <$> v Y..: "master"
                                      <*> v Y..: "objects"
-            "mesh" -> Mesh <$> v Y..: "path"
-                           <*> v Y..: "material"
-            "rect" -> Rectangle <$> v Y..: "corner"
-                                <*> v Y..: "over"
-                                <*> v Y..: "up"
-                                <*> (v Y..: "doubleSided" <|> pure True)
-                                <*> v Y..: "material"
-            "grid" -> Grid <$> v Y..: "objects"
-            "concaveSphere" -> ConcaveSphere <$> v Y..: "center"
-                                             <*> v Y..: "radius"
-                                             <*> v Y..: "material"
-            t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')
+          parseGrid = Grid <$> v Y..: "objects"
+          parseObject = do
+            mat <- v Y..: "material"
+            t <- v Y..: "type"
+            obj <- case t of
+                "sphere" -> Sphere <$> v Y..: "center"
+                                   <*> v Y..: "radius"
+                                   <*> (pure mat)
+                "plane" -> Plane <$> v Y..: "origin"
+                                 <*> v Y..: "normal"
+                                 <*> (pure mat)
+                "box" -> Box <$> v Y..: "from"
+                             <*> v Y..: "to"
+                             <*> (pure mat)
+                "tri" -> Triangle <$> v Y..: "v1"
+                                  <*> v Y..: "v2"
+                                  <*> v Y..: "v3"
+                                  <*> (pure mat)
+                "mesh" -> Mesh <$> v Y..: "path"
+                               <*> (pure mat)
+                "rect" -> Rectangle <$> v Y..: "corner"
+                                    <*> v Y..: "over"
+                                    <*> v Y..: "up"
+                                    <*> (v Y..: "doubleSided" <|> pure True)
+                                    <*> (pure mat)
+                "concaveSphere" -> ConcaveSphere <$> v Y..: "center"
+                                                 <*> v Y..: "radius"
+                                                 <*> (pure mat)
+                t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')
+
+            (trans::Maybe [TransformationDesc]) <- v Y..:? "transform"
+            case trans of
+                Nothing -> return obj
+                Just tds -> return $ Instances obj [ID tds Nothing]
 
     parseJSON _ = fail "Expected object for ObjectDesc"
 

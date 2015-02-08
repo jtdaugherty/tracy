@@ -31,8 +31,6 @@
     light transport)
 
 - Other
-  * Support applying transformations to single objects (implicitly
-    convert to instance list internally)
   * Allow user to override tracing depth on command line
   * Make it possible to set arbitrary config settings by using the yaml
     structure? E.g. "world.viewPlane.hres=x"
