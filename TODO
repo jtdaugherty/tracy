@@ -19,6 +19,10 @@
     square)
 
 - Effects
+  * Materials:
+    * Blinn
+    * "Add" shader: instead of mixture with scaling factor, just add two
+      materials together
   * Refraction
   * Textures
     * Procedural
@@ -29,13 +33,18 @@
 - Other
   * Support applying transformations to single objects (implicitly
     convert to instance list internally)
-  * Use more newtypes
   * Allow user to override tracing depth on command line
+  * Make it possible to set arbitrary config settings by using the yaml
+    structure? E.g. "world.viewPlane.hres=x"
 
 - Animation
   * animate more things, add more animated value types
-  * Support rendering frame sequences on multiple hosts
-  * Support showing successive frames in GUI for multi-frame renderings?
+  * Support rendering frame sequences on multiple hosts (requires
+    keeping console and data handlers running and resetting state on
+    frame change)
+  * Support showing successive frames in GUI for multi-frame renderings
+    (figure out whether we have to wipe the frame buffer befor each
+    frame)
 
 - GUI
   * Keystroke to trigger a reload scenes from disk and re-render
