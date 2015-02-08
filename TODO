@@ -30,6 +30,7 @@
   * Support applying transformations to single objects (implicitly
     convert to instance list internally)
   * Use more newtypes
+  * Allow user to override tracing depth on command line
 
 - Animation
   * animate more things, add more animated value types
