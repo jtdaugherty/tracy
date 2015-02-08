@@ -3,6 +3,7 @@ module Tracy.Materials.Mix
   )
   where
 
+import Control.Applicative
 import Control.Lens
 import Data.Colour
 
@@ -18,17 +19,14 @@ mix amt m1 m2 =
              , _getLe = mixGetLe amt m1 m2
              }
 
-theMix :: Double -> TraceM Color -> TraceM Color -> TraceM Color
-theMix amt a1 a2 = do
-    v1 <- a1
-    v2 <- a2
-    return $ (v1 * grey amt) + (v2 * (grey (1-amt)))
+theMix :: Double -> Color -> Color -> Color
+theMix amt v1 v2 = (v1 * grey amt) + (v2 * (grey (1-amt)))
 
 mixShading :: Double -> Material -> Material -> Shade -> Tracer -> TraceM Color
 mixShading amt m1 m2 sh t
   | amt == 1.0 = v1
   | amt == 0.0 = v2
-  | otherwise = theMix amt v1 v2
+  | otherwise = theMix amt <$> v1 <*> v2
   where
     v1 = (m1^.doShading) sh t
     v2 = (m2^.doShading) sh t
@@ -37,7 +35,7 @@ mixAreaShading :: Double -> Material -> Material -> Shade -> Tracer -> TraceM Co
 mixAreaShading amt m1 m2 sh t
   | amt == 1.0 = v1
   | amt == 0.0 = v2
-  | otherwise = theMix amt v1 v2
+  | otherwise = theMix amt <$> v1 <*> v2
   where
     v1 = (m1^.doAreaShading) sh t
     v2 = (m2^.doAreaShading) sh t
@@ -46,7 +44,7 @@ mixPathShading :: Double -> Material -> Material -> Shade -> Tracer -> TraceM Co
 mixPathShading amt m1 m2 sh t
   | amt == 1.0 = v1
   | amt == 0.0 = v2
-  | otherwise = theMix amt v1 v2
+  | otherwise = theMix amt <$> v1 <*> v2
   where
     v1 = (m1^.doPathShading) sh t
     v2 = (m2^.doPathShading) sh t
@@ -55,7 +53,7 @@ mixGetLe :: Double -> Material -> Material -> Shade -> Color
 mixGetLe amt m1 m2 sh
   | amt == 1.0 = v1
   | amt == 0.0 = v2
-  | otherwise = (v1 * grey amt) + (v2 * (grey $ 1-amt))
+  | otherwise = theMix amt v1 v2
     where
       v1 = (m1^.getLe) sh
       v2 = (m2^.getLe) sh
