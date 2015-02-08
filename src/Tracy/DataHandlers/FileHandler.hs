@@ -37,7 +37,7 @@ fileHandler filename chan = do
       ev <- readChan chan
       case ev of
           DChunkFinished rowRange rs -> do
-            let startRow = fst rowRange
+            let Row startRow = fst rowRange
             m <- readIORef ref
             mergeChunks (m M.! startRow) startRow merged rs
             writeIORef ref $ M.alter (\(Just v) -> Just (v + 1)) startRow m

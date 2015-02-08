@@ -48,12 +48,12 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
       sampleRanges = ranges (renderCfg^.samplesPerChunk) allSampleIndices
 
       requests = if renderCfg^.renderMode == BreadthFirst
-                 then [ RenderRequest rowRange sampleRange
+                 then [ RenderRequest (Row ra, Row rb) sampleRange
                       | sampleRange <- sampleRanges
-                      , rowRange <- rowRanges
+                      , (ra, rb) <- rowRanges
                       ]
-                 else [ RenderRequest rowRange sampleRange
-                      | rowRange <- rowRanges
+                 else [ RenderRequest (Row ra, Row rb) sampleRange
+                      | (ra, rb) <- rowRanges
                       , sampleRange <- sampleRanges
                       ]
 

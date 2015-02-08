@@ -67,7 +67,7 @@ guiHandler chan = do
   let work sampleCounts = do
         ev <- readChan chan
         case ev of
-            DChunkFinished (startRow, stopRow) rs -> do
+            DChunkFinished (Row startRow, Row stopRow) rs -> do
                 let numSamples = sampleCounts M.! startRow
                     startIndex = startRow * cols
                     stopIndex = ((stopRow + 1) * cols) - 1

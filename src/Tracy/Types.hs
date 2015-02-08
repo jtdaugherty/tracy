@@ -29,6 +29,9 @@ type Color = Colour
 newtype Frame = Frame Int
               deriving (Eq, Show, Generic)
 
+newtype Row = Row Int
+              deriving (Eq, Show, Generic)
+
 data InfoEvent =
       ISampleRoot Double
     | IFrameNum Frame
@@ -57,7 +60,7 @@ data DataEvent =
       DSceneName String
     | DFrameNum Frame
     | DSampleRoot Double
-    | DChunkFinished (Int, Int) (SV.Vector Colour)
+    | DChunkFinished (Row, Row) (SV.Vector Colour)
     | DImageSize Int Int
     | DRowRanges [(Int, Int)]
     | DStarted
@@ -67,7 +70,7 @@ data DataEvent =
 
 data JobRequest =
       SetScene RenderConfig SceneDesc MeshGroup Frame (VU.Vector Word32) [(Int, Int)]
-    | RenderRequest (Int, Int) (Int, Int)
+    | RenderRequest (Row, Row) (Int, Int)
     | RenderFinished
     | Shutdown
     deriving (Generic, Show)
@@ -76,7 +79,7 @@ type MeshGroup = Map MeshSource MeshData
 
 data JobResponse =
       JobError String
-    | ChunkFinished (Int, Int) (SV.Vector Colour)
+    | ChunkFinished (Row, Row) (SV.Vector Colour)
     | SetSceneAck
     | JobAck
     deriving (Generic)
@@ -456,6 +459,7 @@ instance Storable Colour where
 
 instance Serialize RenderMode where
 instance Serialize Frame where
+instance Serialize Row where
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where
 instance Serialize V2SamplerDesc where
