@@ -391,6 +391,7 @@ data LightDesc =
 data MaterialDesc =
       Matte Color
     | Mix Double MaterialDesc MaterialDesc
+    | Add MaterialDesc MaterialDesc
     | Phong Color Double Double
     | Emissive Color Double
     | Reflective Color Double Double Color Double
@@ -612,6 +613,8 @@ instance Y.FromJSON MaterialDesc where
                              <*> v Y..: "ks"
                              <*> v Y..: "exp"
             "matte" -> Matte <$> v Y..: "color"
+            "add" -> Add <$> v Y..: "first"
+                         <*> v Y..: "second"
             "mix" -> Mix <$> v Y..: "amount"
                          <*> v Y..: "first"
                          <*> v Y..: "second"

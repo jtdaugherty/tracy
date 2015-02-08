@@ -17,6 +17,7 @@ import Tracy.Materials.Emissive
 import Tracy.Materials.Phong
 import Tracy.Materials.Matte
 import Tracy.Materials.Mix
+import Tracy.Materials.Add
 
 import Tracy.Objects.Sphere
 import Tracy.Objects.Box
@@ -134,6 +135,7 @@ accelSchemeFromDesc GridScheme = return gridScheme
 materialFromDesc :: Frame -> MaterialDesc -> LoadM Material
 materialFromDesc _ (Matte c) = return $ matteFromColor c
 materialFromDesc fn (Mix amt m1 m2) = mix amt <$> materialFromDesc fn m1 <*> materialFromDesc fn m2
+materialFromDesc fn (Add m1 m2) = add <$> materialFromDesc fn m1 <*> materialFromDesc fn m2
 materialFromDesc _ (Phong c ks e) = return $ phongFromColor c ks e
 materialFromDesc _ (Reflective c ks e cr kr) = return $ reflective c ks e cr kr
 materialFromDesc _ (GlossyReflective c ks e cr kr er) = return $ glossyReflective c ks e cr kr er

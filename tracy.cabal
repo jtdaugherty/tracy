@@ -76,6 +76,7 @@ library
     Tracy.Lights.Area
     Tracy.Lights.Environment
     Tracy.Lights.Point
+    Tracy.Materials.Add
     Tracy.Materials.Emissive
     Tracy.Materials.Matte
     Tracy.Materials.Mix
