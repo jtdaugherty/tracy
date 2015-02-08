@@ -74,7 +74,7 @@ localRenderManager jobReq jobResp = do
                           let sampleData = SampleData theNumSets pSamplesVec sSamplesVec dSamplesVec oSamplesVec
 
                           sampleIndexMap <- M.fromList <$>
-                                            (forM rowRanges $ \(startRow, endRow) ->
+                                            (forM rowRanges $ \(Row startRow, Row endRow) ->
                                                 (,) <$> (pure startRow) <*>
                                                   (replicateM (endRow-startRow+1) $
                                                   V.replicateM (fromEnum $ s^.sceneWorld.viewPlane.hres) $

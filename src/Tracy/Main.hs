@@ -33,7 +33,7 @@ render :: String
        -> IO ()
 render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
   let w = s^.sceneDescWorld
-      allRows = [0..fromEnum (w^.wdViewPlane.vpVres-1)]
+      allRows = [Row 0..Row $ fromEnum (w^.wdViewPlane.vpVres-1)]
       allSampleIndices = [0..fromEnum (((renderCfg^.sampleRoot) ** 2) - 1)]
 
       ranges _ [] = []
@@ -48,12 +48,12 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
       sampleRanges = ranges (renderCfg^.samplesPerChunk) allSampleIndices
 
       requests = if renderCfg^.renderMode == BreadthFirst
-                 then [ RenderRequest (Row ra, Row rb) sampleRange
+                 then [ RenderRequest rowRange sampleRange
                       | sampleRange <- sampleRanges
-                      , (ra, rb) <- rowRanges
+                      , rowRange <- rowRanges
                       ]
-                 else [ RenderRequest (Row ra, Row rb) sampleRange
-                      | (ra, rb) <- rowRanges
+                 else [ RenderRequest rowRange sampleRange
+                      | rowRange <- rowRanges
                       , sampleRange <- sampleRanges
                       ]
 

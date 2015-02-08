@@ -67,9 +67,9 @@ guiHandler chan = do
   let work sampleCounts = do
         ev <- readChan chan
         case ev of
-            DChunkFinished (Row startRow, Row stopRow) rs -> do
+            DChunkFinished (startRow@(Row startRowI), Row stopRow) rs -> do
                 let numSamples = sampleCounts M.! startRow
-                    startIndex = startRow * cols
+                    startIndex = startRowI * cols
                     stopIndex = ((stopRow + 1) * cols) - 1
 
                 mergeChunks numSamples startRow combinedArray rs

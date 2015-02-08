@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures, BangPatterns, MultiParamTypeClasses, OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell, ScopedTypeVariables, TypeSynonymInstances, FlexibleInstances, DeriveGeneric, DefaultSignatures, BangPatterns, MultiParamTypeClasses, OverloadedStrings, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Tracy.Types where
 
@@ -30,7 +30,7 @@ newtype Frame = Frame Int
               deriving (Eq, Show, Generic)
 
 newtype Row = Row Int
-              deriving (Eq, Show, Generic)
+              deriving (Eq, Show, Generic, Enum, Ord)
 
 data InfoEvent =
       ISampleRoot Double
@@ -62,14 +62,14 @@ data DataEvent =
     | DSampleRoot Double
     | DChunkFinished (Row, Row) (SV.Vector Colour)
     | DImageSize Int Int
-    | DRowRanges [(Int, Int)]
+    | DRowRanges [(Row, Row)]
     | DStarted
     | DFinished
     | DShutdown
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc MeshGroup Frame (VU.Vector Word32) [(Int, Int)]
+      SetScene RenderConfig SceneDesc MeshGroup Frame (VU.Vector Word32) [(Row, Row)]
     | RenderRequest (Row, Row) (Int, Int)
     | RenderFinished
     | Shutdown

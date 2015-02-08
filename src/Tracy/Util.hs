@@ -73,8 +73,8 @@ createMergeBuffer rows cols = do
     p <- mallocArray (3 * rows * cols)
     return (rows, cols, p)
 
-mergeChunks :: Int -> Int -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
-mergeChunks numSamples startRow (_, cols, merged) newData = do
+mergeChunks :: Int -> Row -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
+mergeChunks numSamples (Row startRow) (_, cols, merged) newData = do
     SV.unsafeWith newData $ \p ->
         c_running_average
           (fromIntegral numSamples)
