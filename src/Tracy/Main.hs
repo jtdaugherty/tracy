@@ -111,6 +111,16 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
                 exitSuccess
             JobAck -> collector numFinished
             SetSceneAck -> do
+                -- Since scene-setting takes a while (all sample data
+                -- and indices are generated and meshes are traversed),
+                -- we wait for all nodes to finish with this setup
+                -- process. Only then, once all nodes have delivered an
+                -- acknowledgement (SetSceneAck), do we begin to send
+                -- out any rendering requests. We start the rendering
+                -- timer once these requests start to go out. As each
+                -- rendering request is finished, the next request is
+                -- sent out (as deemed appropriate by the rendering
+                -- manager).
                 writeChan iChan $ INodeReady node
                 modifyIORef numReadyNodes (+ 1)
                 ready <- readIORef numReadyNodes
