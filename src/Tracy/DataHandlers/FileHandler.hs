@@ -16,8 +16,8 @@ import qualified Data.Vector.Storable as SV
 import Tracy.Types
 import Tracy.Util
 
-buildFilename :: String -> Int -> FilePath
-buildFilename sn fn = sn ++ "-" ++ show fn ++ ".bmp"
+buildFilename :: String -> Frame -> FilePath
+buildFilename sn (Frame fn) = sn ++ "-" ++ show fn ++ ".bmp"
 
 fileHandler :: FilePath -> Chan DataEvent -> IO ()
 fileHandler filename chan = do

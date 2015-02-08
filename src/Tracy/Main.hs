@@ -6,7 +6,6 @@ import Control.Concurrent
 import Control.Monad (when)
 import Data.IORef
 import Data.Time.Clock
-import Data.Maybe (isNothing)
 import System.Exit
 import System.Random.MWC
 import qualified Data.Map as M
@@ -26,7 +25,7 @@ defaultRenderConfig =
 render :: String
        -> RenderConfig
        -> SceneDesc
-       -> Int
+       -> Frame
        -> Int
        -> (Chan JobRequest -> Chan (String, JobResponse) -> IO ())
        -> Chan InfoEvent

@@ -41,17 +41,17 @@ import Tracy.Transformations
 
 type LoadM a = Either String a
 
-sceneFromDesc :: SceneDesc -> MeshGroup -> Int -> Either String (Scene ThinLens)
+sceneFromDesc :: SceneDesc -> MeshGroup -> Frame -> Either String (Scene ThinLens)
 sceneFromDesc sd mg fn = runSceneFromDesc sd mg fn
 
-runSceneFromDesc :: SceneDesc -> MeshGroup -> Int -> LoadM (Scene ThinLens)
+runSceneFromDesc :: SceneDesc -> MeshGroup -> Frame -> LoadM (Scene ThinLens)
 runSceneFromDesc sd mg fn =
     Scene <$> (worldFromDesc mg fn    $ sd^.sceneDescWorld)
           <*> (accelSchemeFromDesc    $ sd^.sceneDescAccelScheme)
           <*> (cameraFromDesc fn      $ sd^.sceneDescCamera)
           <*> (tracerFromDesc         $ sd^.sceneDescTracer)
 
-worldFromDesc :: MeshGroup -> Int -> WorldDesc -> LoadM World
+worldFromDesc :: MeshGroup -> Frame -> WorldDesc -> LoadM World
 worldFromDesc mg fn wd =
     World <$> (viewPlaneFromDesc fn  $ wd^.wdViewPlane)
           <*> (pure                  $ wd^.wdBgColor)
@@ -60,7 +60,7 @@ worldFromDesc mg fn wd =
           <*> (lightFromDesc mg fn   $ wd^.wdAmbient)
           <*> (pure                  $ wd^.wdWorldShadows)
 
-viewPlaneFromDesc :: Int -> ViewPlaneDesc -> LoadM ViewPlane
+viewPlaneFromDesc :: Frame -> ViewPlaneDesc -> LoadM ViewPlane
 viewPlaneFromDesc _ vpd =
     ViewPlane (vpd^.vpHres)
         (vpd^.vpVres)
@@ -70,13 +70,13 @@ viewPlaneFromDesc _ vpd =
         (vpd^.vpMaxDepth)
         <$> (v2SamplerFromDesc $ vpd^.vpPixelSampler)
 
-objectsFromDesc :: MeshGroup -> Int -> [ObjectDesc] -> LoadM [Object]
+objectsFromDesc :: MeshGroup -> Frame -> [ObjectDesc] -> LoadM [Object]
 objectsFromDesc mg fn os = concat <$> sequenceA (objectFromDesc mg fn <$> os)
 
 single :: LoadM b -> LoadM [b]
 single v = (:[]) <$> v
 
-objectFromDesc :: MeshGroup -> Int -> ObjectDesc -> LoadM [Object]
+objectFromDesc :: MeshGroup -> Frame -> ObjectDesc -> LoadM [Object]
 objectFromDesc _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc fn m
 objectFromDesc _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc fn m
 objectFromDesc _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc fn m
@@ -97,7 +97,7 @@ objectFromDesc mg fn (Instances oDesc is) = do
         [o] -> return $ (\(t, m) -> inst t m o) <$> ids
         _ -> error "Error: Instances of (multiple) Instances not allowed"
 
-instanceDataFromDesc :: Int -> InstanceDesc -> LoadM (Transformation, Maybe Material)
+instanceDataFromDesc :: Frame -> InstanceDesc -> LoadM (Transformation, Maybe Material)
 instanceDataFromDesc fn (ID tDesc mDesc) = do
     mResult <- case mDesc of
                    Nothing -> return Nothing
@@ -113,10 +113,10 @@ transformationFromDesc (RotateX v) = return $ rotateX v
 transformationFromDesc (RotateY v) = return $ rotateY v
 transformationFromDesc (RotateZ v) = return $ rotateZ v
 
-lightsFromDesc :: MeshGroup -> Int -> [LightDesc] -> LoadM [Light]
+lightsFromDesc :: MeshGroup -> Frame -> [LightDesc] -> LoadM [Light]
 lightsFromDesc mg fn ls = sequenceA (lightFromDesc mg fn <$> ls)
 
-lightFromDesc :: MeshGroup -> Int -> LightDesc -> LoadM Light
+lightFromDesc :: MeshGroup -> Frame -> LightDesc -> LoadM Light
 lightFromDesc _ _ (Ambient s c) = return $ ambientLight s c
 lightFromDesc _ _ (AmbientOccluder c min_amt s) = return $ ambientOccluder c min_amt s
 lightFromDesc _ _ (Point sh ls c loc) = return $ pointLight sh ls c loc
@@ -131,7 +131,7 @@ accelSchemeFromDesc :: AccelSchemeDesc -> LoadM AccelScheme
 accelSchemeFromDesc NoScheme = return noScheme
 accelSchemeFromDesc GridScheme = return gridScheme
 
-materialFromDesc :: Int -> MaterialDesc -> LoadM Material
+materialFromDesc :: Frame -> MaterialDesc -> LoadM Material
 materialFromDesc _ (Matte c) = return $ matteFromColor c
 materialFromDesc fn (Mix amt m1 m2) = mix amt <$> materialFromDesc fn m1 <*> materialFromDesc fn m2
 materialFromDesc _ (Phong c ks e) = return $ phongFromColor c ks e
@@ -155,7 +155,7 @@ v2SamplerFromDesc (UnitDisk sd) = (toUnitDisk <$>) <$> v2SamplerFromDesc sd
 v3SamplerFromDesc :: V3SamplerDesc -> LoadM (Sampler (V3 Double))
 v3SamplerFromDesc (UnitHemi e sd) = (toUnitHemi e <$>) <$> v2SamplerFromDesc sd
 
-cameraFromDesc :: Int -> CameraDesc -> LoadM (Camera ThinLens)
+cameraFromDesc :: Frame -> CameraDesc -> LoadM (Camera ThinLens)
 cameraFromDesc fn cd@(ThinLensCamera { }) =
     thinLensCamera (animate fn $ cd^.thinLensEye)
                    (cd^.thinLensLookAt)

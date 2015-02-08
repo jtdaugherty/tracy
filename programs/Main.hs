@@ -162,10 +162,11 @@ main = do
                                        )
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender renderCfg sceneDesc (argFrameNum preCfg) numNodes manager iChan dChan
+        _ <- forkIO $ render toRender renderCfg sceneDesc (Frame $ argFrameNum preCfg)
+                        numNodes manager iChan dChan
 
         case UseGUI `elem` os of
             False -> do
-                let filename = buildFilename toRender (argFrameNum preCfg)
+                let filename = buildFilename toRender (Frame $ argFrameNum preCfg)
                 fileHandler filename dChan
             True -> guiHandler dChan

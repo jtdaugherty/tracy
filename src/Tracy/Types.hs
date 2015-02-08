@@ -26,9 +26,12 @@ import qualified Data.Text as T
 
 type Color = Colour
 
+newtype Frame = Frame Int
+              deriving (Eq, Show, Generic)
+
 data InfoEvent =
       ISampleRoot Double
-    | IFrameNum Int
+    | IFrameNum Frame
     | IConnected String
     | IConnecting String
     | INodeReady String
@@ -52,7 +55,7 @@ data InfoEvent =
 
 data DataEvent =
       DSceneName String
-    | DFrameNum Int
+    | DFrameNum Frame
     | DSampleRoot Double
     | DChunkFinished (Int, Int) (SV.Vector Colour)
     | DImageSize Int Int
@@ -63,7 +66,7 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc MeshGroup Int (VU.Vector Word32) [(Int, Int)]
+      SetScene RenderConfig SceneDesc MeshGroup Frame (VU.Vector Word32) [(Int, Int)]
     | RenderRequest (Int, Int) (Int, Int)
     | RenderFinished
     | Shutdown
@@ -79,17 +82,17 @@ data JobResponse =
     deriving (Generic)
 
 class Anim a b where
-    animate :: Int -> a -> b
+    animate :: Frame -> a -> b
 
 data AnimV3 =
       V3Val (V3 Double)
-    | V3Lerp (Int, Int) (V3 Double, V3 Double)
-    | V3LerpRotY (Int, Int) (V3 Double) Double
+    | V3Lerp (Frame, Frame) (V3 Double, V3 Double)
+    | V3LerpRotY (Frame, Frame) (V3 Double) Double
     deriving (Generic, Eq, Show)
 
 data AnimDouble =
       DoubleVal Double
-    | DoubleLerp (Int, Int) (Double, Double)
+    | DoubleLerp (Frame, Frame) (Double, Double)
     deriving (Generic, Eq, Show)
 
 -- A transformation is a pair of (forward transformation matrix, inverse
@@ -452,6 +455,7 @@ instance Storable Colour where
         q = castPtr p
 
 instance Serialize RenderMode where
+instance Serialize Frame where
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where
 instance Serialize V2SamplerDesc where
@@ -525,14 +529,14 @@ instance Y.FromJSON AnimV3 where
         t <- v Y..: "type"
         case (t::T.Text) of
             "const" -> V3Val <$> v Y..: "value"
-            "lerp" -> V3Lerp <$> ((,) <$> (v Y..: "fromFrame")
-                                      <*> (v Y..: "toFrame")
+            "lerp" -> V3Lerp <$> ((,) <$> (Frame <$> (v Y..: "fromFrame"))
+                                      <*> (Frame <$> (v Y..: "toFrame"))
                                  )
                              <*> ((,) <$> (v Y..: "from")
                                       <*> (v Y..: "to")
                                  )
-            "lerpRotY" -> V3LerpRotY <$> ((,) <$> (v Y..: "fromFrame")
-                                              <*> (v Y..: "toFrame")
+            "lerpRotY" -> V3LerpRotY <$> ((,) <$> (Frame <$> (v Y..: "fromFrame"))
+                                              <*> (Frame <$> (v Y..: "toFrame"))
                                          )
                                      <*> (v Y..: "from")
                                      <*> (v Y..: "angle")
@@ -544,8 +548,8 @@ instance Y.FromJSON AnimDouble where
         t <- v Y..: "type"
         case (t::T.Text) of
             "const" -> DoubleVal <$> v Y..: "value"
-            "lerp" -> DoubleLerp <$> ((,) <$> (v Y..: "fromFrame")
-                                          <*> (v Y..: "toFrame")
+            "lerp" -> DoubleLerp <$> ((,) <$> (Frame <$> (v Y..: "fromFrame"))
+                                          <*> (Frame <$> (v Y..: "toFrame"))
                                      )
                                  <*> ((,) <$> (v Y..: "from")
                                           <*> (v Y..: "to")
