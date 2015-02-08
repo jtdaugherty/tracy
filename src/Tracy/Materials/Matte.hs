@@ -9,7 +9,7 @@ import Linear
 import Data.Colour
 
 import Tracy.Types
-import Tracy.BRDF
+import Tracy.BRDF.Lambertian
 
 matteFromColor :: Color -> Material
 matteFromColor c = matte

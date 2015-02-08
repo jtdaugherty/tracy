@@ -11,7 +11,10 @@ import Linear
 import Data.Colour
 
 import Tracy.Types
-import Tracy.BRDF
+
+import Tracy.BRDF.GlossySpecular
+import Tracy.BRDF.PerfectSpecular
+import Tracy.BRDF.Lambertian
 
 phong :: BRDF -> BRDF -> BRDF -> Material
 phong ambBrdf diffBrdf glossyBrdf =
