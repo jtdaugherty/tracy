@@ -18,7 +18,7 @@ defaultRenderConfig =
     RenderConfig { _sampleRoot = 4
                  , _forceShadows = Nothing
                  , _samplesPerChunk = 1
-                 , _rowsPerChunk = 100
+                 , _rowsPerChunk = Height 100
                  , _renderMode = DepthFirst
                  }
 
@@ -33,8 +33,10 @@ render :: String
        -> IO ()
 render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
   let w = s^.sceneDescWorld
-      allRows = [Row 0..Row $ fromEnum (w^.wdViewPlane.vpVres-1)]
+      height = w^.wdViewPlane.vpVres
+      allRows = [Row 0..Row $ fromEnum (height-1)]
       allSampleIndices = [0..fromEnum (((renderCfg^.sampleRoot) ** 2) - 1)]
+      Height chunkHeight = renderCfg^.rowsPerChunk
 
       ranges _ [] = []
       ranges n rs = (f, l) : ranges n rest
@@ -44,7 +46,7 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
             current = take n rs
             rest = drop n rs
 
-      rowRanges = ranges (renderCfg^.rowsPerChunk) allRows
+      rowRanges = ranges chunkHeight allRows
       sampleRanges = ranges (renderCfg^.samplesPerChunk) allSampleIndices
 
       requests = if renderCfg^.renderMode == BreadthFirst
@@ -67,12 +69,12 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
   writeChan iChan $ INumObjects $ Count $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
-  writeChan iChan $ IImageSize (fromEnum $ w^.wdViewPlane.vpHres)
-                               (fromEnum $ w^.wdViewPlane.vpVres)
+  writeChan iChan $ IImageSize (Width $ fromEnum $ w^.wdViewPlane.vpHres)
+                               (Height $ fromEnum $ w^.wdViewPlane.vpVres)
 
   writeChan dChan $ DSampleRoot $ renderCfg^.sampleRoot
-  writeChan dChan $ DImageSize (fromEnum $ w^.wdViewPlane.vpHres)
-                               (fromEnum $ w^.wdViewPlane.vpVres)
+  writeChan dChan $ DImageSize (Width $ fromEnum $ w^.wdViewPlane.vpHres)
+                               (Height $ fromEnum $ w^.wdViewPlane.vpVres)
   writeChan dChan $ DRowRanges rowRanges
 
   writeChan iChan ILoadingMeshes

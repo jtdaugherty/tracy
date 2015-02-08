@@ -149,7 +149,7 @@ main = do
         let renderCfg = defaultRenderConfig & sampleRoot .~ (argSampleRoot preCfg)
                                             & forceShadows .~ (argForceShadows preCfg)
                                             & samplesPerChunk .~ (argSamplesPerChunk preCfg)
-                                            & rowsPerChunk .~ (argRowsPerChunk preCfg)
+                                            & rowsPerChunk .~ (Height $ argRowsPerChunk preCfg)
                                             & renderMode .~ (argRenderMode preCfg)
 
         iChan <- newChan

@@ -33,7 +33,7 @@ guiHandler chan = do
   DSceneName sceneName <- readChan chan
   DFrameNum frameNum <- readChan chan
   DSampleRoot _ <- readChan chan
-  DImageSize cols rows <- readChan chan
+  DImageSize (Width cols) (Height rows) <- readChan chan
   DRowRanges rowRanges <- readChan chan
 
   ref <- newIORef $ MyState cols rows

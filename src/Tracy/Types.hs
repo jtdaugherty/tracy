@@ -40,6 +40,12 @@ newtype Depth = Depth Int
 newtype Count = Count Int
               deriving (Eq, Show, Generic)
 
+newtype Width = Width Int
+              deriving (Eq, Show, Generic)
+
+newtype Height = Height Int
+              deriving (Eq, Show, Generic)
+
 data InfoEvent =
       ISampleRoot Double
     | IFrameNum Frame
@@ -55,7 +61,7 @@ data InfoEvent =
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
-    | IImageSize Int Int
+    | IImageSize Width Height
     | ILoadedMeshes Count
     | ILoadingMeshes
     | ISettingScene
@@ -69,7 +75,7 @@ data DataEvent =
     | DFrameNum Frame
     | DSampleRoot Double
     | DChunkFinished (Row, Row) (SV.Vector Colour)
-    | DImageSize Int Int
+    | DImageSize Width Height
     | DRowRanges [(Row, Row)]
     | DStarted
     | DFinished
@@ -205,7 +211,7 @@ data RenderConfig =
     RenderConfig { _sampleRoot :: Double
                  , _forceShadows :: Maybe Bool
                  , _samplesPerChunk :: Int
-                 , _rowsPerChunk :: Int
+                 , _rowsPerChunk :: Height
                  , _renderMode :: RenderMode
                  }
                  deriving (Generic, Show)
@@ -266,7 +272,7 @@ type CameraRenderer a = Camera a
                       -> World
                       -> Tracer
                       -> SampleData
-                      -> (Int, V.Vector Int)
+                      -> (Row, V.Vector Int)
                       -> (Int, Int)
                       -> SV.Vector Color
 
@@ -469,6 +475,8 @@ instance Serialize RenderMode where
 instance Serialize Frame where
 instance Serialize Row where
 instance Serialize Count where
+instance Serialize Height where
+instance Serialize Width where
 instance Serialize Depth where
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where

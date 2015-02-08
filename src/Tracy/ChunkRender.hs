@@ -25,7 +25,7 @@ renderChunk :: RenderConfig
             -> (Int, Int)
             -> (Row, Row)
             -> IO (SV.Vector Color)
-renderChunk cfg s tracer sampleData sampleSetIndices sampleRange (Row startRow, Row stopRow) = do
+renderChunk cfg s tracer sampleData sampleSetIndices sampleRange (startRow, stopRow) = do
   let cam = s^.sceneCamera
       w = s^.sceneWorld
       renderer = cam^.cameraRenderWorld

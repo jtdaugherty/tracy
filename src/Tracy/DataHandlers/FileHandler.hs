@@ -24,7 +24,7 @@ fileHandler filename chan = do
   DSceneName _ <- readChan chan
   DFrameNum _ <- readChan chan
   DSampleRoot _ <- readChan chan
-  DImageSize cols rows <- readChan chan
+  DImageSize (Width cols) (Height rows) <- readChan chan
   DRowRanges rowRanges <- readChan chan
 
   DStarted <- readChan chan
