@@ -124,7 +124,7 @@ phongPathShading diffBrdf sh tracer = do
     let reflected_ray = Ray { _origin = sh^.localHitPoint
                             , _direction = wi
                             }
-    traced <- (tracer^.doTrace) reflected_ray (sh^.depth + 1)
+    traced <- (tracer^.doTrace) reflected_ray (sh^.depth + Depth 1)
     return $ (fr * traced * (grey $ (sh^.normal) `dot` wi)) / (grey pdf)
 
 phongShading :: BRDF -> BRDF -> BRDF

@@ -32,6 +32,14 @@ newtype Frame = Frame Int
 newtype Row = Row Int
               deriving (Eq, Show, Generic, Enum, Ord)
 
+-- A depth value.
+newtype Depth = Depth Int
+              deriving (Eq, Show, Generic, Num, Ord)
+
+-- The size of some set of things or the value of a counter.
+newtype Count = Count Int
+              deriving (Eq, Show, Generic)
+
 data InfoEvent =
       ISampleRoot Double
     | IFrameNum Frame
@@ -40,15 +48,15 @@ data InfoEvent =
     | INodeReady String
     | ISceneName String
     | IAccelScheme AccelSchemeDesc
-    | INumObjects Int
+    | INumObjects Count
     | IShadows Bool
-    | INumCPUs Int
-    | IChunkFinished Int Int NominalDiffTime
+    | INumCPUs Count
+    | IChunkFinished Count Count NominalDiffTime
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
     | IImageSize Int Int
-    | ILoadedMeshes Int
+    | ILoadedMeshes Count
     | ILoadingMeshes
     | ISettingScene
     | IStarted
@@ -122,7 +130,7 @@ data Shade =
           , _normal :: !(V3 Double)
           , _material :: Material
           , _shadeRay :: !Ray
-          , _depth :: !Int
+          , _depth :: !Depth
           }
 
 data Ray =
@@ -151,7 +159,7 @@ data ViewPlane =
               , _pixelSize :: Double
               , _gamma :: Double
               , _inverseGamma :: Double
-              , _maxDepth :: Int
+              , _maxDepth :: Depth
               , _pixelSampler :: Sampler (Double, Double)
               }
     deriving (Generic)
@@ -162,7 +170,7 @@ data ViewPlaneDesc =
                   , _vpPixelSize :: Double
                   , _vpGamma :: Double
                   , _vpInverseGamma :: Double
-                  , _vpMaxDepth :: Int
+                  , _vpMaxDepth :: Depth
                   , _vpPixelSampler :: V2SamplerDesc
                   }
     deriving (Show, Eq, Generic)
@@ -306,7 +314,7 @@ data TraceData =
 type TraceM a = Reader TraceData a
 
 data Tracer =
-    Tracer { _doTrace :: Ray -> Int -> TraceM Color
+    Tracer { _doTrace :: Ray -> Depth -> TraceM Color
            }
 
 ---------------------------------------------------------------------------
@@ -460,6 +468,8 @@ instance Storable Colour where
 instance Serialize RenderMode where
 instance Serialize Frame where
 instance Serialize Row where
+instance Serialize Count where
+instance Serialize Depth where
 instance Serialize SceneDesc where
 instance Serialize WorldDesc where
 instance Serialize V2SamplerDesc where
@@ -492,7 +502,7 @@ instance Y.FromJSON ViewPlaneDesc where
                       <*> v Y..: "pixelSize"
                       <*> v Y..: "gamma"
                       <*> v Y..: "inverseGamma"
-                      <*> v Y..: "maxDepth"
+                      <*> (Depth <$> v Y..: "maxDepth")
                       <*> v Y..: "pixelSampler"
     parseJSON _ = fail "Expected object for ViewPlane"
 

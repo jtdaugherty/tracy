@@ -19,7 +19,7 @@ rayCastTracer =
     Tracer { _doTrace = rayCastTrace
            }
 
-rayCastTrace :: Ray -> Int -> TraceM Color
+rayCastTrace :: Ray -> Depth -> TraceM Color
 rayCastTrace ray theDepth = do
     maxD <- view (tdWorld.viewPlane.maxDepth)
     if theDepth > maxD then
@@ -37,7 +37,7 @@ pathTracer =
     Tracer { _doTrace = pathTrace
            }
 
-pathTrace :: Ray -> Int -> TraceM Color
+pathTrace :: Ray -> Depth -> TraceM Color
 pathTrace ray theDepth = do
     maxD <- view (tdWorld.viewPlane.maxDepth)
     if theDepth > maxD then
@@ -60,7 +60,7 @@ areaLightTracer =
     Tracer { _doTrace = areaLightTrace
            }
 
-areaLightTrace :: Ray -> Int -> TraceM Color
+areaLightTrace :: Ray -> Depth -> TraceM Color
 areaLightTrace ray theDepth = do
     maxD <- view (tdWorld.viewPlane.maxDepth)
     if theDepth > maxD then

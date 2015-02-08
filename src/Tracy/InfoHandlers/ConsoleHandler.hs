@@ -52,7 +52,7 @@ consoleHandler chan = do
             ITotalTime t -> outputS "Total time" t
             ISettingScene -> output_ "Setting up scene on nodes..."
             IStarted -> output_ "Starting."
-            IChunkFinished finished total t ->
+            IChunkFinished (Count finished) (Count total) t ->
                     let totalSecs = fromEnum t `div` 1000000000000
                         h = totalSecs `div` 3600
                         m = (totalSecs `mod` 3600) `div` 60

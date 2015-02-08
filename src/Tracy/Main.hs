@@ -65,7 +65,7 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
 
   writeChan iChan $ ISampleRoot $ renderCfg^.sampleRoot
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
-  writeChan iChan $ INumObjects $ w^.wdObjects.to length
+  writeChan iChan $ INumObjects $ Count $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
   writeChan iChan $ IImageSize (fromEnum $ w^.wdViewPlane.vpHres)
                                (fromEnum $ w^.wdViewPlane.vpVres)
@@ -80,7 +80,7 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
   -- Preload meshes
   !mg <- loadMeshes s
 
-  writeChan iChan $ ILoadedMeshes $ M.size mg
+  writeChan iChan $ ILoadedMeshes $ Count $ M.size mg
 
   reqChan <- newChan
   respChan <- newChan
@@ -144,7 +144,7 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
                 let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
                                              (length requests - (numFinished + 1))
 
-                writeChan iChan $ IChunkFinished (numFinished + 1) (length requests) remainingTime
+                writeChan iChan $ IChunkFinished (Count $ numFinished + 1) (Count $ length requests) remainingTime
                 writeChan dChan $ DChunkFinished rowRange rs
 
                 if numFinished + 1 == length requests then
