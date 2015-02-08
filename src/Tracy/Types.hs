@@ -261,10 +261,10 @@ instance Functor Sampler where
 
 data SampleData =
     SampleData { _numSets :: Int
-               , _pixelSampleSets :: V.Vector (V.Vector (Double, Double))
-               , _squareSampleSets :: V.Vector (V.Vector (Double, Double))
-               , _diskSampleSets :: V.Vector (V.Vector (Double, Double))
-               , _objectSampleSets :: V.Vector (V.Vector (Double, Double))
+               , _pixelSampleSets :: !(V.Vector (V.Vector (Double, Double)))
+               , _squareSampleSets :: !(V.Vector (V.Vector (Double, Double)))
+               , _diskSampleSets :: !(V.Vector (V.Vector (Double, Double)))
+               , _objectSampleSets :: !(V.Vector (V.Vector (Double, Double)))
                }
 
 type CameraRenderer a = Camera a
