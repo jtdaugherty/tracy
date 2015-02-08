@@ -390,7 +390,7 @@ data LightDesc =
 
 data MaterialDesc =
       Matte Color
-    | Mix Double MaterialDesc MaterialDesc
+    | Mix AnimDouble MaterialDesc MaterialDesc
     | Add MaterialDesc MaterialDesc
     | Phong Color Double Double
     | Emissive Color Double
