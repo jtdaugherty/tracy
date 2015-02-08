@@ -11,7 +11,7 @@ import qualified Data.Map as M
 import Linear (V3)
 
 import Tracy.Types
-import Tracy.Cameras
+import Tracy.Cameras.ThinLens
 
 import Tracy.Materials.Emissive
 import Tracy.Materials.Phong

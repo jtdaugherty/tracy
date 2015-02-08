@@ -57,7 +57,7 @@ library
     Tracy.BRDF.Lambertian
     Tracy.BRDF.PerfectSpecular
     Tracy.BoundingBox
-    Tracy.Cameras
+    Tracy.Cameras.ThinLens
     Tracy.ChunkRender
     Tracy.Constants
     Tracy.Main

@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, BangPatterns #-}
-module Tracy.Cameras
+module Tracy.Cameras.ThinLens
   ( thinLensCamera
   )
   where
