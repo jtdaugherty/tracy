@@ -29,6 +29,7 @@
 - Other
   * Support applying transformations to single objects (implicitly
     convert to instance list internally)
+  * Use more newtypes
 
 - Animation
   * animate more things, add more animated value types
