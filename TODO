@@ -1,10 +1,12 @@
-- Performance
+- Acceleration aids
   * Implement bounding volume hierarchy support
+
+- Benchmarks
+  * Hit functions
+  * Sample generation
   * Generate vectors of random values in Samplers.hs to improve
-    performance, test sample setup time in Main.hs
-  * Factor out Local.hs sample setup code for benchmarking
-  * Use uniform vectors in samplers and in sample index generation in
-    Local.hs instead of uniformR (benchmark to test the difference)
+    performance
+  * Test use of uniformVector instead of repeated uniformR calls
   * Use vectors instead of lists in some internal sampler operations
     (e.g. shuffling using lists and !! will be slow)
 
