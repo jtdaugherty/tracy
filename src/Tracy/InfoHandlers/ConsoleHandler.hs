@@ -25,7 +25,7 @@ consoleHandler chan = do
         ev <- readChan chan
         case ev of
             ISceneName n -> output "Scene name" n
-            IFrameNum n -> output "Frame number" (show n)
+            IFrameNum (Frame n) -> output "Frame number" (show n)
             ISampleRoot root -> let sStr = if root == 1
                                            then "sample"
                                            else "samples"
