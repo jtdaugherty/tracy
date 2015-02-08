@@ -155,12 +155,14 @@ main = do
         iChan <- newChan
         dChan <- newChan
 
-        let manager = if null $ argRenderNodes preCfg
-                      then localRenderManager
-                      else networkRenderManager (argRenderNodes preCfg) iChan
+        let (numNodes, manager) = if null $ argRenderNodes preCfg
+                                  then (1, localRenderManager)
+                                  else ( length $ argRenderNodes preCfg
+                                       , networkRenderManager (argRenderNodes preCfg) iChan
+                                       )
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender renderCfg sceneDesc (argFrameNum preCfg) manager iChan dChan
+        _ <- forkIO $ render toRender renderCfg sceneDesc (argFrameNum preCfg) numNodes manager iChan dChan
 
         case UseGUI `elem` os of
             False -> do

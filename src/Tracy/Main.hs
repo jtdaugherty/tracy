@@ -27,11 +27,12 @@ render :: String
        -> RenderConfig
        -> SceneDesc
        -> Int
+       -> Int
        -> (Chan JobRequest -> Chan (String, JobResponse) -> IO ())
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
-render sceneName renderCfg s frameNum renderManager iChan dChan = do
+render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
   let w = s^.sceneDescWorld
       allRows = [0..fromEnum (w^.wdViewPlane.vpVres-1)]
       allSampleIndices = [0..fromEnum (((renderCfg^.sampleRoot) ** 2) - 1)]
@@ -97,10 +98,8 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
   writeChan iChan ISettingScene
   writeChan reqChan $ SetScene renderCfg s mg frameNum rngSeedV rowRanges
 
-  -- Send the rendering requests
-  mapM_ (writeChan reqChan) requests
-
   startTime <- newIORef Nothing
+  numReadyNodes <- newIORef 0
 
   -- Wait for the responses
   let collector numFinished = do
@@ -113,13 +112,13 @@ render sceneName renderCfg s frameNum renderManager iChan dChan = do
             JobAck -> collector numFinished
             SetSceneAck -> do
                 writeChan iChan $ INodeReady node
+                modifyIORef numReadyNodes (+ 1)
+                ready <- readIORef numReadyNodes
 
-                t <- readIORef startTime
-                -- XXX this starts the clock on the first ack, but if
-                -- we're using multiple network nodes, it would be nice
-                -- to start the clock only when _all_ of them have
-                -- ack'd.
-                when (isNothing t) $ do
+                when (ready == numNodes) $ do
+                      -- Send the rendering requests
+                      mapM_ (writeChan reqChan) requests
+
                       t1 <- getCurrentTime
                       writeChan iChan IStarted
                       writeChan iChan $ IStartTime t1
