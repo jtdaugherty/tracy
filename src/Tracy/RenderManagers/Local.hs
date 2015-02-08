@@ -32,7 +32,7 @@ localSetSceneAndRender jobReq jobResp cfg builtScene sampleData sampleIndexMap =
         scene = builtScene & sceneWorld .~ worldAccelShadows
         tracer = builtScene^.sceneTracer
 
-    let processRequests = do
+        processRequests = do
           ev <- readChan jobReq
           case ev of
               RenderRequest rowRange sampleRange -> do
