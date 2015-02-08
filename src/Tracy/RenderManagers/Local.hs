@@ -18,7 +18,7 @@ import Tracy.Samplers
 import Tracy.ChunkRender
 
 localNodeName :: String
-localNodeName = "<local>"
+localNodeName = "<in-process renderer>"
 
 localSetSceneAndRender :: Chan JobRequest -> Chan (String, JobResponse) -> RenderConfig
                        -> Scene ThinLens -> SampleData -> M.Map Int [V.Vector Int]
