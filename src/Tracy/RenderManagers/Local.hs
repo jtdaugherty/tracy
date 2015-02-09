@@ -35,11 +35,12 @@ localSetSceneAndRender jobReq jobResp cfg sDesc mg sampleData sampleIndexMap = d
 
           ev <- readChan jobReq
           case ev of
-              RenderRequest rowRange sampleRange -> do
+              RenderRequest rowRange sampleRange@(sa, sb) -> do
                   let Row startRow = fst rowRange
                       !sampleIndices = sampleIndexMap M.! startRow
+                      sc = length [sa..sb]
                   ch <- renderChunk cfg scene tracer sampleData sampleIndices sampleRange rowRange
-                  writeChan jobResp (localNodeName, ChunkFinished rowRange ch)
+                  writeChan jobResp (localNodeName, ChunkFinished rowRange (Count sc) ch)
                   processRequests builtScene
               FrameFinished -> writeChan jobResp (localNodeName, JobAck) >> return True
               RenderFinished -> writeChan jobResp (localNodeName, JobAck) >> return False

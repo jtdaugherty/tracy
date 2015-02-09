@@ -74,7 +74,7 @@ data InfoEvent =
 data DataEvent =
       DSceneName String
     | DSampleRoot Double
-    | DChunkFinished (Row, Row) (SV.Vector Colour)
+    | DChunkFinished (Row, Row) Count (SV.Vector Colour)
     | DImageSize Width Height
     | DRowRanges [(Row, Row)]
     | DStarted Frame
@@ -95,7 +95,7 @@ type MeshGroup = Map MeshSource MeshData
 
 data JobResponse =
       JobError String
-    | ChunkFinished (Row, Row) (SV.Vector Colour)
+    | ChunkFinished (Row, Row) Count (SV.Vector Colour)
     | SetSceneAck
     | SetFrameAck
     | JobAck

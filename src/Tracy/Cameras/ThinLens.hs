@@ -12,7 +12,6 @@ import qualified Data.Vector.Storable as SV
 import Linear
 
 import Tracy.Types
-import Tracy.Util (max3)
 import Tracy.Samplers (toUnitHemi)
 
 camera :: V3 Double -> V3 Double -> V3 Double -> Double -> Double
@@ -46,18 +45,9 @@ thinLensRayDir cam pixelPoint lensPoint =
 
     in signorm raydir
 
-maxToOne :: Color -> Color
-maxToOne (Colour r g b) = Colour r' g' b'
-    where
-      m = max3 r g b
-      (r', g', b') = if m > 1
-                     then (r/m, g/m, b/m)
-                     else (r, g, b)
-
 thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRange =
   let !newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
-      !maxToOneDenom = grey $ toEnum $ V.length sampleIndices
       !sampleIndices = V.fromList [fst sampleRange .. snd sampleRange]
       !maxToOneExposure = grey (cam^.exposureTime)
       !vp = w^.viewPlane
@@ -72,8 +62,7 @@ thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRa
               !pixelSampleSet = (sampleData^.pixelSampleSets) V.! sampleSetIndex
               !sampleSetIndex = sampleSetIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
 
-          in maxToOne ((V.sum (results col pixelSampleSet squareSampleSet diskSampleSet objectSampleSet) / maxToOneDenom) *
-              maxToOneExposure)
+          in (V.sum (results col pixelSampleSet squareSampleSet diskSampleSet objectSampleSet) * maxToOneExposure)
 
       results :: Double -> V.Vector (Double, Double) -> V.Vector (Double, Double)
               -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector Color

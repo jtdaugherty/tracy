@@ -120,5 +120,5 @@ main = do
                     JobAck -> return ()
                     SetSceneAck -> putStrLn "Done setting up scene, ready for frames"
                     SetFrameAck -> putStrLn "Done setting up frame, ready to render"
-                    ChunkFinished _ _ -> putStrLn $ "Finished chunk"
+                    ChunkFinished _ _ _ -> putStrLn $ "Finished chunk"
                     JobError e -> putStrLn $ "Job error: " ++ e

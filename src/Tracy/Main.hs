@@ -106,7 +106,7 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
             JobAck -> collector curFrame numFinished
             SetFrameAck -> do
                 collector curFrame numFinished
-            ChunkFinished rowRange rs -> do
+            ChunkFinished rowRange sc rs -> do
                 -- If we get here and startTime is Nothing, that's a
                 -- bug; how could we have finished a chunk if we hadn't
                 -- gotten at least one scene ack?
@@ -122,7 +122,7 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
                     Frame fe = endFrame
 
                 writeChan iChan $ IChunkFinished curFrame (Count $ numFinished + 1) (Count $ length requests) remainingTime
-                writeChan dChan $ DChunkFinished rowRange rs
+                writeChan dChan $ DChunkFinished rowRange sc rs
 
                 case numFinished + 1 == length requests of
                     False -> collector curFrame $ numFinished + 1

@@ -9,6 +9,7 @@ module Tracy.Util
   , toV3
   , toV4
   , flipNormal
+  , maxToOne
 
   , createMergeBuffer
   , mergeChunks
@@ -28,6 +29,14 @@ import Foreign.C.Types
 import Foreign.Ptr
 
 import Tracy.Types
+
+maxToOne :: Color -> Color
+maxToOne (Colour r g b) = Colour r' g' b'
+    where
+      m = max3 r g b
+      (r', g', b') = if m > 1
+                     then (r/m, g/m, b/m)
+                     else (r, g, b)
 
 {-# INLINE flipNormal #-}
 flipNormal :: V3 Double -> V3 Double -> V3 Double
@@ -73,11 +82,12 @@ createMergeBuffer rows cols = do
     p <- mallocArray (3 * rows * cols)
     return (rows, cols, p)
 
-mergeChunks :: Int -> Row -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
-mergeChunks numSamples (Row startRow) (_, cols, merged) newData = do
+mergeChunks :: Int -> Int -> Row -> (Int, Int, Ptr Double) -> SV.Vector Color -> IO ()
+mergeChunks numSamples newSampleCount (Row startRow) (_, cols, merged) newData = do
     SV.unsafeWith newData $ \p ->
         c_running_average
           (fromIntegral numSamples)
+          (fromIntegral newSampleCount)
           (fromIntegral $ 3 * SV.length newData)
           (plusPtr merged $ startRow * cols * 3 * (sizeOf (0::Double)))
           (castPtr p)
@@ -87,7 +97,7 @@ vectorFromMergeBuffer (rows, cols, merged) =
     SV.generateM (rows*cols) $ peekElemOff (castPtr merged)
 
 foreign import ccall unsafe "running_average"
-  c_running_average :: CDouble -> CInt -> Ptr Double -> Ptr Double -> IO ()
+  c_running_average :: CDouble -> CDouble -> CInt -> Ptr Double -> Ptr Double -> IO ()
 
 toV4 :: (Num a) => V3 a -> V4 a
 toV4 v = V4 (v^._x) (v^._y) (v^._z) 0

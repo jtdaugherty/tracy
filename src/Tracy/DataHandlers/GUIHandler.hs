@@ -8,6 +8,7 @@ import Control.Concurrent.Chan
 import Control.Concurrent (forkIO)
 import Control.Monad
 import qualified Data.Map as M
+import qualified Data.Vector.Storable as SV
 import Data.IORef
 import Foreign (mallocArray)
 import Foreign.Storable
@@ -66,36 +67,38 @@ guiHandler chan = do
   combinedArray@(_, _, combinedPtr) <- createMergeBuffer rows cols
 
   let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat (0::Int)
-      work sampleCounts = do
+      work chunkCounts = do
         ev <- readChan chan
         case ev of
             DStarted (Frame fn) -> do
                 GLUT.windowTitle $= windowTitle fn
-                work sampleCounts
-            DChunkFinished (startRow@(Row startRowI), Row stopRow) rs -> do
-                let numSamples = sampleCounts M.! startRow
+                work chunkCounts
+            DChunkFinished (startRow@(Row startRowI), Row stopRow) (Count sc) rs -> do
+                let numSamples = chunkCounts M.! startRow
+                    newSampleCount = numSamples + sc
                     startIndex = startRowI * cols
                     stopIndex = ((stopRow + 1) * cols) - 1
 
-                mergeChunks numSamples startRow combinedArray rs
+                mergeChunks numSamples newSampleCount startRow combinedArray rs
 
                 forM_ [startIndex..stopIndex] $ \i -> do
                     val <- peekElemOff (castPtr combinedPtr) i
-                    pokeElemOff imageArray i $ toColor3 val
+                    pokeElemOff imageArray i $ toColor3 $ maxToOne val
 
                 writeIORef redrawRef True
                 work $
-                  M.alter (\(Just v) -> Just (v + 1)) startRow sampleCounts
+                  M.alter (\(Just v) -> Just (v + sc)) startRow chunkCounts
 
             DFinished frameNum -> do
                 -- Write the current accumulation buffer to disk
                 vec <- vectorFromMergeBuffer combinedArray
-                writeImage vec rows cols (buildFilename sceneName frameNum)
+                let vec2 = SV.map maxToOne vec
+                writeImage vec2 rows cols (buildFilename sceneName frameNum)
 
                 -- Start over with a new sample count map
                 work sCountMap
             DShutdown -> return ()
-            _ -> work sampleCounts
+            _ -> work chunkCounts
 
   _ <- forkIO $ work sCountMap
 

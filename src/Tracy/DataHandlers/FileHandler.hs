@@ -31,13 +31,16 @@ fileHandler chan = do
       work m = do
         ev <- readChan chan
         case ev of
-            DChunkFinished rowRange rs -> do
+            DChunkFinished rowRange (Count sc) rs -> do
               let startRow = fst rowRange
-              mergeChunks (m M.! startRow) startRow merged rs
-              work $ M.alter (\(Just v) -> Just (v + 1)) startRow m
+                  oldCnt = m M.! startRow
+                  newCnt = oldCnt + sc
+              mergeChunks oldCnt newCnt startRow merged rs
+              work $ M.alter (\(Just v) -> Just (v + sc)) startRow m
             DFinished frameNum -> do
                 vec <- vectorFromMergeBuffer merged
-                writeImage vec rows cols (buildFilename sceneName frameNum)
+                let vec2 = SV.map maxToOne vec
+                writeImage vec2 rows cols (buildFilename sceneName frameNum)
                 -- Reset sample count state
                 work sCountMap
             DShutdown -> return ()
