@@ -34,6 +34,10 @@
     structure? E.g. "world.viewPlane.hres=x"
   * Make console output fancier, improve output of tracy-node (use
     pretty-printing docs)
+  * Some settings in the scene are frame-independent, not animatable,
+    etc. These should be factored out of the Scene and SceneDesc types!
+    This would also avoid the ugly hack in Local.hs where we build a scene
+    from description just to get at some of those settings.
 
 - Animation
   * animate more things, add more animated value types
