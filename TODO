@@ -35,8 +35,6 @@
   * Make console output fancier, improve output of tracy-node
 
 - Animation
-  * Refactor animation type class and instances so interpolation is only
-    implemented once for lots of numeric and vector types
   * animate more things, add more animated value types
   * Support rendering frame sequences on multiple hosts (requires
     keeping console and data handlers running and resetting state on
