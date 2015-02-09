@@ -57,8 +57,8 @@ maxToOne (Colour r g b) = Colour r' g' b'
 thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRange =
   let !newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
-      !maxToOneDenom = grey $ toEnum $ V.length sampleIndicies
-      !sampleIndicies = V.fromList [fst sampleRange .. snd sampleRange]
+      !maxToOneDenom = grey $ toEnum $ V.length sampleIndices
+      !sampleIndices = V.fromList [fst sampleRange .. snd sampleRange]
       !maxToOneExposure = grey (cam^.exposureTime)
       !vp = w^.viewPlane
       !row = toEnum theRow
@@ -82,7 +82,7 @@ thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRa
                                     (squareSamples V.! idx)
                                     (diskSamples V.! idx)
                                     (objectSamples V.! idx)
-                ) sampleIndicies
+                ) sampleIndices
 
       result col (px, py) (sx, sy) (dx, dy) (ox, oy) =
           let !x = newPixSize * (col - (0.5 * vp^.hres) + px)
