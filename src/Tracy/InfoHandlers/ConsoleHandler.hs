@@ -78,4 +78,3 @@ consoleHandler chan = do
         if ev == IShutdown then
            return False else
            return True
-
