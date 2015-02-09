@@ -51,8 +51,9 @@ Features:
    - YAML-based file format
    - Network (de)serialization
  * Animation:
-   - Renders a selected frame from an animation sequence (frames can be
-     stitched into movies using external tools; see `scripts/`)
+   - Renders animation frame sequences locally or on network nodes
+     (frames can be stitched into movies using external tools; see
+     `scripts/`)
    - Linear interpolation of float values, rotational interpolation of
      vectors for some object fields
  * Engine:
