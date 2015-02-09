@@ -16,6 +16,7 @@ import Linear
 import Data.Colour
 import Data.Monoid
 import Data.Word
+import Data.Scientific (toRealFloat)
 import System.Random.MWC
 import Foreign.Storable
 import Foreign.C.Types
@@ -570,7 +571,7 @@ instance Y.FromJSON AnimDouble where
     parseJSON (Y.Object v) = do
         t <- v Y..: "type"
         case (t::T.Text) of
-            "const" -> DoubleVal <$> v Y..: "value"
+            "const" -> v Y..: "value"
             "lerp" -> DoubleLerp <$> ((,) <$> (Frame <$> (v Y..: "fromFrame"))
                                           <*> (Frame <$> (v Y..: "toFrame"))
                                      )
@@ -578,7 +579,8 @@ instance Y.FromJSON AnimDouble where
                                           <*> (v Y..: "to")
                                      )
             t' -> fail $ "Invalid AnimDouble type: " ++ (show $ T.unpack t')
-    parseJSON _ = fail "Expected object for AnimDouble"
+    parseJSON (Y.Number n) = return $ DoubleVal $ toRealFloat n
+    parseJSON v = fail $ "Expected object for AnimDouble, got " ++ show v
 
 instance Y.FromJSON CameraDesc where
     parseJSON (Y.Object v) =
@@ -587,9 +589,9 @@ instance Y.FromJSON CameraDesc where
                        <*> v Y..: "up"
                        <*> v Y..: "exposure"
                        <*> v Y..: "zoom"
-                       <*> ((DoubleVal <$> v Y..: "vpDist") <|> (v Y..: "vpDist"))
-                       <*> ((DoubleVal <$> v Y..: "fpDist") <|> (v Y..: "fpDist"))
-                       <*> ((DoubleVal <$> v Y..: "lensRadius") <|> (v Y..: "lensRadius"))
+                       <*> v Y..: "vpDist"
+                       <*> v Y..: "fpDist"
+                       <*> v Y..: "lensRadius"
                        <*> v Y..: "lensSampler"
     parseJSON _ = fail "Expected object for CameraDesc"
 

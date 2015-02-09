@@ -39,6 +39,7 @@ library
     old-locale,
     parallel,
     ply-loader >= 0.4,
+    scientific,
     stm,
     text,
     time,
