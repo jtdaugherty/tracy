@@ -45,7 +45,7 @@ consoleHandler chan = do
             IConnecting s -> output "Connecting to" s
             INodeReady s -> output "Node ready" s
             IShadows val -> output "Shadows" (if val then "yes" else "no")
-            IImageSize w h -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
+            IImageSize (Width w) (Height h) -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
             INumCPUs n -> outputS "Using CPUs" n
             IStartTime t -> outputS "Start time" t
             IFinishTime t -> outputS "Finish time" t
