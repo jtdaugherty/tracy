@@ -60,6 +60,7 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
                       ]
 
   writeChan iChan $ ISceneName sceneName
+  writeChan iChan $ IFrameRange frameRange
   writeChan dChan $ DSceneName sceneName
 
   writeChan iChan $ ISampleRoot $ renderCfg^.sampleRoot
@@ -111,10 +112,16 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
                 -- gotten at least one scene ack?
                 Just t1 <- readIORef startTime
                 t <- getCurrentTime
-                let remainingTime = toEnum $ ((fromEnum $ diffUTCTime t t1) `div` (numFinished + 1)) *
-                                             (length requests - (numFinished + 1))
+                let remainingTime = toEnum $ timePerCompletedChunk * chunksRemaining
+                    chunksFinished = numFinished + 1 + ((length requests) * completedFrames)
+                    chunksRemaining = (length requests) * framesLeft + (length requests - (numFinished + 1))
+                    timePerCompletedChunk = (fromEnum $ diffUTCTime t t1) `div` chunksFinished
+                    framesLeft = fe - fc
+                    completedFrames = fc - 1
+                    Frame fc = curFrame
+                    Frame fe = endFrame
 
-                writeChan iChan $ IChunkFinished (Count $ numFinished + 1) (Count $ length requests) remainingTime
+                writeChan iChan $ IChunkFinished curFrame (Count $ numFinished + 1) (Count $ length requests) remainingTime
                 writeChan dChan $ DChunkFinished rowRange rs
 
                 case numFinished + 1 == length requests of

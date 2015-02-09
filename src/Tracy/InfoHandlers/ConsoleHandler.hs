@@ -47,11 +47,15 @@ consoleHandler chan = do
             IImageSize (Width w) (Height h) -> output "Image size" (show w ++ "px (W) x " ++ show h ++ "px (H)")
             INumCPUs n -> outputS "Using CPUs" n
             IStartTime t -> outputS "Start time" t
-            IFinishTime t -> outputS "Finish time" t
+            IFinishTime t -> putStrLn "" >> outputS "Finish time" t
             ITotalTime t -> outputS "Total time" t
             ISettingScene -> output_ "Setting up scene on nodes..."
             IStarted -> output_ "Starting."
-            IChunkFinished (Count finished) (Count total) t ->
+            IFrameRange (Frame fa, Frame fb) ->
+                case fa == fb of
+                    False -> output "Frame range" (show fa ++ "-" ++ show fb)
+                    True -> output "Frame" (show fa)
+            IChunkFinished (Frame fn) (Count finished) (Count total) t ->
                     let totalSecs = fromEnum t `div` 1000000000000
                         h = totalSecs `div` 3600
                         m = (totalSecs `mod` 3600) `div` 60
@@ -65,12 +69,11 @@ consoleHandler chan = do
                                           , "s"
                                           ]
                     in do
-                        putStr $ "  Rendering...                   " ++
+                        putStr $ "  Rendering...                   Frame " ++ show fn ++ ": " ++
                           (concat [ show perc, "% (", totalStr , " remaining)     \r" ])
-                        when (finished == total) $ putStrLn ""
                         hFlush stdout
 
-            IFinished (Frame frame) -> output "Finished frame" (show frame)
+            IFinished _ -> return ()
             IShutdown -> output_ "Done."
         if ev == IShutdown then
            return False else

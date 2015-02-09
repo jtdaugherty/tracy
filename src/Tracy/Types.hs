@@ -53,11 +53,12 @@ data InfoEvent =
     | IConnecting String
     | INodeReady String
     | ISceneName String
+    | IFrameRange (Frame, Frame)
     | IAccelScheme AccelSchemeDesc
     | INumObjects Count
     | IShadows Bool
     | INumCPUs Count
-    | IChunkFinished Count Count NominalDiffTime
+    | IChunkFinished Frame Count Count NominalDiffTime
     | IStartTime UTCTime
     | IFinishTime UTCTime
     | ITotalTime NominalDiffTime
