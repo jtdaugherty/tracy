@@ -77,7 +77,7 @@ data DataEvent =
     | DChunkFinished (Row, Row) (SV.Vector Colour)
     | DImageSize Width Height
     | DRowRanges [(Row, Row)]
-    | DStarted
+    | DStarted Frame
     | DFinished Frame
     | DShutdown
     deriving (Eq, Show)

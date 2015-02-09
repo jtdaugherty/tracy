@@ -25,8 +25,6 @@ fileHandler chan = do
   DImageSize (Width cols) (Height rows) <- readChan chan
   DRowRanges rowRanges <- readChan chan
 
-  DStarted <- readChan chan
-
   merged <- createMergeBuffer rows cols
 
   let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat 0

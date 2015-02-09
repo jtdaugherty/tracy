@@ -137,6 +137,7 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
       doFrames curFrame = do
         -- Set the frame on all nodes
         writeChan reqChan $ SetFrame curFrame
+        writeChan dChan $ DStarted curFrame
         mapM_ (writeChan reqChan) requests
         collector curFrame 0
         if curFrame /= endFrame
@@ -170,7 +171,6 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
                       t1 <- getCurrentTime
                       writeChan iChan IStarted
                       writeChan iChan $ IStartTime t1
-                      writeChan dChan DStarted
                       return t1
             JobAck -> waitForReady ready
             _ -> do

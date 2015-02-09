@@ -44,6 +44,8 @@ guiHandler chan = do
   GLUT.initialDisplayMode $= [ GLUT.SingleBuffered, GLUT.RGBMode ]
   GLUT.initialWindowSize $= GL.Size (toEnum $ fromEnum cols) (toEnum $ fromEnum rows)
   GLUT.initialWindowPosition $= GL.Position 100 100
+
+  let windowTitle fn = sceneName ++ " (frame " ++ show fn ++ ")"
   _ <- GLUT.createWindow sceneName
 
   GLUT.displayCallback $= display ref imageArray
@@ -67,6 +69,9 @@ guiHandler chan = do
       work sampleCounts = do
         ev <- readChan chan
         case ev of
+            DStarted (Frame fn) -> do
+                GLUT.windowTitle $= windowTitle fn
+                work sampleCounts
             DChunkFinished (startRow@(Row startRowI), Row stopRow) rs -> do
                 let numSamples = sampleCounts M.! startRow
                     startIndex = startRowI * cols
@@ -92,9 +97,7 @@ guiHandler chan = do
             DShutdown -> return ()
             _ -> work sampleCounts
 
-  _ <- forkIO $ do
-    DStarted <- readChan chan
-    work sCountMap
+  _ <- forkIO $ work sCountMap
 
   GLUT.mainLoop
 
