@@ -552,7 +552,7 @@ instance Y.FromJSON AnimV3 where
     parseJSON (Y.Object v) = do
         t <- v Y..: "type"
         case (t::T.Text) of
-            "const" -> V3Val <$> v Y..: "value"
+            "const" -> v Y..: "value"
             "lerp" -> V3Lerp <$> ((,) <$> (Frame <$> (v Y..: "fromFrame"))
                                       <*> (Frame <$> (v Y..: "toFrame"))
                                  )
@@ -565,6 +565,7 @@ instance Y.FromJSON AnimV3 where
                                      <*> (v Y..: "from")
                                      <*> (v Y..: "angle")
             t' -> fail $ "Invalid AnimV3 type: " ++ (show $ T.unpack t')
+    parseJSON (Y.String s) = V3Val <$> parseReadsT s "Invalid AnimV3 constant vector value"
     parseJSON _ = fail "Expected object for AnimV3"
 
 instance Y.FromJSON AnimDouble where
@@ -584,7 +585,7 @@ instance Y.FromJSON AnimDouble where
 
 instance Y.FromJSON CameraDesc where
     parseJSON (Y.Object v) =
-        ThinLensCamera <$> ((V3Val <$> v Y..: "eye") <|> (v Y..: "eye"))
+        ThinLensCamera <$> v Y..: "eye"
                        <*> v Y..: "lookAt"
                        <*> v Y..: "up"
                        <*> v Y..: "exposure"
