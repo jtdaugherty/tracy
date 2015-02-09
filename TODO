@@ -32,7 +32,8 @@
   * Allow user to override tracing depth on command line
   * Make it possible to set arbitrary config settings by using the yaml
     structure? E.g. "world.viewPlane.hres=x"
-  * Make console output fancier, improve output of tracy-node
+  * Make console output fancier, improve output of tracy-node (use
+    pretty-printing docs)
 
 - Animation
   * animate more things, add more animated value types
