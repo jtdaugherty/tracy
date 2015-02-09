@@ -8,7 +8,6 @@ import Control.Lens ((^.))
 import Data.Traversable (sequenceA)
 import Data.Monoid
 import qualified Data.Map as M
-import Linear (V3)
 
 import Tracy.Types
 import Tracy.Cameras.ThinLens
