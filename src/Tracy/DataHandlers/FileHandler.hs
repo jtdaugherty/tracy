@@ -41,6 +41,7 @@ fileHandler chan = do
                 -- Reset sample count state
                 work sCountMap
             DShutdown -> return ()
+            DStarted _ -> work m
             _ -> error "FileHandler: unexpected event!"
 
   work sCountMap
