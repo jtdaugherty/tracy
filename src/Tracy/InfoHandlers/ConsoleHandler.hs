@@ -38,9 +38,9 @@ consoleHandler chan = do
                                                  ]
                                 in output "Sampler root" msg
             IAccelScheme name -> output "Acceleration method" (show name)
-            ILoadedMeshes n -> outputS "Loaded meshes" n
+            ILoadedMeshes (Count n) -> outputS "Loaded meshes" n
             ILoadingMeshes -> output_ "Loading meshes..."
-            INumObjects n -> outputS "Objects" n
+            INumObjects (Count n) -> outputS "Objects" n
             IConnected s -> output "Connected to" s
             IConnecting s -> output "Connecting to" s
             INodeReady s -> output "Node ready" s
