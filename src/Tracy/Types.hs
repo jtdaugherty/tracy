@@ -28,7 +28,7 @@ import qualified Data.Text as T
 type Color = Colour
 
 newtype Frame = Frame Int
-              deriving (Eq, Show, Generic)
+              deriving (Eq, Show, Generic, Enum, Num)
 
 newtype Row = Row Int
               deriving (Eq, Show, Generic, Enum, Ord)
@@ -49,7 +49,6 @@ newtype Height = Height Int
 
 data InfoEvent =
       ISampleRoot Double
-    | IFrameNum Frame
     | IConnected String
     | IConnecting String
     | INodeReady String
@@ -67,25 +66,26 @@ data InfoEvent =
     | ILoadingMeshes
     | ISettingScene
     | IStarted
-    | IFinished
+    | IFinished Frame
     | IShutdown
     deriving (Eq)
 
 data DataEvent =
       DSceneName String
-    | DFrameNum Frame
     | DSampleRoot Double
     | DChunkFinished (Row, Row) (SV.Vector Colour)
     | DImageSize Width Height
     | DRowRanges [(Row, Row)]
     | DStarted
-    | DFinished
+    | DFinished Frame
     | DShutdown
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc MeshGroup Frame (VU.Vector Word32) [(Row, Row)]
+      SetScene RenderConfig SceneDesc MeshGroup (VU.Vector Word32) [(Row, Row)]
+    | SetFrame Frame
     | RenderRequest (Row, Row) (Int, Int)
+    | FrameFinished
     | RenderFinished
     | Shutdown
     deriving (Generic, Show)
@@ -96,6 +96,7 @@ data JobResponse =
       JobError String
     | ChunkFinished (Row, Row) (SV.Vector Colour)
     | SetSceneAck
+    | SetFrameAck
     | JobAck
     deriving (Generic)
 

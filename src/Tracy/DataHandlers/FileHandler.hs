@@ -7,7 +7,6 @@ module Tracy.DataHandlers.FileHandler
 
 import Control.Applicative
 import Control.Concurrent.Chan
-import Data.IORef
 import qualified Data.Map as M
 import qualified Data.ByteString as B
 import Codec.BMP
@@ -19,10 +18,9 @@ import Tracy.Util
 buildFilename :: String -> Frame -> FilePath
 buildFilename sn (Frame fn) = sn ++ "-" ++ show fn ++ ".bmp"
 
-fileHandler :: FilePath -> Chan DataEvent -> IO ()
-fileHandler filename chan = do
-  DSceneName _ <- readChan chan
-  DFrameNum _ <- readChan chan
+fileHandler :: Chan DataEvent -> IO ()
+fileHandler chan = do
+  DSceneName sceneName <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize (Width cols) (Height rows) <- readChan chan
   DRowRanges rowRanges <- readChan chan
@@ -31,26 +29,23 @@ fileHandler filename chan = do
 
   merged <- createMergeBuffer rows cols
 
-  ref <- newIORef $ M.fromList $ zip (fst <$> rowRanges) $ repeat 0
+  let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat 0
+      work m = do
+        ev <- readChan chan
+        case ev of
+            DChunkFinished rowRange rs -> do
+              let startRow = fst rowRange
+              mergeChunks (m M.! startRow) startRow merged rs
+              work $ M.alter (\(Just v) -> Just (v + 1)) startRow m
+            DFinished frameNum -> do
+                vec <- vectorFromMergeBuffer merged
+                writeImage vec rows cols (buildFilename sceneName frameNum)
+                -- Reset sample count state
+                work sCountMap
+            DShutdown -> return ()
+            _ -> error "FileHandler: unexpected event!"
 
-  let work = do
-      ev <- readChan chan
-      case ev of
-          DChunkFinished rowRange rs -> do
-            let startRow = fst rowRange
-            m <- readIORef ref
-            mergeChunks (m M.! startRow) startRow merged rs
-            writeIORef ref $ M.alter (\(Just v) -> Just (v + 1)) startRow m
-            work
-          DFinished -> return ()
-          _ -> error "FileHandler: unexpected event!"
-
-  work
-
-  DShutdown <- readChan chan
-
-  vec <- vectorFromMergeBuffer merged
-  writeImage vec rows cols filename
+  work sCountMap
 
 writeImage :: SV.Vector Color -> Int -> Int -> FilePath -> IO ()
 writeImage dat rows cols filename = do

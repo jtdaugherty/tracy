@@ -3,7 +3,6 @@ module Tracy.Main where
 
 import Control.Lens
 import Control.Concurrent
-import Control.Monad (when)
 import Data.IORef
 import Data.Time.Clock
 import System.Exit
@@ -25,18 +24,19 @@ defaultRenderConfig =
 render :: String
        -> RenderConfig
        -> SceneDesc
-       -> Frame
+       -> (Frame, Frame)
        -> Int
        -> (Chan JobRequest -> Chan (String, JobResponse) -> IO ())
        -> Chan InfoEvent
        -> Chan DataEvent
        -> IO ()
-render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
+render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
   let w = s^.sceneDescWorld
       height = w^.wdViewPlane.vpVres
       allRows = [Row 0..Row $ fromEnum (height-1)]
       allSampleIndices = [0..fromEnum (((renderCfg^.sampleRoot) ** 2) - 1)]
       Height chunkHeight = renderCfg^.rowsPerChunk
+      (startFrame, endFrame) = frameRange
 
       ranges _ [] = []
       ranges n rs = (f, l) : ranges n rest
@@ -60,10 +60,7 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
                       ]
 
   writeChan iChan $ ISceneName sceneName
-  writeChan iChan $ IFrameNum frameNum
-
   writeChan dChan $ DSceneName sceneName
-  writeChan dChan $ DFrameNum frameNum
 
   writeChan iChan $ ISampleRoot $ renderCfg^.sampleRoot
   writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
@@ -95,48 +92,19 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
   rngSeed <- save gen
   let rngSeedV = fromSeed rngSeed
 
-  -- Set the scene
-  writeChan iChan ISettingScene
-  writeChan reqChan $ SetScene renderCfg s mg frameNum rngSeedV rowRanges
-
   startTime <- newIORef Nothing
-  numReadyNodes <- newIORef 0
 
   -- Wait for the responses
-  let collector numFinished = do
+  let collector curFrame numFinished = do
         resp <- readChan respChan
         let node = fst resp
         case snd resp of
             JobError msg -> do
                 putStrLn $ "Yikes! Error in render thread, node " ++ node ++ ": " ++ msg
                 exitSuccess
-            JobAck -> collector numFinished
-            SetSceneAck -> do
-                -- Since scene-setting takes a while (all sample data
-                -- and indices are generated and meshes are traversed),
-                -- we wait for all nodes to finish with this setup
-                -- process. Only then, once all nodes have delivered an
-                -- acknowledgement (SetSceneAck), do we begin to send
-                -- out any rendering requests. We start the rendering
-                -- timer once these requests start to go out. As each
-                -- rendering request is finished, the next request is
-                -- sent out (as deemed appropriate by the rendering
-                -- manager).
-                writeChan iChan $ INodeReady node
-                modifyIORef numReadyNodes (+ 1)
-                ready <- readIORef numReadyNodes
-
-                when (ready == numNodes) $ do
-                      -- Send the rendering requests
-                      mapM_ (writeChan reqChan) requests
-
-                      t1 <- getCurrentTime
-                      writeChan iChan IStarted
-                      writeChan iChan $ IStartTime t1
-                      writeChan dChan DStarted
-                      writeIORef startTime $ Just t1
-
-                collector numFinished
+            JobAck -> collector curFrame numFinished
+            SetFrameAck -> do
+                collector curFrame numFinished
             ChunkFinished rowRange rs -> do
                 -- If we get here and startTime is Nothing, that's a
                 -- bug; how could we have finished a chunk if we hadn't
@@ -149,18 +117,73 @@ render sceneName renderCfg s frameNum numNodes renderManager iChan dChan = do
                 writeChan iChan $ IChunkFinished (Count $ numFinished + 1) (Count $ length requests) remainingTime
                 writeChan dChan $ DChunkFinished rowRange rs
 
-                if numFinished + 1 == length requests then
-                   writeChan reqChan RenderFinished >> writeChan reqChan Shutdown else
-                   collector $ numFinished + 1
+                case numFinished + 1 == length requests of
+                    False -> collector curFrame $ numFinished + 1
+                    True -> do
+                        writeChan reqChan FrameFinished
+                        writeChan dChan $ DFinished curFrame
+                        writeChan iChan $ IFinished curFrame
+            _ -> do
+                putStrLn $ "Yikes! Unexpected response in rendering loop, node " ++ node
+                exitSuccess
 
-  collector 0
+      doFrames curFrame = do
+        -- Set the frame on all nodes
+        writeChan reqChan $ SetFrame curFrame
+        mapM_ (writeChan reqChan) requests
+        collector curFrame 0
+        if curFrame /= endFrame
+           then doFrames (curFrame + Frame 1)
+           else do
+               writeChan reqChan RenderFinished
+               writeChan reqChan Shutdown
+
+      waitForReady ready = do
+        resp <- readChan respChan
+        let node = fst resp
+        case snd resp of
+            JobError e -> do
+                putStrLn $ "Yikes! Error waiting for scene ack, node " ++ node ++ ": " ++ e
+                exitSuccess
+            SetSceneAck -> do
+                -- Since scene-setting takes a while (all sample data
+                -- and indices are generated and meshes are traversed),
+                -- we wait for all nodes to finish with this setup
+                -- process. Only then, once all nodes have delivered an
+                -- acknowledgement (SetSceneAck), do we begin to send
+                -- out any rendering requests. We start the rendering
+                -- timer once these requests start to go out. As each
+                -- rendering request is finished, the next request is
+                -- sent out (as deemed appropriate by the rendering
+                -- manager).
+                writeChan iChan $ INodeReady node
+                case ready + 1 == numNodes of
+                    False -> waitForReady $ ready + 1
+                    True -> do
+                      t1 <- getCurrentTime
+                      writeChan iChan IStarted
+                      writeChan iChan $ IStartTime t1
+                      writeChan dChan DStarted
+                      return t1
+            JobAck -> waitForReady ready
+            _ -> do
+                putStrLn $ "Yikes! Unexpected response in scene ack loop, node " ++ node
+                exitSuccess
+
+  -- Set the scene
+  writeChan iChan ISettingScene
+  writeChan reqChan $ SetScene renderCfg s mg rngSeedV rowRanges
+
+  -- Wait for all nodes to finish setting up, then start the
+  -- request/response loop
+  startTimeVal <- waitForReady 0
+  writeIORef startTime $ Just startTimeVal
+
+  doFrames startFrame
 
   Just t1 <- readIORef startTime
   t2 <- getCurrentTime
 
-  writeChan dChan DFinished
-
-  writeChan iChan IFinished
   writeChan iChan $ IFinishTime t2
   writeChan iChan $ ITotalTime (diffUTCTime t2 t1)
 

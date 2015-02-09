@@ -31,7 +31,6 @@ data MyState =
 guiHandler :: Chan DataEvent -> IO ()
 guiHandler chan = do
   DSceneName sceneName <- readChan chan
-  DFrameNum frameNum <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize (Width cols) (Height rows) <- readChan chan
   DRowRanges rowRanges <- readChan chan
@@ -64,7 +63,8 @@ guiHandler chan = do
 
   combinedArray@(_, _, combinedPtr) <- createMergeBuffer rows cols
 
-  let work sampleCounts = do
+  let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat (0::Int)
+      work sampleCounts = do
         ev <- readChan chan
         case ev of
             DChunkFinished (startRow@(Row startRowI), Row stopRow) rs -> do
@@ -82,16 +82,19 @@ guiHandler chan = do
                 work $
                   M.alter (\(Just v) -> Just (v + 1)) startRow sampleCounts
 
-            DFinished -> return ()
+            DFinished frameNum -> do
+                -- Write the current accumulation buffer to disk
+                vec <- vectorFromMergeBuffer combinedArray
+                writeImage vec rows cols (buildFilename sceneName frameNum)
+
+                -- Start over with a new sample count map
+                work sCountMap
             DShutdown -> return ()
             _ -> work sampleCounts
 
   _ <- forkIO $ do
-    let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat (0::Int)
     DStarted <- readChan chan
     work sCountMap
-    vec <- vectorFromMergeBuffer combinedArray
-    writeImage vec rows cols (buildFilename sceneName frameNum)
 
   GLUT.mainLoop
 

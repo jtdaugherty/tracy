@@ -25,7 +25,6 @@ consoleHandler chan = do
         ev <- readChan chan
         case ev of
             ISceneName n -> output "Scene name" n
-            IFrameNum (Frame n) -> output "Frame number" (show n)
             ISampleRoot root -> let sStr = if root == 1
                                            then "sample"
                                            else "samples"
@@ -71,7 +70,7 @@ consoleHandler chan = do
                         when (finished == total) $ putStrLn ""
                         hFlush stdout
 
-            IFinished -> return ()
+            IFinished (Frame frame) -> output "Finished frame" (show frame)
             IShutdown -> output_ "Done."
         if ev == IShutdown then
            return False else

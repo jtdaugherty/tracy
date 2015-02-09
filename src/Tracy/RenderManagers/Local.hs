@@ -21,18 +21,18 @@ localNodeName :: String
 localNodeName = "<in-process renderer>"
 
 localSetSceneAndRender :: Chan JobRequest -> Chan (String, JobResponse) -> RenderConfig
-                       -> Scene ThinLens -> SampleData -> M.Map Int [V.Vector Int]
+                       -> SceneDesc -> MeshGroup -> SampleData -> M.Map Int [V.Vector Int]
                        -> IO ()
-localSetSceneAndRender jobReq jobResp cfg builtScene sampleData sampleIndexMap = do
-    let aScheme = builtScene^.sceneAccelScheme
-        worldAccel = (aScheme^.schemeApply) (builtScene^.sceneWorld)
-        worldAccelShadows = case cfg^.forceShadows of
-                              Nothing -> worldAccel
-                              Just v -> worldAccel & worldShadows .~ v
-        scene = builtScene & sceneWorld .~ worldAccelShadows
-        tracer = builtScene^.sceneTracer
+localSetSceneAndRender jobReq jobResp cfg sDesc mg sampleData sampleIndexMap = do
+    let processRequests builtScene = do
+          let aScheme = builtScene^.sceneAccelScheme
+              worldAccel = (aScheme^.schemeApply) (builtScene^.sceneWorld)
+              worldAccelShadows = case cfg^.forceShadows of
+                                    Nothing -> worldAccel
+                                    Just v -> worldAccel & worldShadows .~ v
+              scene = builtScene & sceneWorld .~ worldAccelShadows
+              tracer = builtScene^.sceneTracer
 
-        processRequests = do
           ev <- readChan jobReq
           case ev of
               RenderRequest rowRange sampleRange -> do
@@ -40,22 +40,46 @@ localSetSceneAndRender jobReq jobResp cfg builtScene sampleData sampleIndexMap =
                       !sampleIndices = sampleIndexMap M.! startRow
                   ch <- renderChunk cfg scene tracer sampleData sampleIndices sampleRange rowRange
                   writeChan jobResp (localNodeName, ChunkFinished rowRange ch)
-                  processRequests
-              RenderFinished -> do
-                  writeChan jobResp (localNodeName, JobAck)
+                  processRequests builtScene
+              FrameFinished -> writeChan jobResp (localNodeName, JobAck) >> return True
+              RenderFinished -> writeChan jobResp (localNodeName, JobAck) >> return False
+              _ -> do
+                  writeChan jobResp ( localNodeName
+                                    , JobError "Expected RenderRequest or RenderFinished, got unexpected event"
+                                    )
+                  return False
+
+        processFrames = do
+          ev <- readChan jobReq
+          case ev of
+              SetFrame fn -> do
+                case sceneFromDesc sDesc mg fn of
+                    Right s -> do
+                        writeChan jobResp (localNodeName, SetFrameAck)
+                        continue <- processRequests s
+                        when continue processFrames
+                    Left e -> writeChan jobResp ( localNodeName
+                                                , JobError $ "Could not create scene from description for frame " ++ (show fn) ++ ": " ++ e
+                                                )
+              RenderFinished -> writeChan jobResp (localNodeName, JobAck)
               _ -> writeChan jobResp ( localNodeName
-                                     , JobError "Expected RenderRequest or RenderFinished, got unexpected event"
+                                     , JobError $ "Unexpected request; expected SetFrame, got " ++ (show ev)
                                      )
 
-    processRequests
+    processFrames
 
 localRenderManager :: Chan JobRequest -> Chan (String, JobResponse) -> IO ()
 localRenderManager jobReq jobResp = do
     let waitForJob = do
           reqEv <- readChan jobReq
           case reqEv of
-              SetScene cfg sDesc mg fn seedV rowRanges -> do
-                  case sceneFromDesc sDesc mg fn of
+              SetScene cfg sDesc mg seedV rowRanges -> do
+                  -- NOTE: this creates a "bogus" scene for frame 1 even
+                  -- though we won't use this frame (necessarily). This
+                  -- is just so we can get access to the samplers and
+                  -- other details that will not (or should not) change
+                  -- per frame.
+                  case sceneFromDesc sDesc mg (Frame 1) of
                       Right s -> do
                           let pxSampler = s^.sceneWorld.viewPlane.pixelSampler
                               sqSampler = correlatedMultiJittered
@@ -83,12 +107,14 @@ localRenderManager jobReq jobResp = do
                                                     )
                           writeChan jobResp (localNodeName, SetSceneAck)
 
-                          localSetSceneAndRender jobReq jobResp cfg s sampleData sampleIndexMap
+                          localSetSceneAndRender jobReq jobResp cfg sDesc mg sampleData sampleIndexMap
                       Left e -> writeChan jobResp (localNodeName, JobError e)
                   waitForJob
               Shutdown -> do
                   writeChan jobResp (localNodeName, JobAck)
               RenderFinished -> writeChan jobResp (localNodeName, JobAck)
+              FrameFinished -> writeChan jobResp (localNodeName, JobError "Expected SetScene or Shutdown, got FrameFinished")
+              SetFrame _ -> writeChan jobResp (localNodeName, JobError "Expected SetScene or Shutdown, got SetFrame")
               _ -> writeChan jobResp (localNodeName, JobError "Expected SetScene or Shutdown, got unexpected event")
 
     waitForJob

@@ -28,7 +28,8 @@ data Arg = Help
          | RowsPerChunk String
          | UseGUI
          | RenderNode String
-         | FrameNum String
+         | FrameStart String
+         | FrameStop String
          | ModeDepthFirst
          | ModeBreadthFirst
            deriving (Eq, Show)
@@ -37,7 +38,8 @@ data PreConfig =
     PreConfig { argSampleRoot :: Double
               , argAccelScheme :: Maybe AccelScheme
               , argCpuCount :: Int
-              , argFrameNum :: Int
+              , argFrameStart :: Int
+              , argFrameStop :: Maybe Int
               , argForceShadows :: Maybe Bool
               , argRenderNodes :: [String]
               , argSamplesPerChunk :: Int
@@ -53,7 +55,8 @@ defaultPreConfig = do
                        , argCpuCount = n
                        , argForceShadows = Nothing
                        , argRenderNodes = []
-                       , argFrameNum = 1
+                       , argFrameStart = 1
+                       , argFrameStop = Nothing
                        , argSamplesPerChunk = 1
                        , argRowsPerChunk = 100
                        , argRenderMode = DepthFirst
@@ -72,8 +75,10 @@ mkOpts = do
              ("Show the rendering in a GUI as it completes")
            , Option "d" ["distribute"] (ReqArg RenderNode "NODE")
              ("Render on NODE (specify once for each node)")
-           , Option "f" ["frame"] (ReqArg FrameNum "NUM")
-             ("Render animation sequence frame number NUM")
+           , Option "f" ["start-frame"] (ReqArg FrameStart "NUM")
+             ("Render animation frames starting at frame number NUM")
+           , Option "t" ["stop-frame"] (ReqArg FrameStop "NUM")
+             ("Render animation frames stopping at frame number NUM")
            , Option "R" ["rows-per-chunk"] (ReqArg RowsPerChunk "COUNT")
              "Rows per chunk"
            , Option "S" ["samples-per-chunk"] (ReqArg SamplesPerChunk "COUNT")
@@ -101,9 +106,13 @@ updateConfig c (RowsPerChunk s) =
     case reads s of
         [(f, _)] -> return $ c { argRowsPerChunk = f }
         _ -> usage >> exitFailure
-updateConfig c (FrameNum s) =
+updateConfig c (FrameStop s) =
     case reads s of
-        [(f, _)] -> return $ c { argFrameNum = f }
+        [(f, _)] -> if f <= 0 then exitFailure else return $ c { argFrameStop = Just f }
+        _ -> usage >> exitFailure
+updateConfig c (FrameStart s) =
+    case reads s of
+        [(f, _)] -> if f <= 0 then exitFailure else return $ c { argFrameStart = f }
         _ -> usage >> exitFailure
 updateConfig c (CPUs s) = do
     case reads s of
@@ -137,6 +146,9 @@ main = do
 
   when (Help `elem` os) usage
   when (length rest /= 1) usage
+  case argFrameStop preCfg of
+      Nothing -> return ()
+      Just f -> when (f < argFrameStart preCfg) $ usage
 
   let [toRender] = rest
 
@@ -160,13 +172,15 @@ main = do
                                   else ( length $ argRenderNodes preCfg
                                        , networkRenderManager (argRenderNodes preCfg) iChan
                                        )
+            frameRange = ( Frame $ argFrameStart preCfg
+                         , case argFrameStop preCfg of
+                             Nothing -> Frame $ argFrameStart preCfg
+                             Just f -> Frame f
+                         )
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender renderCfg sceneDesc (Frame $ argFrameNum preCfg)
-                        numNodes manager iChan dChan
+        _ <- forkIO $ render toRender renderCfg sceneDesc frameRange numNodes manager iChan dChan
 
         case UseGUI `elem` os of
-            False -> do
-                let filename = buildFilename toRender (Frame $ argFrameNum preCfg)
-                fileHandler filename dChan
+            False -> fileHandler dChan
             True -> guiHandler dChan

@@ -103,9 +103,12 @@ main = do
             Left e -> putStrLn $ "Error decoding message: " ++ e
             Right val -> do
                 case val of
-                    SetScene cfg _ _ fn _ _ ->
-                        putStrLn $ "Got scene setting, frame " ++ show fn ++ ", cfg: " ++ show cfg
+                    SetScene cfg _ _ _ _ ->
+                        putStrLn $ "Got scene setting, cfg: " ++ show cfg
+                    SetFrame (Frame fn) ->
+                        putStrLn $ "Got frame setting for frame number " ++ show fn
                     RenderRequest _ _ -> putStrLn $ "Got render request"
+                    FrameFinished -> putStrLn "Got frame finished"
                     RenderFinished -> putStrLn "Rendering finished"
                     Shutdown -> putStrLn "Shutdown"
 
@@ -115,6 +118,7 @@ main = do
 
                 case snd resp of
                     JobAck -> return ()
-                    SetSceneAck -> putStrLn "Done setting up scene, ready to render"
+                    SetSceneAck -> putStrLn "Done setting up scene, ready for frames"
+                    SetFrameAck -> putStrLn "Done setting up frame, ready to render"
                     ChunkFinished _ _ -> putStrLn $ "Finished chunk"
                     JobError e -> putStrLn $ "Job error: " ++ e
