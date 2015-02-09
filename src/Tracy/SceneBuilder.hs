@@ -154,8 +154,8 @@ v2SamplerFromDesc MultiJittered = return multiJittered
 v2SamplerFromDesc CorrelatedMultiJittered = return correlatedMultiJittered
 v2SamplerFromDesc (UnitDisk sd) = (toUnitDisk <$>) <$> v2SamplerFromDesc sd
 
-v3SamplerFromDesc :: V3SamplerDesc -> LoadM (Sampler (V3 Double))
-v3SamplerFromDesc (UnitHemi e sd) = (toUnitHemi e <$>) <$> v2SamplerFromDesc sd
+-- v3SamplerFromDesc :: V3SamplerDesc -> LoadM (Sampler (V3 Double))
+-- v3SamplerFromDesc (UnitHemi e sd) = (toUnitHemi e <$>) <$> v2SamplerFromDesc sd
 
 cameraFromDesc :: Frame -> CameraDesc -> LoadM (Camera ThinLens)
 cameraFromDesc fn cd@(ThinLensCamera { }) =
