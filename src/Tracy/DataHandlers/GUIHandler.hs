@@ -67,14 +67,14 @@ guiHandler chan = do
   combinedArray@(_, _, combinedPtr) <- createMergeBuffer rows cols
 
   let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat (0::Int)
-      work chunkCounts = do
+      work sampleCounts = do
         ev <- readChan chan
         case ev of
             DStarted (Frame fn) -> do
                 GLUT.windowTitle $= windowTitle fn
-                work chunkCounts
+                work sampleCounts
             DChunkFinished (startRow@(Row startRowI), Row stopRow) (Count sc) rs -> do
-                let numSamples = chunkCounts M.! startRow
+                let numSamples = sampleCounts M.! startRow
                     newSampleCount = numSamples + sc
                     startIndex = startRowI * cols
                     stopIndex = ((stopRow + 1) * cols) - 1
@@ -87,7 +87,7 @@ guiHandler chan = do
 
                 writeIORef redrawRef True
                 work $
-                  M.alter (\(Just v) -> Just (v + sc)) startRow chunkCounts
+                  M.alter (\(Just v) -> Just (v + sc)) startRow sampleCounts
 
             DFinished frameNum -> do
                 -- Write the current accumulation buffer to disk
@@ -98,7 +98,7 @@ guiHandler chan = do
                 -- Start over with a new sample count map
                 work sCountMap
             DShutdown -> return ()
-            _ -> work chunkCounts
+            _ -> work sampleCounts
 
   _ <- forkIO $ work sCountMap
 
