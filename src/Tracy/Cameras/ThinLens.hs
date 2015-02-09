@@ -49,7 +49,7 @@ thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRange =
   let !newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
       !sampleIndices = V.fromList [fst sampleRange .. snd sampleRange]
-      !maxToOneExposure = grey (cam^.exposureTime)
+      !exposure = grey (cam^.exposureTime)
       !vp = w^.viewPlane
       !row = toEnum theRow
       !colors = SV.generate (fromEnum $ vp^.hres) (getCol . toEnum)
@@ -62,7 +62,7 @@ thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRa
               !pixelSampleSet = (sampleData^.pixelSampleSets) V.! sampleSetIndex
               !sampleSetIndex = sampleSetIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
 
-          in (V.sum (results col pixelSampleSet squareSampleSet diskSampleSet objectSampleSet) * maxToOneExposure)
+          in (V.sum (results col pixelSampleSet squareSampleSet diskSampleSet objectSampleSet) * exposure)
 
       results :: Double -> V.Vector (Double, Double) -> V.Vector (Double, Double)
               -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector Color
