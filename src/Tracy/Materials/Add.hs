@@ -3,10 +3,8 @@ module Tracy.Materials.Add
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Control.Monad
-import Data.Colour
 
 import Tracy.Types
 
