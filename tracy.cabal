@@ -30,6 +30,7 @@ library
     cereal,
     containers,
     deepseq,
+    diagrams-lib,
     distributive,
     either,
     lens,
@@ -90,6 +91,7 @@ library
     Tracy.Objects.Plane
     Tracy.Objects.Rectangle
     Tracy.Objects.Sphere
+    Tracy.Objects.Torus
     Tracy.Objects.Triangle
     Tracy.RenderManagers.Local
     Tracy.RenderManagers.Network

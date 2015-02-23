@@ -10,6 +10,7 @@ Features:
      lighting)
    - Boxes
    - Planes
+   - Tori
    - Rectangles
    - Triangle meshes
  * Triangle mesh shading:

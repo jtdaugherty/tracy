@@ -19,6 +19,7 @@ import Tracy.Materials.Mix
 import Tracy.Materials.Add
 
 import Tracy.Objects.Sphere
+import Tracy.Objects.Torus
 import Tracy.Objects.Box
 import Tracy.Objects.Grid
 import Tracy.Objects.Plane
@@ -78,6 +79,7 @@ single v = (:[]) <$> v
 
 objectFromDesc :: MeshGroup -> Frame -> ObjectDesc -> LoadM [Object]
 objectFromDesc _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc fn m
+objectFromDesc _ fn (Torus r1 r2 m) = single $ torus r1 r2 <$> materialFromDesc fn m
 objectFromDesc _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc fn m
 objectFromDesc _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc fn m
 objectFromDesc _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc fn m

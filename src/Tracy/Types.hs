@@ -366,6 +366,7 @@ data MeshData =
 
 data ObjectDesc =
       Sphere (V3 Double) Double MaterialDesc
+    | Torus Double Double MaterialDesc
     | ConcaveSphere (V3 Double) Double MaterialDesc
     | Rectangle (V3 Double) (V3 Double) (V3 Double) Bool MaterialDesc
     | Triangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
@@ -674,6 +675,9 @@ instance Y.FromJSON ObjectDesc where
             mat <- v Y..: "material"
             t <- v Y..: "type"
             obj <- case t of
+                "torus" -> Torus <$> v Y..: "outerRadius"
+                                 <*> v Y..: "innerRadius"
+                                 <*> (pure mat)
                 "sphere" -> Sphere <$> v Y..: "center"
                                    <*> v Y..: "radius"
                                    <*> (pure mat)
