@@ -11,7 +11,6 @@ import Data.Maybe
 import Linear
 
 import Tracy.Types
-import Tracy.Constants
 import Tracy.Util
 import Tracy.BoundingBox
 import Diagrams.Solve
@@ -34,9 +33,9 @@ torusBBox radOuter radInner =
         b = radInner
 
 shadowHitTorus :: Double -> Double -> Ray -> Maybe Double
-shadowHitTorus radOuter radInner ray = hit
+shadowHitTorus radOuter radInner ray = theHit
     where
-        hit = listToMaybe $ sort $ filter (> 0.1) roots
+        theHit = listToMaybe $ sort $ filter (> 0.1) roots
         a = radOuter
         b = radInner
 
