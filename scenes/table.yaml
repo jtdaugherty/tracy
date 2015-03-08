@@ -40,16 +40,6 @@ world:
               type: emissive
               color: Colour 1 1 1
               strength: 6
-        - type: sphere
-          center: V3 0.10225 4.449909 -1.18322
-          radius: 0.811
-          material:
-              type: reflective
-              baseColor: Colour 0.3 0.3 0.3
-              ks: 0.9
-              exp: 1000
-              reflectiveColor: Colour 1 1 1
-              reflectiveStrength: 0.9
         - type: mesh
           path: meshes/table.ply
           material:
@@ -57,30 +47,42 @@ world:
               color: Colour 0.392 0.28627 0
               ks: 0.5
               exp: 100
-        - type: mesh
-          path: meshes/monkey2.ply
-          material:
-              type: glossyReflective
-              baseColor: Colour 0 1 1
-              ks: 0.7
-              exp: 10
-              reflectiveColor: Colour 1 1 1
-              kr: 0.7
-              expR: 100
-        - type: mesh
-          path: meshes/torus.ply
-          material:
-              type: reflective
-              baseColor: Colour 1 0.7 0.7
-              ks: 0.9
-              exp: 1000
-              reflectiveColor: Colour 1 0.7 0.7
-              reflectiveStrength: 0.7
-        - type: mesh
-          path: meshes/ico1.ply
-          material:
-              type: matte
-              color: Colour 1 1 0
+        - type: grid
+          objects:
+              - type: sphere
+                center: V3 0.10225 4.449909 -1.18322
+                radius: 0.811
+                material:
+                    type: reflective
+                    baseColor: Colour 0.3 0.3 0.3
+                    ks: 0.9
+                    exp: 1000
+                    reflectiveColor: Colour 1 1 1
+                    reflectiveStrength: 0.9
+              - type: mesh
+                path: meshes/monkey2.ply
+                material:
+                    type: glossyReflective
+                    baseColor: Colour 0 1 1
+                    ks: 0.7
+                    exp: 10
+                    reflectiveColor: Colour 1 1 1
+                    kr: 0.7
+                    expR: 100
+              - type: mesh
+                path: meshes/torus.ply
+                material:
+                    type: reflective
+                    baseColor: Colour 1 0.7 0.7
+                    ks: 0.9
+                    exp: 1000
+                    reflectiveColor: Colour 1 0.7 0.7
+                    reflectiveStrength: 0.7
+              - type: mesh
+                path: meshes/ico1.ply
+                material:
+                    type: matte
+                    color: Colour 1 1 0
         - type: mesh
           path: meshes/chairLeft.ply
           material:
