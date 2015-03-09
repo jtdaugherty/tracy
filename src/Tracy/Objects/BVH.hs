@@ -1,6 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 module Tracy.Objects.BVH
   ( bvh
+  , buildBVH
+  , BVH(..)
   , bvhWithMaterial
   , bboxArea
   )
