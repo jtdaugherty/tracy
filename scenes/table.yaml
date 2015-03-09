@@ -25,10 +25,9 @@ world:
     shadows: true
 
     ambient:
-        type: ambientOccluder
+        type: ambient
         color: Colour 1 1 1
         strength: 1
-        minAmount: Colour 0 0 0
 
     objects:
         - type: rect
