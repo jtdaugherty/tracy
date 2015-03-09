@@ -38,10 +38,11 @@ mkSamplerGroup gen name s =
                 , bench "32" $ nfIO $ runSampler s gen 32
                 ]
 
-bvhObjects :: [Object]
-bvhObjects =
-    (flip map) [1..100] $ \i ->
-        sphere (V3 i i i) 0.5 $ matteFromColor cWhite
+bvhObjects :: Int -> [Object]
+bvhObjects n =
+    (flip map) [1..n] $ \i ->
+        let v = toEnum i
+        in sphere (V3 v v v) 0.5 $ matteFromColor cWhite
 
 allGroups :: GenIO -> [Benchmark]
 allGroups gen =
@@ -58,7 +59,11 @@ allGroups gen =
                           , bench "UR" $ nf toUnitDisk (0.2, 0.2)
                           , bench "LR" $ nf toUnitDisk (0.2, -0.2)
                           ]
-    , bench "buildBVH" $ nf buildBVH bvhObjects
+    , bgroup "buildBVH" [ bench "1" $ nf buildBVH (bvhObjects 1)
+                        , bench "10" $ nf buildBVH (bvhObjects 10)
+                        , bench "100" $ nf buildBVH (bvhObjects 100)
+                        , bench "150" $ nf buildBVH (bvhObjects 150)
+                        ]
     ]
 
 main :: IO ()
