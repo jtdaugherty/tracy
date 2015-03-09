@@ -70,7 +70,7 @@ world:
               reflectiveColor: Colour 1 1 1
               kr: 1
               expR: 100
-        - type: grid
+        - type: bvh
           objects:
             - type: instances
               master:
