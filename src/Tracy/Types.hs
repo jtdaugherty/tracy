@@ -251,7 +251,7 @@ data BBox =
     BBox { _bboxP0 :: !(V3 Double)
          , _bboxP1 :: !(V3 Double)
          }
-         deriving (Show)
+         deriving (Show, Ord, Eq)
 
 data Sampler a = Sampler (GenIO -> Double -> IO (V.Vector a))
 
@@ -375,6 +375,7 @@ data ObjectDesc =
     | Mesh MeshSource MaterialDesc
     | Instances ObjectDesc [InstanceDesc]
     | Grid [ObjectDesc]
+    | BVH [ObjectDesc]
     deriving (Eq, Show, Generic)
 
 data InstanceDesc = ID [TransformationDesc] (Maybe MaterialDesc)
@@ -425,6 +426,7 @@ instance HasMeshes ObjectDesc where
     findMeshes (Mesh s _) = [s]
     findMeshes (Instances o _) = findMeshes o
     findMeshes (Grid os) = concat $ findMeshes <$> os
+    findMeshes (BVH os) = concat $ findMeshes <$> os
     findMeshes _ = []
 
 instance HasMeshes LightDesc where
@@ -666,11 +668,18 @@ instance Y.FromJSON TransformationDesc where
     parseJSON _ = fail "Expected string for Transformation"
 
 instance Y.FromJSON ObjectDesc where
-    parseJSON (Y.Object v) = parseInstances <|> parseGrid <|> parseObject
+    parseJSON (Y.Object v) = parseInstances <|> parseGrid <|> parseBVH <|> parseObject
         where
           parseInstances = Instances <$> v Y..: "master"
                                      <*> v Y..: "objects"
-          parseGrid = Grid <$> v Y..: "objects"
+          parseGrid = do
+              t :: T.Text <- v Y..: "type"
+              when (t /= "grid") $ fail "Not a grid"
+              Grid <$> v Y..: "objects"
+          parseBVH = do
+              t :: T.Text <- v Y..: "type"
+              when (t /= "bvh") $ fail "Not a bvh"
+              BVH <$> v Y..: "objects"
           parseObject = do
             mat <- v Y..: "material"
             t <- v Y..: "type"

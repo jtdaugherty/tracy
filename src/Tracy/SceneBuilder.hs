@@ -22,6 +22,7 @@ import Tracy.Objects.Sphere
 import Tracy.Objects.Torus
 import Tracy.Objects.Box
 import Tracy.Objects.Grid
+import Tracy.Objects.BVH
 import Tracy.Objects.Plane
 import Tracy.Objects.Rectangle
 import Tracy.Objects.Triangle
@@ -92,6 +93,7 @@ objectFromDesc mg fn (Mesh src m) = do
     theMesh <- mesh mData <$> materialFromDesc fn m
     return [theMesh]
 objectFromDesc mg fn (Grid os) = single $ grid <$> (concat <$> sequenceA (objectFromDesc mg fn <$> os))
+objectFromDesc mg fn (BVH os) = single $ bvh <$> (concat <$> sequenceA (objectFromDesc mg fn <$> os))
 objectFromDesc mg fn (Instances oDesc is) = do
     v <- objectFromDesc mg fn oDesc
     ids <- sequenceA $ instanceDataFromDesc fn <$> is

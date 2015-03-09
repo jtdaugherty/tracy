@@ -20,6 +20,7 @@ Features:
    - PLY
  * Acceleration aids:
    - Regular grids
+   - Bounding volume hierarchies
  * Materials and shading:
    - Phong
    - Matte

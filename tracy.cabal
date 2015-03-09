@@ -84,6 +84,7 @@ library
     Tracy.Materials.Mix
     Tracy.Materials.Phong
     Tracy.Objects.Box
+    Tracy.Objects.BVH
     Tracy.Objects.Compound
     Tracy.Objects.Grid
     Tracy.Objects.Instance
