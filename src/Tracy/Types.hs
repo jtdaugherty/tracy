@@ -442,14 +442,6 @@ instance HasMeshes WorldDesc where
 instance HasMeshes SceneDesc where
     findMeshes sd = findMeshes $ _sceneDescWorld sd
 
-instance Serialize a => Serialize (V3 a) where
-    get = V3 <$> get <*> get <*> get
-    put (V3 x y z) = put x >> put y >> put z
-
-instance Serialize a => Serialize (V4 a) where
-    get = V4 <$> get <*> get <*> get <*> get
-    put (V4 x y z w) = put x >> put y >> put z >> put w
-
 instance Serialize Colour where
     get = Colour <$> get <*> get <*> get
     put (Colour r g b) = put r >> put g >> put b
