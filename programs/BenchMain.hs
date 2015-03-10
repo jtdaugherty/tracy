@@ -15,9 +15,6 @@ import Tracy.Objects.Sphere
 import Tracy.Objects.BVH
 import Tracy.Materials.Matte
 
-instance NFData (V3 Double) where
-    rnf (V3 a b c) = a `seq` b `seq` c `seq` ()
-
 instance NFData Object where
     rnf o = (o^.objectMaterial) `seq`
             (o^.hit) `seq`
