@@ -18,7 +18,7 @@ world:
         pixelSize: 1.0
         gamma: 1.0
         inverseGamma: 1.0
-        maxDepth: 10
+        maxDepth: 2
         pixelSampler: CorrelatedMultiJittered
 
     bgColor: Colour 0 0 0
@@ -40,7 +40,7 @@ world:
               color: Colour 1 1 1
               strength: 6
         - type: mesh
-          path: meshes/table.ply
+          path: meshes/table/table.ply
           material:
               type: phong
               color: Colour 0.392 0.28627 0
@@ -59,7 +59,7 @@ world:
                     reflectiveColor: Colour 1 1 1
                     reflectiveStrength: 0.9
               - type: mesh
-                path: meshes/monkey2.ply
+                path: meshes/table/monkey2.ply
                 material:
                     type: glossyReflective
                     baseColor: Colour 0 1 1
@@ -69,7 +69,7 @@ world:
                     kr: 0.7
                     expR: 100
               - type: mesh
-                path: meshes/torus.ply
+                path: meshes/table/torus.ply
                 material:
                     type: reflective
                     baseColor: Colour 1 0.7 0.7
@@ -78,51 +78,51 @@ world:
                     reflectiveColor: Colour 1 0.7 0.7
                     reflectiveStrength: 0.7
               - type: mesh
-                path: meshes/ico1.ply
+                path: meshes/table/ico1.ply
                 material:
                     type: matte
                     color: Colour 1 1 0
         - type: mesh
-          path: meshes/chairLeft.ply
+          path: meshes/table/chairLeft.ply
           material:
               type: phong
               color: Colour 1 0.3098 0
               ks: 1.0
               exp: 100000
         - type: mesh
-          path: meshes/chairRight.ply
+          path: meshes/table/chairRight.ply
           material:
               type: phong
               color: Colour 1 0.3098 0
               ks: 1.0
               exp: 100000
         - type: mesh
-          path: meshes/plane_back.ply
+          path: meshes/table/plane_back.ply
           material:
               type: matte
               color: Colour 1 1 1
         - type: mesh
-          path: meshes/plane_front.ply
+          path: meshes/table/plane_front.ply
           material:
               type: matte
               color: Colour 1 1 1
         - type: mesh
-          path: meshes/plane_bottom.ply
+          path: meshes/table/plane_bottom.ply
           material:
               type: matte
               color: Colour 1 1 1
         - type: mesh
-          path: meshes/plane_top.ply
+          path: meshes/table/plane_top.ply
           material:
               type: matte
               color: Colour 1 1 1
         - type: mesh
-          path: meshes/plane_left.ply
+          path: meshes/table/plane_left.ply
           material:
               type: matte
               color: Colour 0.26275 0.592157 0.878431
         - type: mesh
-          path: meshes/plane_right.ply
+          path: meshes/table/plane_right.ply
           material:
               type: matte
               color: Colour 0.26275 0.592157 0.878431

@@ -1,0 +1,101 @@
+tracer: PathTracer
+accel: NoScheme
+camera:
+    eye: V3 6.5 5.34 7.48
+    lookAt: V3 0.2 3.7 -0.27
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 500
+    fpDist: 500
+    lensRadius: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+        pixelSampler: CorrelatedMultiJittered
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambient
+        color: Colour 1 1 1
+        strength: 1
+
+    objects:
+        - type: mesh
+          path: meshes/table-lamp/bulb_shaft.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: bvh
+          objects:
+              - type: mesh
+                path: meshes/table-lamp/bulb.ply
+                material:
+                    type: emissive
+                    color: Colour 1 1 1
+                    strength: 100
+              - type: mesh
+                path: meshes/table-lamp/lamp_shade.ply
+                material:
+                    type: matte
+                    color: Colour 1 1 1
+              - type: mesh
+                path: meshes/table-lamp/table.ply
+                material:
+                    type: phong
+                    color: Colour 0.392 0.28627 0
+                    ks: 0.5
+                    exp: 100
+              - type: mesh
+                path: meshes/table-lamp/chair1.ply
+                material:
+                    type: phong
+                    color: Colour 1 0.3098 0
+                    ks: 1.0
+                    exp: 100000
+              - type: mesh
+                path: meshes/table-lamp/chair2.ply
+                material:
+                    type: phong
+                    color: Colour 1 0.3098 0
+                    ks: 1.0
+                    exp: 100000
+        - type: mesh
+          path: meshes/table-lamp/wall1.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/table-lamp/wall2.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/table-lamp/wall3.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/table-lamp/wall4.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/table-lamp/ceiling.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
+        - type: mesh
+          path: meshes/table-lamp/floor.ply
+          material:
+              type: matte
+              color: Colour 1 1 1
