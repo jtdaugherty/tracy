@@ -54,7 +54,6 @@ data InfoEvent =
     | INodeReady String
     | ISceneName String
     | IFrameRange (Frame, Frame)
-    | IAccelScheme AccelSchemeDesc
     | INumObjects Count
     | IShadows Bool
     | INumCPUs Count
@@ -195,15 +194,9 @@ data World =
 
 data Scene a =
     Scene { _sceneWorld :: World
-          , _sceneAccelScheme :: AccelScheme
           , _sceneCamera :: Camera a
           , _sceneTracer :: Tracer
           }
-
-data AccelScheme =
-    AccelScheme { _schemeName :: String
-                , _schemeApply :: World -> World
-                }
 
 data RenderMode =
     BreadthFirst
@@ -337,16 +330,10 @@ data TracerDesc =
 
 data SceneDesc =
     SceneDesc { _sceneDescWorld :: WorldDesc
-              , _sceneDescAccelScheme :: AccelSchemeDesc
               , _sceneDescCamera :: CameraDesc
               , _sceneDescTracer :: TracerDesc
               }
     deriving (Eq, Show, Generic)
-
-data AccelSchemeDesc =
-      NoScheme
-    | GridScheme
-    deriving (Eq, Show, Generic, Read)
 
 data WorldDesc =
     WorldDesc { _wdViewPlane :: ViewPlaneDesc
@@ -485,7 +472,6 @@ instance Serialize CameraDesc where
 instance Serialize ObjectDesc where
 instance Serialize LightDesc where
 instance Serialize MaterialDesc where
-instance Serialize AccelSchemeDesc where
 instance Serialize TransformationDesc where
 instance Serialize InstanceDesc where
 instance Serialize TracerDesc where
@@ -536,10 +522,6 @@ instance Read Colour where
 instance Y.FromJSON TracerDesc where
     parseJSON (Y.String s) = parseReadsT s "Invalid TracerDesc value"
     parseJSON _ = fail "Expected string for TracerDesc"
-
-instance Y.FromJSON AccelSchemeDesc where
-    parseJSON (Y.String s) = parseReadsT s "Invalid AccelSchemeDesc value"
-    parseJSON _ = fail "Expected string for AccelSchemeDesc"
 
 instance Y.FromJSON (V3 Double) where
     parseJSON (Y.String s) = parseReadsT s "Invalid V3 value"
@@ -734,7 +716,6 @@ instance Y.FromJSON WorldDesc where
 instance Y.FromJSON SceneDesc where
     parseJSON (Y.Object v) =
         SceneDesc <$> v Y..: "world"
-                  <*> v Y..: "accel"
                   <*> v Y..: "camera"
                   <*> v Y..: "tracer"
     parseJSON _ = fail "Expected object for SceneDesc"
@@ -748,7 +729,6 @@ makeLenses ''BRDF
 makeLenses ''Light
 makeLenses ''Material
 makeLenses ''BBox
-makeLenses ''AccelScheme
 makeLenses ''RenderConfig
 makeLenses ''Scene
 makeLenses ''Camera

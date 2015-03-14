@@ -64,7 +64,6 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
   writeChan dChan $ DSceneName sceneName
 
   writeChan iChan $ ISampleRoot $ renderCfg^.sampleRoot
-  writeChan iChan $ IAccelScheme $ s^.sceneDescAccelScheme
   writeChan iChan $ INumObjects $ Count $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows
   writeChan iChan $ IImageSize (Width $ fromEnum $ w^.wdViewPlane.vpHres)

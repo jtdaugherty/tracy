@@ -36,7 +36,6 @@ consoleHandler chan = do
                                                  , " per pixel)"
                                                  ]
                                 in output "Sampler root" msg
-            IAccelScheme name -> output "Acceleration method" (show name)
             ILoadedMeshes (Count n) -> outputS "Loaded meshes" n
             ILoadingMeshes -> output_ "Loading meshes..."
             INumObjects (Count n) -> outputS "Objects" n

@@ -1,5 +1,4 @@
 tracer: PathTracer
-accel: NoScheme
 camera:
     eye: V3 6.5 5.34 7.48
     lookAt: V3 0.2 3.7 -0.27

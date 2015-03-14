@@ -36,7 +36,6 @@ data Arg = Help
 
 data PreConfig =
     PreConfig { argSampleRoot :: Double
-              , argAccelScheme :: Maybe AccelScheme
               , argCpuCount :: Int
               , argFrameStart :: Int
               , argFrameStop :: Maybe Int
@@ -51,7 +50,6 @@ defaultPreConfig :: IO PreConfig
 defaultPreConfig = do
     n <- getNumProcessors
     return $ PreConfig { argSampleRoot = 1
-                       , argAccelScheme = Nothing
                        , argCpuCount = n
                        , argForceShadows = Nothing
                        , argRenderNodes = []

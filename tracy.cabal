@@ -53,7 +53,6 @@ library
     cbits/average.c
 
   exposed-modules:
-    Tracy.AccelSchemes
     Tracy.Anim
     Tracy.BRDF.GlossySpecular
     Tracy.BRDF.Lambertian

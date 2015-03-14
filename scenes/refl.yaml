@@ -1,5 +1,4 @@
 tracer: AreaLightTracer
-accel: NoScheme
 camera:
     eye:
         type: lerpRotY

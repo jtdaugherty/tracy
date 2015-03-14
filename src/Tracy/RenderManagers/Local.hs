@@ -25,12 +25,11 @@ localSetSceneAndRender :: Chan JobRequest -> Chan (String, JobResponse) -> Rende
                        -> IO ()
 localSetSceneAndRender jobReq jobResp cfg sDesc mg sampleData sampleIndexMap = do
     let processRequests builtScene = do
-          let aScheme = builtScene^.sceneAccelScheme
-              worldAccel = (aScheme^.schemeApply) (builtScene^.sceneWorld)
-              worldAccelShadows = case cfg^.forceShadows of
-                                    Nothing -> worldAccel
-                                    Just v -> worldAccel & worldShadows .~ v
-              scene = builtScene & sceneWorld .~ worldAccelShadows
+          let baseWorld = builtScene^.sceneWorld
+              shadowWorld = case cfg^.forceShadows of
+                               Nothing -> baseWorld
+                               Just v -> baseWorld & worldShadows .~ v
+              scene = builtScene & sceneWorld .~ shadowWorld
               tracer = builtScene^.sceneTracer
 
           ev <- readChan jobReq

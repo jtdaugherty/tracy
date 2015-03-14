@@ -37,7 +37,6 @@ import Tracy.Lights.Point
 
 import Tracy.Anim ()
 import Tracy.Tracers
-import Tracy.AccelSchemes
 import Tracy.Samplers
 import Tracy.Transformations
 
@@ -49,7 +48,6 @@ sceneFromDesc sd mg fn = runSceneFromDesc sd mg fn
 runSceneFromDesc :: SceneDesc -> MeshGroup -> Frame -> LoadM (Scene ThinLens)
 runSceneFromDesc sd mg fn =
     Scene <$> (worldFromDesc mg fn    $ sd^.sceneDescWorld)
-          <*> (accelSchemeFromDesc    $ sd^.sceneDescAccelScheme)
           <*> (cameraFromDesc fn      $ sd^.sceneDescCamera)
           <*> (tracerFromDesc         $ sd^.sceneDescTracer)
 
@@ -130,10 +128,6 @@ lightFromDesc mg fn (Area sh oDesc p) = do
     case v of
       [o] -> return $ areaLight sh o p
       _ -> fail "Could not create area light from multiple objects"
-
-accelSchemeFromDesc :: AccelSchemeDesc -> LoadM AccelScheme
-accelSchemeFromDesc NoScheme = return noScheme
-accelSchemeFromDesc GridScheme = return gridScheme
 
 materialFromDesc :: Frame -> MaterialDesc -> LoadM Material
 materialFromDesc _ (Matte c) = return $ matteFromColor c

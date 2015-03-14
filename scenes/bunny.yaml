@@ -1,5 +1,4 @@
 tracer: RayCastTracer
-accel: NoScheme
 camera:
     eye: V3 -6 -3 3
     lookAt: V3 0 0 2
