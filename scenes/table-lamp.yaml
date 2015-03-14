@@ -1,6 +1,6 @@
 tracer: PathTracer
 camera:
-    eye: V3 6.5 5.34 7.48
+    eye: V3 5.5 4.34 6.48
     lookAt: V3 0.2 3.7 -0.27
     up: V3 0 1 0
     exposure: 1.0
@@ -41,7 +41,7 @@ world:
                 material:
                     type: emissive
                     color: Colour 1 1 1
-                    strength: 100
+                    strength: 30
               - type: mesh
                 path: meshes/table-lamp/lamp_shade.ply
                 material:
@@ -57,17 +57,13 @@ world:
               - type: mesh
                 path: meshes/table-lamp/chair1.ply
                 material:
-                    type: phong
+                    type: matte
                     color: Colour 1 0.3098 0
-                    ks: 1.0
-                    exp: 100000
               - type: mesh
                 path: meshes/table-lamp/chair2.ply
                 material:
-                    type: phong
+                    type: matte
                     color: Colour 1 0.3098 0
-                    ks: 1.0
-                    exp: 100000
         - type: mesh
           path: meshes/table-lamp/wall1.ply
           material:
@@ -97,4 +93,4 @@ world:
           path: meshes/table-lamp/floor.ply
           material:
               type: matte
-              color: Colour 1 1 1
+              color: Colour 0.7 0.7 1
