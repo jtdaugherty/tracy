@@ -30,7 +30,7 @@ library
     cereal,
     containers,
     deepseq,
-    diagrams-lib,
+    diagrams-solve,
     distributive,
     either,
     lens,

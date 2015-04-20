@@ -13,7 +13,7 @@ import Linear
 import Tracy.Types
 import Tracy.Util
 import Tracy.BoundingBox
-import Diagrams.Solve
+import Diagrams.Solve.Polynomial
 
 torus :: Double -> Double -> Material -> Object
 torus radOuter radInner m =
