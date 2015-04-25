@@ -129,7 +129,7 @@ usage :: IO a
 usage = do
   pn <- getProgName
   opts <- mkOpts
-  let header = "Usage: " ++ pn ++ " [options] <scene name>"
+  let header = "Usage: " ++ pn ++ " [options] <scene file>"
   putStrLn $ usageInfo header opts
   exitFailure
 
