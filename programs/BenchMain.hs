@@ -16,6 +16,7 @@ import Tracy.Objects.Box
 import Tracy.Objects.BVH
 import Tracy.Objects.Triangle
 import Tracy.Objects.Torus
+import Tracy.Objects.Rectangle
 import Tracy.Materials.Matte
 
 instance NFData Object where
@@ -59,6 +60,9 @@ tri1 = tri (V3 1 (-1) 0) (V3 0 1 0) (V3 (-1) (-1) 0) $ matteFromColor cWhite
 torus1 :: Object
 torus1 = torus 10 1 $ matteFromColor cWhite
 
+rect1 :: Object
+rect1 = rectangle (V3 (-1) (-1) 0) (V3 0 2 0) (V3 2 0 0) False $ matteFromColor cWhite
+
 allGroups :: GenIO -> [Benchmark]
 allGroups gen =
     [ bgroup "samplers" [ mkSamplerGroup gen "regular" regular
@@ -92,6 +96,9 @@ allGroups gen =
         , bgroup "torus" [ bench "hit" $ nf (torus1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
                          , bench "miss" $ nf (torus1^.hit) (Ray (V3 0 10 10) (V3 0 0 (-1)))
                          ]
+        , bgroup "rectangle" [ bench "hit" $ nf (rect1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
+                             , bench "miss" $ nf (rect1^.hit) (Ray (V3 0 10 10) (V3 0 0 (-1)))
+                             ]
         ]
     ]
 
