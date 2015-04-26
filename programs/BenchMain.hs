@@ -14,6 +14,7 @@ import Tracy.Samplers
 import Tracy.Objects.Sphere
 import Tracy.Objects.Box
 import Tracy.Objects.BVH
+import Tracy.Objects.Triangle
 import Tracy.Materials.Matte
 
 instance NFData Object where
@@ -51,6 +52,9 @@ sphere1 = sphere (V3 0 0 0) 10 $ matteFromColor cWhite
 box1 :: Object
 box1 = box (V3 1 1 1) (V3 (-1) (-1) (-1)) $ matteFromColor cWhite
 
+tri1 :: Object
+tri1 = tri (V3 1 (-1) 0) (V3 0 1 0) (V3 (-1) (-1) 0) $ matteFromColor cWhite
+
 allGroups :: GenIO -> [Benchmark]
 allGroups gen =
     [ bgroup "samplers" [ mkSamplerGroup gen "regular" regular
@@ -72,12 +76,15 @@ allGroups gen =
                         , bench "150" $ nf buildBVH (bvhObjects 150)
                         ]
     , bgroup "objects"
-        [ bgroup "sphere" [ bench "hit" $ nf (sphere1^.hit) (Ray (V3 10 0 0) (V3 (-1) 0 0))
-                          , bench "miss" $ nf (sphere1^.hit) (Ray (V3 10 20 0) (V3 (-1) 0 0))
+        [ bgroup "sphere" [ bench "hit" $ nf (sphere1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
+                          , bench "miss" $ nf (sphere1^.hit) (Ray (V3 0 20 10) (V3 0 0 (-1)))
                           ]
-        , bgroup "box" [ bench "hit" $ nf (box1^.hit) (Ray (V3 10 0 0) (V3 (-1) 0 0))
-                       , bench "miss" $ nf (box1^.hit) (Ray (V3 10 3 0) (V3 (-1) 0 0))
+        , bgroup "box" [ bench "hit" $ nf (box1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
+                       , bench "miss" $ nf (box1^.hit) (Ray (V3 0 3 10) (V3 0 0 (-1)))
                        ]
+        , bgroup "triangle" [ bench "hit" $ nf (tri1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
+                            , bench "miss" $ nf (tri1^.hit) (Ray (V3 0 10 10) (V3 0 0 (-1)))
+                            ]
         ]
     ]
 
