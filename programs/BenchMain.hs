@@ -27,6 +27,9 @@ instance NFData BVH where
     rnf (Leaf b o) = b `seq` o `seq` ()
     rnf (Node b o1 o2) = b `seq` o1 `seq` o2 `seq` ()
 
+instance NFData Shade where
+    rnf (Shade lhp n _ sh d) = lhp `seq` n `seq` sh `seq` d `seq` ()
+
 mkSamplerGroup :: (NFData a) => GenIO -> String -> Sampler a -> Benchmark
 mkSamplerGroup gen name s =
     bgroup name [ bench "4"  $ nfIO $ runSampler s gen 4
@@ -40,6 +43,9 @@ bvhObjects n =
     (flip map) [1..n] $ \i ->
         let v = toEnum i
         in sphere (V3 v v v) 0.5 $ matteFromColor cWhite
+
+sphere1 :: Object
+sphere1 = sphere (V3 0 0 0) 10 $ matteFromColor cWhite
 
 allGroups :: GenIO -> [Benchmark]
 allGroups gen =
@@ -61,6 +67,9 @@ allGroups gen =
                         , bench "100" $ nf buildBVH (bvhObjects 100)
                         , bench "150" $ nf buildBVH (bvhObjects 150)
                         ]
+    , bgroup "sphere" [ bench "hit" $ nf (sphere1^.hit) (Ray (V3 10 0 0) (V3 (-1) 0 0))
+                      , bench "miss" $ nf (sphere1^.hit) (Ray (V3 10 20 0) (V3 (-1) 0 0))
+                      ]
     ]
 
 main :: IO ()
