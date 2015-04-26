@@ -130,6 +130,7 @@ executable tracy-bench
     cereal,
     containers,
     deepseq,
+    diagrams-solve,
     distributive,
     either,
     lens,
