@@ -12,6 +12,7 @@ import System.Random.MWC
 import Tracy.Types
 import Tracy.Samplers
 import Tracy.Objects.Sphere
+import Tracy.Objects.Box
 import Tracy.Objects.BVH
 import Tracy.Materials.Matte
 
@@ -47,6 +48,9 @@ bvhObjects n =
 sphere1 :: Object
 sphere1 = sphere (V3 0 0 0) 10 $ matteFromColor cWhite
 
+box1 :: Object
+box1 = box (V3 1 1 1) (V3 (-1) (-1) (-1)) $ matteFromColor cWhite
+
 allGroups :: GenIO -> [Benchmark]
 allGroups gen =
     [ bgroup "samplers" [ mkSamplerGroup gen "regular" regular
@@ -67,9 +71,14 @@ allGroups gen =
                         , bench "100" $ nf buildBVH (bvhObjects 100)
                         , bench "150" $ nf buildBVH (bvhObjects 150)
                         ]
-    , bgroup "sphere" [ bench "hit" $ nf (sphere1^.hit) (Ray (V3 10 0 0) (V3 (-1) 0 0))
-                      , bench "miss" $ nf (sphere1^.hit) (Ray (V3 10 20 0) (V3 (-1) 0 0))
-                      ]
+    , bgroup "objects"
+        [ bgroup "sphere" [ bench "hit" $ nf (sphere1^.hit) (Ray (V3 10 0 0) (V3 (-1) 0 0))
+                          , bench "miss" $ nf (sphere1^.hit) (Ray (V3 10 20 0) (V3 (-1) 0 0))
+                          ]
+        , bgroup "box" [ bench "hit" $ nf (box1^.hit) (Ray (V3 10 0 0) (V3 (-1) 0 0))
+                       , bench "miss" $ nf (box1^.hit) (Ray (V3 10 3 0) (V3 (-1) 0 0))
+                       ]
+        ]
     ]
 
 main :: IO ()
