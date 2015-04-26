@@ -63,12 +63,12 @@ _hitSphere p rad ray =
 
 hitSphere :: V3 Double -> Double -> Material -> Ray
           -> Maybe (Shade, Double)
-hitSphere p rad mat ray =
-    let temp = ray^.origin - p
+hitSphere p rad mat ray = makeShade <$> _hitSphere p rad ray
+    where
         makeShade tval = (sh, tval)
             where
+              temp = ray^.origin - p
               sh = defaultShade { _localHitPoint = ray^.origin + (tval *^ ray^.direction)
                                 , _material = mat
                                 , _normal = (temp + (tval *^ ray^.direction)) ^/ rad
                                 }
-    in makeShade <$> _hitSphere p rad ray
