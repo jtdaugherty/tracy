@@ -53,14 +53,14 @@ loadMesh (MeshFile filename) = do
                      , V3 (toDouble $ vals V.! 3) (toDouble $ vals V.! 4) (toDouble $ vals V.! 5)
                      )
 
-        -- Vector (Vector Scalar) -> Vector [Int] -> [[Int]]
-        intFs = V.toList $ V.map ((toInt <$>)) fs
+        -- Vector (Vector Scalar) -> Vector (Vector Int)
+        intFs = V.map (V.map toInt) fs
 
     return $ MeshData vVecs intFs
 
 mesh :: MeshData -> Material -> Object
 mesh mData m =
-    let tris = mkTri <$> meshFaces mData
+    let tris = V.map mkTri $ meshFaces mData
         mkTri is = let v0 = (meshVertices mData) V.! (is V.! 0)
                        v1 = (meshVertices mData) V.! (is V.! 1)
                        v2 = (meshVertices mData) V.! (is V.! 2)

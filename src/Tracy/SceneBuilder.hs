@@ -8,6 +8,7 @@ import Control.Lens ((^.))
 import Data.Traversable (sequenceA)
 import Data.Monoid
 import qualified Data.Map as M
+import qualified Data.Vector as V
 
 import Tracy.Types
 import Tracy.Cameras.ThinLens
@@ -90,7 +91,7 @@ objectFromDesc mg fn (Mesh src m) = do
                Nothing -> fail $ "Could not find preloaded mesh for " ++ show src
     theMesh <- mesh mData <$> materialFromDesc fn m
     return [theMesh]
-objectFromDesc mg fn (Grid os) = single $ grid <$> (concat <$> sequenceA (objectFromDesc mg fn <$> os))
+objectFromDesc mg fn (Grid os) = single $ grid <$> V.fromList <$> (concat <$> sequenceA (objectFromDesc mg fn <$> os))
 objectFromDesc mg fn (BVH os) = single $ bvh <$> (concat <$> sequenceA (objectFromDesc mg fn <$> os))
 objectFromDesc mg fn (Instances oDesc is) = do
     v <- objectFromDesc mg fn oDesc

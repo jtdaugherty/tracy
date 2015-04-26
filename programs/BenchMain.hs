@@ -5,6 +5,7 @@ module Main where
 import Criterion.Main
 import Control.DeepSeq (NFData(..))
 import Control.Lens
+import qualified Data.Vector as V
 import Data.Colour
 import Linear (V3(V3))
 import System.Random.MWC
@@ -18,6 +19,7 @@ import Tracy.Objects.Triangle
 import Tracy.Objects.Torus
 import Tracy.Objects.Rectangle
 import Tracy.Objects.Plane
+import Tracy.Objects.Compound
 import Tracy.Materials.Matte
 
 instance NFData Object where
@@ -67,6 +69,11 @@ rect1 = rectangle (V3 (-1) (-1) 0) (V3 0 2 0) (V3 2 0 0) False $ matteFromColor 
 plane1 :: Object
 plane1 = plane (V3 0 0 0) (V3 0 0 1) $ matteFromColor cWhite
 
+compound1 :: Object
+compound1 = compound v $ matteFromColor cWhite
+    where
+        v = V.fromList [box1, plane1, sphere1]
+
 allGroups :: GenIO -> [Benchmark]
 allGroups gen =
     [ bgroup "samplers" [ mkSamplerGroup gen "regular" regular
@@ -106,6 +113,9 @@ allGroups gen =
         , bgroup "plane" [ bench "hit" $ nf (plane1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
                          , bench "miss" $ nf (plane1^.hit) (Ray (V3 0 0 10) (V3 0 0 1))
                          ]
+        , bgroup "compound" [ bench "hit" $ nf (compound1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
+                            , bench "miss" $ nf (compound1^.hit) (Ray (V3 0 0 10) (V3 0 0 1))
+                            ]
         ]
     ]
 

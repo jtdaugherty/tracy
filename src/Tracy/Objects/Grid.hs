@@ -11,19 +11,20 @@ import Tracy.BoundingBox
 import Tracy.Util
 import Tracy.Objects.Compound
 import Data.Maybe
+import qualified Data.Vector as V
 import Control.Lens hiding (ix, inside)
 import Control.Applicative
 import Control.Monad.State
 import qualified Data.Map as M
 import Linear
 
-grid :: [Object] -> Object
+grid :: V.Vector Object -> Object
 grid os = grid_ os Nothing
 
-gridWithMaterial :: [Object] -> Material -> Object
+gridWithMaterial :: V.Vector Object -> Material -> Object
 gridWithMaterial os m = grid_ os (Just m)
 
-grid_ :: [Object] -> Maybe Material -> Object
+grid_ :: V.Vector Object -> Maybe Material -> Object
 grid_ os mMat =
     let bbox = boundingBox (minCoords os) (maxCoords os)
         dims = getDimensions os
@@ -37,26 +38,25 @@ grid_ os mMat =
               , _areaLightImpl = Nothing
               }
 
-minCoords :: [Object] -> V3 Double
+minCoords :: V.Vector Object -> V3 Double
 minCoords os =
     V3 (mx - epsilon) (my - epsilon) (mz - epsilon)
     where
-      b o = fromJust $ o^.bounding_box
+      boxes = V.map (^.bounding_box.to fromJust) os
+      mx = V.minimum $ V.map (^.bboxP0._x) boxes
+      my = V.minimum $ V.map (^.bboxP0._y) boxes
+      mz = V.minimum $ V.map (^.bboxP0._z) boxes
 
-      mx = minimum $ (\o -> (b o)^.bboxP0._x) <$> os
-      my = minimum $ (\o -> (b o)^.bboxP0._y) <$> os
-      mz = minimum $ (\o -> (b o)^.bboxP0._z) <$> os
-
-maxCoords :: [Object] -> V3 Double
+maxCoords :: V.Vector Object -> V3 Double
 maxCoords os =
     V3 (mx + epsilon) (my + epsilon) (mz + epsilon)
     where
-      b o = fromJust $ o^.bounding_box
-      mx = maximum $ (\o -> (b o)^.bboxP1._x) <$> os
-      my = maximum $ (\o -> (b o)^.bboxP1._y) <$> os
-      mz = maximum $ (\o -> (b o)^.bboxP1._z) <$> os
+      boxes = V.map (^.bounding_box.to fromJust) os
+      mx = V.maximum $ V.map (^.bboxP1._x) boxes
+      my = V.maximum $ V.map (^.bboxP1._y) boxes
+      mz = V.maximum $ V.map (^.bboxP1._z) boxes
 
-getDimensions :: [Object] -> (Int, Int, Int)
+getDimensions :: V.Vector Object -> (Int, Int, Int)
 getDimensions os = (truncate nx, truncate ny, truncate nz)
     where
       p0 = minCoords os
@@ -67,18 +67,18 @@ getDimensions os = (truncate nx, truncate ny, truncate nz)
       wz = p1^._z - p0^._z
 
       multiplier = 2.0
-      s = ((wx * wy * wz) / toEnum (length os)) ** 0.3333333
+      s = ((wx * wy * wz) / toEnum (V.length os)) ** 0.3333333
 
       nx = multiplier * wx / s + 1
       ny = multiplier * wy / s + 1
       nz = multiplier * wz / s + 1
 
-setupCells :: BBox -> [Object] -> (Int, Int, Int) -> M.Map (Int, Int, Int) Object
-setupCells b os (nx, ny, nz) = mkCompounds $ foldr addObject M.empty os
+setupCells :: BBox -> V.Vector Object -> (Int, Int, Int) -> M.Map (Int, Int, Int) Object
+setupCells b os (nx, ny, nz) = mkCompounds $ V.foldr addObject M.empty os
     where
       p0 = b^.bboxP0
       p1 = b^.bboxP1
-      addObject :: Object -> M.Map (Int, Int, Int) [Object] -> M.Map (Int, Int, Int) [Object]
+      addObject :: Object -> M.Map (Int, Int, Int) (V.Vector Object) -> M.Map (Int, Int, Int) (V.Vector Object)
       addObject o m = let Just !ob = o^.bounding_box
 
                           !ixmin = clamp (fromEnum $ (ob^.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (nx - 1)
@@ -89,8 +89,8 @@ setupCells b os (nx, ny, nz) = mkCompounds $ foldr addObject M.empty os
                           !iymax = clamp (fromEnum $ (ob^.bboxP1._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (ny - 1)
                           !izmax = clamp (fromEnum $ (ob^.bboxP1._z - p0^._z) * (toEnum nz) / (p1^._z - p0^._z)) 0 (nz - 1)
 
-                          ins Nothing = Just [o]
-                          ins (Just !xs) = Just (o : xs)
+                          ins Nothing = Just $ V.singleton o
+                          ins (Just !xs) = Just $ V.cons o xs
                           addToCell = M.alter ins
                           !is = [ (x, y, z)
                                 | z <- [izmin..izmax]

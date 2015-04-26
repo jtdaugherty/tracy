@@ -347,7 +347,7 @@ data WorldDesc =
 
 data MeshData =
     MeshData { meshVertices :: V.Vector (V3 Double, V3 Double)
-             , meshFaces :: [V.Vector Int]
+             , meshFaces :: V.Vector (V.Vector Int)
              }
     deriving (Eq, Show)
 

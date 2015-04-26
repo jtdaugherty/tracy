@@ -7,25 +7,31 @@ import Tracy.Types
 import Data.Maybe
 import Control.Lens
 import Control.Applicative
-import Data.List
 import Data.Ord (comparing)
+import qualified Data.Vector as V
 
-compound :: [Object] -> Material -> Object
-compound [] _ = error "empty compound"
-compound [o] _ = o
-compound os m =
+compound :: V.Vector Object -> Material -> Object
+compound os m
+  | V.null os = error "empty compound"
+  | V.length os == 1 = os V.! 0
+  | otherwise =
     Object { _objectMaterial = m -- XXX unused
-           , _hit = hitCompound (os^..folded.hit)
-           , _shadow_hit = shadowHitCompound (os^..folded.hit)
+           , _hit = hitCompound $ V.map (^.hit) os
+           , _shadow_hit = shadowHitCompound $ V.map (^.hit) os
            , _bounding_box = Nothing
            , _areaLightImpl = Nothing
            }
 
-hitCompound :: [Ray -> Maybe (Shade, Double)] -> Ray -> Maybe (Shade, Double)
+hitCompound :: V.Vector (Ray -> Maybe (Shade, Double)) -> Ray -> Maybe (Shade, Double)
 hitCompound hitFuncs r =
-    listToMaybe $ sortBy (comparing snd) $ catMaybes results
+    if V.null hits
+    then Nothing
+    else Just $ V.minimumBy (comparing snd) hits
     where
-      results = hitFuncs <*> pure r
+        results :: V.Vector (Maybe (Shade, Double))
+        results = V.map ($ r) hitFuncs
+        hits :: V.Vector (Shade, Double)
+        hits = V.map fromJust $ V.filter isJust results
 
-shadowHitCompound :: [Ray -> Maybe (Shade, Double)] -> Ray -> Maybe Double
+shadowHitCompound :: V.Vector (Ray -> Maybe (Shade, Double)) -> Ray -> Maybe Double
 shadowHitCompound hitFuncs r = snd <$> hitCompound hitFuncs r
