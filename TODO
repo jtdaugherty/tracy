@@ -2,8 +2,6 @@
   * Implement bounding volume hierarchy support
 
 - Benchmarks
-  * Hit functions
-  * Sample generation
   * Generate vectors of random values in Samplers.hs to improve
     performance
   * Test use of uniformVector instead of repeated uniformR calls
