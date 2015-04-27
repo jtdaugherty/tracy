@@ -53,8 +53,8 @@ thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRa
       !vp = w^.viewPlane
       !row = toEnum theRow
       !colors = SV.generate (fromEnum $ vp^.hres) (getCol . toEnum)
-      !hitFuncs = w^..objects.folded.hit
-      !shadowHitFuncs = w^..objects.folded.shadow_hit
+      !hitFuncs = V.fromList $ w^..objects.folded.hit
+      !shadowHitFuncs = V.fromList $ w^..objects.folded.shadow_hit
       getCol col =
           let !squareSampleSet = (sampleData^.squareSampleSets) V.! sampleSetIndex
               !diskSampleSet = (sampleData^.diskSampleSets) V.! sampleSetIndex

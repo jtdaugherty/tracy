@@ -309,8 +309,8 @@ data TraceData =
        , _tdSquareSample :: !(V2 Double)
        , _tdObjectSurfaceSample :: !(V2 Double)
        , _tdWorld :: World
-       , _tdWorldHitFuncs :: [Ray -> Maybe (Shade, Double)]
-       , _tdWorldShadowHitFuncs :: [Ray -> Maybe Double]
+       , _tdWorldHitFuncs :: V.Vector (Ray -> Maybe (Shade, Double))
+       , _tdWorldShadowHitFuncs :: V.Vector (Ray -> Maybe Double)
        }
 
 type TraceM a = Reader TraceData a

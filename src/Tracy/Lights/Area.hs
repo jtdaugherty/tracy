@@ -3,10 +3,10 @@ module Tracy.Lights.Area
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Data.Colour
 import Data.Maybe
+import qualified Data.Vector as V
 import Linear
 
 import Tracy.Types
@@ -52,9 +52,9 @@ areaLightInShadow :: LightDir -> Ray -> TraceM Bool
 areaLightInShadow ld r = do
     hitFuncs <- view tdWorldShadowHitFuncs
     let ts = (ld^.lightSamplePoint - r^.origin) `dot` (r^.direction)
-        results = hitFuncs <*> pure r
-    let vs = filter (< ts - 0.01) $ catMaybes results
-    return $ not $ null vs
+        results = V.map ($ r) hitFuncs
+    let vs = V.filter (\v -> isJust v && fromJust v < ts - 0.01) results
+    return $ not $ V.null vs
 
 areaLightG :: LightDir -> Shade -> Double
 areaLightG ld sh =

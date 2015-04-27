@@ -3,10 +3,10 @@ module Tracy.Lights.Point
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Data.Colour
 import Data.Maybe
+import qualified Data.Vector as V
 import Linear
 
 import Tracy.Types
@@ -24,9 +24,9 @@ ptPDF = const $ const 1.0
 ptShadow :: V3 Double -> LightDir -> Ray -> TraceM Bool
 ptShadow loc _ld r = do
     hitFuncs <- view tdWorldShadowHitFuncs
-    let results = hitFuncs <*> pure r
+    let results = V.map ($ r) hitFuncs
         d = distance loc (r^.origin)
-    return $ (not . null) $ filter (< d) $ catMaybes results
+    return $ not $ V.null $ V.filter (\v -> isJust v && fromJust v < d) results
 
 ptDir :: Double -> Color -> V3 Double -> Shade -> TraceM LightDir
 ptDir _ _ loc sh = do

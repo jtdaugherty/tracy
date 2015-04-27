@@ -5,12 +5,11 @@ module Tracy.Tracers
   )
   where
 
-import Control.Applicative
 import Control.Lens
-import Data.List
 import Data.Maybe
 import Data.Colour
 import Data.Ord (comparing)
+import qualified Data.Vector as V
 
 import Tracy.Types
 
@@ -53,7 +52,10 @@ pathTrace ray theDepth = do
 doHit :: Ray -> TraceM (Maybe (Shade, Double))
 doHit r = do
     hitFuncs <- view tdWorldHitFuncs
-    return $ listToMaybe $ sortBy (comparing snd) $ catMaybes $ hitFuncs <*> pure r
+    let results = V.map fromJust $ V.filter isJust $ V.map ($ r) hitFuncs
+    return $ if V.null results
+             then Nothing
+             else Just (V.minimumBy (comparing snd) results)
 
 areaLightTracer :: Tracer
 areaLightTracer =
