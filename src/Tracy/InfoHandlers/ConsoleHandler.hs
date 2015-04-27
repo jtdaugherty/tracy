@@ -39,6 +39,7 @@ consoleHandler chan = do
             ILoadedMeshes (Count n) -> outputS "Loaded meshes" n
             ILoadingMeshes -> output_ "Loading meshes..."
             INumObjects (Count n) -> outputS "Objects" n
+            ITraceMaxDepth (Depth v) -> outputS "Maximum trace depth" v
             IConnected s -> output "Connected to" s
             IConnecting s -> output "Connecting to" s
             INodeReady s -> output "Node ready" s

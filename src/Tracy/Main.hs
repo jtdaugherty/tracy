@@ -60,9 +60,10 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
                       ]
 
   writeChan iChan $ ISceneName sceneName
-  writeChan iChan $ IFrameRange frameRange
   writeChan dChan $ DSceneName sceneName
 
+  writeChan iChan $ IFrameRange frameRange
+  writeChan iChan $ ITraceMaxDepth $ s^.sceneDescWorld.wdViewPlane.vpMaxDepth
   writeChan iChan $ ISampleRoot $ renderCfg^.sampleRoot
   writeChan iChan $ INumObjects $ Count $ w^.wdObjects.to length
   writeChan iChan $ IShadows $ w^.wdWorldShadows

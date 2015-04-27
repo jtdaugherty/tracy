@@ -23,6 +23,7 @@ data Arg = Help
          | SampleRoot String
          | NoShadows
          | Shadows
+         | TraceMaxDepth String
          | CPUs String
          | SamplesPerChunk String
          | RowsPerChunk String
@@ -44,6 +45,7 @@ data PreConfig =
               , argSamplesPerChunk :: Int
               , argRowsPerChunk :: Int
               , argRenderMode :: RenderMode
+              , argTraceMaxDepth :: Maybe Depth
               }
 
 defaultPreConfig :: IO PreConfig
@@ -58,6 +60,7 @@ defaultPreConfig = do
                        , argSamplesPerChunk = 1
                        , argRowsPerChunk = 100
                        , argRenderMode = DepthFirst
+                       , argTraceMaxDepth = Nothing
                        }
 
 mkOpts :: IO [OptDescr Arg]
@@ -85,6 +88,8 @@ mkOpts = do
              "Render chunks breadth-first"
            , Option "D" ["depth-first"] (NoArg ModeDepthFirst)
              "Render chunks depth-first"
+           , Option "" ["max-depth"] (ReqArg TraceMaxDepth "DEPTH")
+             "Set maximum depth to DEPTH bounces for depth-based tracers"
            ]
 
 updateConfig :: PreConfig -> Arg -> IO PreConfig
@@ -96,6 +101,10 @@ updateConfig c Shadows = return $ c { argForceShadows = Just False }
 updateConfig c ModeDepthFirst = return $ c { argRenderMode = DepthFirst }
 updateConfig c ModeBreadthFirst = return $ c { argRenderMode = BreadthFirst }
 updateConfig c (RenderNode n) = return $ c { argRenderNodes = n : argRenderNodes c }
+updateConfig c (TraceMaxDepth s) =
+    case reads s of
+        [(f, _)] -> return $ c { argTraceMaxDepth = Just $ Depth f }
+        _ -> usage >> exitFailure
 updateConfig c (SamplesPerChunk s) =
     case reads s of
         [(f, _)] -> return $ c { argSamplesPerChunk = f }
@@ -165,7 +174,13 @@ main = do
         iChan <- newChan
         dChan <- newChan
 
-        let (numNodes, manager) = if null $ argRenderNodes preCfg
+        -- Modify the scene description according to the command-line
+        -- parameters
+        let configuredSceneDesc = case argTraceMaxDepth preCfg of
+              Nothing -> sceneDesc
+              Just v -> sceneDesc & sceneDescWorld.wdViewPlane.vpMaxDepth .~ v
+
+            (numNodes, manager) = if null $ argRenderNodes preCfg
                                   then (1, localRenderManager)
                                   else ( length $ argRenderNodes preCfg
                                        , networkRenderManager (argRenderNodes preCfg) iChan
@@ -177,7 +192,7 @@ main = do
                          )
 
         _ <- forkIO $ consoleHandler iChan
-        _ <- forkIO $ render toRender renderCfg sceneDesc frameRange numNodes manager iChan dChan
+        _ <- forkIO $ render toRender renderCfg configuredSceneDesc frameRange numNodes manager iChan dChan
 
         case UseGUI `elem` os of
             False -> fileHandler dChan

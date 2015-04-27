@@ -49,6 +49,7 @@ newtype Height = Height Int
 
 data InfoEvent =
       ISampleRoot Double
+    | ITraceMaxDepth Depth
     | IConnected String
     | IConnecting String
     | INodeReady String
