@@ -78,12 +78,16 @@ compound1 = compound v $ matteFromColor cWhite
 
 grid1 :: Object
 grid1 = grid $ V.fromList spheres
-    where
-        rad = 1
-        spheres = do
-            x <- [-1, 0, 1]
-            y <- [-1, 0, 1]
-            return $ sphere (V3 (3 * rad * x) (3 * rad * y) 0) rad $ matteFromColor cWhite
+
+bvh1 :: Object
+bvh1 = bvh spheres
+
+spheres :: [Object]
+spheres = do
+    let rad = 1
+    x <- [-1, 0, 1]
+    y <- [-1, 0, 1]
+    return $ sphere (V3 (3 * rad * x) (3 * rad * y) 0) rad $ matteFromColor cWhite
 
 bbox1 :: BBox
 bbox1 = boundingBox (V3 1 1 1) (V3 (-1) (-1) (-1))
@@ -136,6 +140,9 @@ allGroups gen =
         , bgroup "grid" [ bench "hit" $ nf (grid1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
                         , bench "miss" $ nf (grid1^.hit) (Ray (V3 0 0 10) (V3 0 0 1))
                         ]
+        , bgroup "bvh" [ bench "hit" $ nf (bvh1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
+                       , bench "miss" $ nf (bvh1^.hit) (Ray (V3 0 0 10) (V3 0 0 1))
+                       ]
         ]
     ]
 
