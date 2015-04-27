@@ -12,6 +12,7 @@ import System.Random.MWC
 
 import Tracy.Types
 import Tracy.Samplers
+import Tracy.BoundingBox
 import Tracy.Objects.Sphere
 import Tracy.Objects.Box
 import Tracy.Objects.BVH
@@ -84,6 +85,9 @@ grid1 = grid $ V.fromList spheres
             y <- [-1, 0, 1]
             return $ sphere (V3 (3 * rad * x) (3 * rad * y) 0) rad $ matteFromColor cWhite
 
+bbox1 :: BBox
+bbox1 = boundingBox (V3 1 1 1) (V3 (-1) (-1) (-1))
+
 allGroups :: GenIO -> [Benchmark]
 allGroups gen =
     [ bgroup "samplers" [ mkSamplerGroup gen "regular" regular
@@ -104,6 +108,9 @@ allGroups gen =
                         , bench "100" $ nf buildBVH (bvhObjects 100)
                         , bench "150" $ nf buildBVH (bvhObjects 150)
                         ]
+    , bgroup "boundingBox" [ bench "hit" $ nf (boundingBoxHit bbox1) (Ray (V3 0 0 10) (V3 0 0 (-1)))
+                           , bench "miss" $ nf (boundingBoxHit bbox1) (Ray (V3 0 20 10) (V3 0 0 (-1)))
+                           ]
     , bgroup "objects"
         [ bgroup "sphere" [ bench "hit" $ nf (sphere1^.hit) (Ray (V3 0 0 10) (V3 0 0 (-1)))
                           , bench "miss" $ nf (sphere1^.hit) (Ray (V3 0 20 10) (V3 0 0 (-1)))
