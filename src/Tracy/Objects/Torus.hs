@@ -17,12 +17,13 @@ import Diagrams.Solve.Polynomial
 
 torus :: Double -> Double -> Material -> Object
 torus radOuter radInner m =
-    Object { _objectMaterial = m
-           , _hit = hitTorus radOuter radInner m
-           , _shadow_hit = shadowHitTorus radOuter radInner
-           , _bounding_box = Just $ torusBBox radOuter radInner
-           , _areaLightImpl = Nothing
-           }
+    let bbox = torusBBox radOuter radInner
+    in Object { _objectMaterial = m
+              , _hit = hitTorus radOuter radInner bbox m
+              , _shadow_hit = shadowHitTorus radOuter radInner bbox
+              , _bounding_box = Just bbox
+              , _areaLightImpl = Nothing
+              }
 
 torusBBox :: Double -> Double -> BBox
 torusBBox radOuter radInner =
@@ -32,8 +33,8 @@ torusBBox radOuter radInner =
         a = radOuter
         b = radInner
 
-shadowHitTorus :: Double -> Double -> Ray -> Maybe Double
-shadowHitTorus radOuter radInner ray = theHit
+shadowHitTorus :: Double -> Double -> BBox -> Ray -> Maybe Double
+shadowHitTorus radOuter radInner bbox ray = boundingBoxHit bbox ray >> theHit
     where
         theHit = listToMaybe $ sort $ filter (> 0.1) roots
         a = radOuter
@@ -59,8 +60,8 @@ shadowHitTorus radOuter radInner ray = theHit
 
         roots = quartForm' (1e-30) c0 c1 c2 c3 c4
 
-hitTorus :: Double -> Double -> Material -> Ray -> Maybe (Shade, Double)
-hitTorus radOuter radInner mat ray =
+hitTorus :: Double -> Double -> BBox -> Material -> Ray -> Maybe (Shade, Double)
+hitTorus radOuter radInner bbox mat ray =
     let makeShade tval = (sh, tval)
             where
               lhp = ray^.origin + (tval *^ ray^.direction)
@@ -68,7 +69,7 @@ hitTorus radOuter radInner mat ray =
                                 , _material = mat
                                 , _normal = computeNormal radOuter radInner lhp
                                 }
-    in makeShade <$> shadowHitTorus radOuter radInner ray
+    in makeShade <$> shadowHitTorus radOuter radInner bbox ray
 
 computeNormal :: Double -> Double -> V3 Double -> V3 Double
 computeNormal radOuter radInner hp =
