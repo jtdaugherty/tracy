@@ -112,10 +112,12 @@ data St = St { txNext :: !Double
 
 hitGrid :: (Int, Int, Int) -> BBox -> M.Map (Int, Int, Int) Object -> Ray -> Maybe (Shade, Double)
 hitGrid (nx, ny, nz) !bbox m !ray =
-    if t0 > t1
-       then Nothing
-       else let !st = St tx_next ty_next tz_next iix iiy iiz
-            in evalState findHit st
+    if isNothing $ boundingBoxHit bbox ray
+    then Nothing
+    else if t0 > t1
+         then Nothing
+         else let !st = St tx_next ty_next tz_next iix iiy iiz
+              in evalState findHit st
     where
         !ox = ray^.origin._x
         !oy = ray^.origin._y
