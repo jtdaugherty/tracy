@@ -12,6 +12,7 @@ import Control.Applicative
 import Control.Lens
 import Data.List
 import qualified Data.Map as M
+import qualified Data.Vector as V
 import Linear
 
 import Tracy.Types
@@ -76,15 +77,7 @@ buildBVH_ m
 dist :: BVH -> BVH -> (Double, BBox)
 dist a b = (bboxArea newBox, newBox)
     where
-        newBox = BBox newP0 newP1
-        abox = bvhBbox a
-        bbox = bvhBbox b
-        corners = [abox^.bboxP0, abox^.bboxP1, bbox^.bboxP0, bbox^.bboxP1]
-        xs = (^._x) <$> corners
-        ys = (^._y) <$> corners
-        zs = (^._z) <$> corners
-        newP0 = V3 (minimum xs) (minimum ys) (minimum zs)
-        newP1 = V3 (maximum xs) (maximum ys) (maximum zs)
+        newBox = enclosingBBox $ V.fromList [bvhBbox a, bvhBbox b]
 
 bboxArea :: BBox -> Double
 bboxArea (BBox p0 p1) = 4 * (w * h + l * w + l * h)

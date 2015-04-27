@@ -2,10 +2,12 @@ module Tracy.BoundingBox
   ( boundingBox
   , boundingBoxHit
   , inside
+  , enclosingBBox
   )
   where
 
 import Control.Lens hiding (inside)
+import qualified Data.Vector as V
 import Linear
 
 import Tracy.Types
@@ -90,3 +92,17 @@ inside b p =
     p^._y < b^.bboxP1._y &&
     p^._z > b^.bboxP0._z &&
     p^._z < b^.bboxP1._z
+
+enclosingBBox :: V.Vector BBox -> BBox
+enclosingBBox boxes
+  | V.null boxes = error "BUG: enclosingBBox needs at least one box"
+  | otherwise = BBox newP0 newP1
+    where
+        corners = p0s V.++ p1s
+        p0s = V.map (^.bboxP0) boxes
+        p1s = V.map (^.bboxP1) boxes
+        xs = V.map (^._x) corners
+        ys = V.map (^._y) corners
+        zs = V.map (^._z) corners
+        newP0 = V3 (V.minimum xs) (V.minimum ys) (V.minimum zs)
+        newP1 = V3 (V.maximum xs) (V.maximum ys) (V.maximum zs)
