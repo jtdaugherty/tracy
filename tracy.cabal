@@ -14,12 +14,17 @@ Flag bench
     Description:     Build with benchmarking support
     Default:         False
 
+Flag brick
+    Description:     Build with brick-based manager program
+    Default:         False
+
 library
   Hs-Source-Dirs:      src
   GHC-Options:         -O2 -Wall -funbox-strict-fields
   build-depends:
     AC-Colour >= 1.1.6,
     GLUT,
+    GLFW-b,
     OpenGL,
     aeson,
     aeson-pretty,
@@ -71,6 +76,7 @@ library
     Tracy.Util
     Tracy.DataHandlers.FileHandler
     Tracy.DataHandlers.GUIHandler
+    Tracy.DataHandlers.GLFWHandler
     Tracy.InfoHandlers.ConsoleHandler
     Tracy.Lights.Ambient
     Tracy.Lights.AmbientOccluder
