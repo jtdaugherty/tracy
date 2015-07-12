@@ -69,7 +69,7 @@ data InfoEvent =
     | IStarted
     | IFinished Frame
     | IShutdown
-    deriving (Eq)
+    deriving (Eq, Show)
 
 data DataEvent =
       DSceneName String
