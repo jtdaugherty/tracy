@@ -130,7 +130,7 @@ data TransformationDesc =
     deriving (Eq, Show, Read, Generic)
 
 instance Monoid Transformation where
-    mempty = Trans (eye4, eye4)
+    mempty = Trans (identity, identity)
     (Trans (f1, i1)) `mappend` (Trans (f2, i2)) =
         Trans (f1 !*! f2, i2 !*! i1)
 
