@@ -116,7 +116,7 @@ hitGrid (nx, ny, nz) !bbox m !ray =
     then Nothing
     else if t0 > t1
          then Nothing
-         else let !st = St tx_next ty_next tz_next iix iiy iiz
+         else let !st = St tx_next ty_next tz_next iix_ iiy iiz
               in evalState findHit st
     where
         !ox = ray^.origin._x
@@ -148,8 +148,8 @@ hitGrid (nx, ny, nz) !bbox m !ray =
         !t0 = max3 tx_min ty_min tz_min
         !t1 = min3 tx_max ty_max tz_max
 
-        iix, iiy, iiz :: Int
-        (!iix, !iiy, !iiz) = if inside bbox (ray^.origin)
+        iix_, iiy, iiz :: Int
+        (!iix_, !iiy, !iiz) = if inside bbox (ray^.origin)
                              then ( clamp (fromEnum $ (ox - x0) * (toEnum nx) / (x1 - x0)) 0 (nx - 1)
                                   , clamp (fromEnum $ (oy - y0) * (toEnum ny) / (y1 - y0)) 0 (ny - 1)
                                   , clamp (fromEnum $ (oz - z0) * (toEnum nz) / (z1 - z0)) 0 (nz - 1)
@@ -170,11 +170,11 @@ hitGrid (nx, ny, nz) !bbox m !ray =
                                               , -1
                                               )
                                          else if dx > 0
-                                              then ( tx_min + (toEnum iix + 1) * dtx
+                                              then ( tx_min + (toEnum iix_ + 1) * dtx
                                                    , 1
                                                    , nx
                                                    )
-                                              else ( tx_min + (toEnum $ nx - iix) * dtx
+                                              else ( tx_min + (toEnum $ nx - iix_) * dtx
                                                    , -1
                                                    , -1
                                                    )
