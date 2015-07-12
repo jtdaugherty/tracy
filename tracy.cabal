@@ -158,6 +158,22 @@ executable tracy-bench
   C-Sources:
     cbits/average.c
 
+executable tracy-brick
+  if flag(brick)
+    Buildable:     True
+  else
+    Buildable:     False
+  Hs-Source-Dirs:      programs
+  Main-is:             BrickMain.hs
+  GHC-Options:         -O2 -Wall -threaded
+  build-depends:
+    base == 4.*,
+    lens,
+    tracy,
+    brick,
+    vty,
+    data-default
+
 executable tracy
   Hs-Source-Dirs:      programs
   Main-is:             Main.hs
