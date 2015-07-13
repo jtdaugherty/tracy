@@ -282,14 +282,24 @@ drawInfoState pcfg st =
             Just (Frame cur) -> case argFrameStop pcfg of
                 Nothing -> 1.0
                 Just stop -> (toEnum $ cur - (argFrameStart pcfg)) / (toEnum $ stop - (argFrameStart pcfg))
+        estTimeRemaining = case st^.lastChunkFinished of
+            Nothing -> "-"
+            Just (_, _, _, diffTime) ->
+                let t = fromEnum diffTime `div` 1000000000000
+                    h = t `div` 3600
+                    m = (t `mod` 3600) `div` 60
+                    s = (t `mod` 3600) `mod` 60
+                    totalStr = show h <> "h " <> show m <> "m " <> show s <> "s"
+                in totalStr
     in hBox [ vBox [ hBorderWithLabel "Rendering Status"
                    , labeledValue "Status:" (if st^.finished
                                              then withAttr statusFinishedAttr "finished"
                                              else if st^.started
-                                                     then withAttr statusStartedAttr "started"
+                                                     then withAttr statusStartedAttr "rendering"
                                                      else "-")
                     , labeledValue "Scene name:" (str $ maybe "-" id $ st^.sceneName)
                     , labeledValue "Start time:" (mValue $ str <$> show <$> st^.startTime)
+                    , labeledValue "Est. time remaining:" (str estTimeRemaining)
                     , labeledValue "Finish time:" (mValue $ str <$> show <$> st^.finishTime)
                     , labeledValue "Total time:" (mValue $ str <$> show <$> st^.totalTime)
                     , labeledValue "# objects:" (mValue $ str <$> show <$> fromEnum <$> st^.numObjects)
