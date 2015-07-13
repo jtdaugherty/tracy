@@ -35,17 +35,17 @@ newtype Row = Row Int
 
 -- A depth value.
 newtype Depth = Depth Int
-              deriving (Eq, Show, Generic, Num, Ord)
+              deriving (Eq, Show, Generic, Num, Ord, Enum)
 
 -- The size of some set of things or the value of a counter.
 newtype Count = Count Int
-              deriving (Eq, Show, Generic)
+              deriving (Eq, Show, Generic, Enum)
 
 newtype Width = Width Int
-              deriving (Eq, Show, Generic)
+              deriving (Eq, Show, Generic, Enum)
 
 newtype Height = Height Int
-              deriving (Eq, Show, Generic)
+              deriving (Eq, Show, Generic, Enum)
 
 data InfoEvent =
       ISampleRoot Double

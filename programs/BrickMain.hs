@@ -32,6 +32,7 @@ import Brick.Util
 import Brick.AttrMap
 import Brick.Widgets.Core
 import Brick.Widgets.Border
+import Brick.Widgets.Border.Style
 
 data Arg = Help
          | SampleRoot String
@@ -196,9 +197,13 @@ makeLenses ''St
 makeLenses ''InfoState
 
 theMap :: AttrMap
-theMap = attrMap defAttr
-    [ (progressCompleteAttr,            white `on` blue)
-    , (progressIncompleteAttr,          defAttr)
+theMap = attrMap (white `on` black)
+    [ (statusFinishedAttr,              fg green)
+    , (statusStartedAttr,               fg yellow)
+    , (nodeStateAttr Connecting,        fg red)
+    , (nodeStateAttr Connected,         fg yellow)
+    , (nodeStateAttr Ready,             fg green)
+    , (hBorderLabelAttr,                fg cyan)
     ]
 
 appEvent :: St -> AppEvent -> EventM (Next St)
@@ -233,23 +238,32 @@ appEvent st GUIShutdown = halt st
 appEvent st _ = continue st
 
 drawUI :: St -> [Widget]
-drawUI st = [ui]
+drawUI st = [withBorderStyle unicode ui]
     where
-        ui = vBox [ "Tracy"
-                  , hBorder
+        ui = vBox [ hBorderWithLabel "tracy"
                   , drawPreConfig $ st^.preConfig
-                  , hBorderWithLabel "Rendering Status"
                   , drawInfoState (st^.preConfig) (st^.infoState)
                   ]
 
 mkNodeEntry :: (String, NodeState) -> Widget
-mkNodeEntry (name, st) = (str name) <+> (padLeft Max (str $ show st))
+mkNodeEntry (name, st) = (str $ take 25 name) <+> (padLeft Max (withAttr (nodeStateAttr st) $ str $ show st))
+
+nodeStateAttr :: NodeState -> AttrName
+nodeStateAttr Connecting = "nodeStateConnecting"
+nodeStateAttr Connected = "nodeStateConnected"
+nodeStateAttr Ready = "nodeStateReady"
 
 progressCompleteAttr :: AttrName
 progressCompleteAttr = "progressComplete"
 
 progressIncompleteAttr :: AttrName
 progressIncompleteAttr = "progressIncomplete"
+
+statusFinishedAttr :: AttrName
+statusFinishedAttr = "statusFinished"
+
+statusStartedAttr :: AttrName
+statusStartedAttr = "statusStarted"
 
 progressBar :: Maybe String -> Float -> Widget
 progressBar mLabel progress =
@@ -288,25 +302,30 @@ drawInfoState pcfg st =
             Just (Frame cur) -> case argFrameStop pcfg of
                 Nothing -> 1.0
                 Just stop -> (toEnum $ cur - (argFrameStart pcfg)) / (toEnum $ stop - (argFrameStart pcfg))
-    in hBox [ vBox [ labeledValue "Status:" (if st^.finished
-                                             then "finished"
+    in hBox [ vBox [ hBorderWithLabel "Rendering Status"
+                   , labeledValue "Status:" (if st^.finished
+                                             then withAttr statusFinishedAttr "finished"
                                              else if st^.started
-                                                     then "started"
+                                                     then withAttr statusStartedAttr "started"
                                                      else "-")
                     , labeledValue "Scene name:" (str $ maybe "-" id $ st^.sceneName)
                     , labeledValue "Start time:" (mValue $ str <$> show <$> st^.startTime)
                     , labeledValue "Finish time:" (mValue $ str <$> show <$> st^.finishTime)
                     , labeledValue "Total time:" (mValue $ str <$> show <$> st^.totalTime)
-                    , labeledValue "# objects:" (mValue $ str <$> show <$> st^.numObjects)
-                    , labeledValue "Loaded meshes:" (mValue $ str <$> show <$> st^.loadedMeshes)
+                    , labeledValue "# objects:" (mValue $ str <$> show <$> fromEnum <$> st^.numObjects)
+                    , labeledValue "Loaded meshes:" (mValue $ str <$> show <$> fromEnum <$> st^.loadedMeshes)
                     , labeledValue "Shadows:" (mValue $ str <$> show <$> st^.shadows)
                     , labeledValue "Image size:" (mValue $ str <$> show <$> st^.imageSize)
-                    , labeledValue "Current frame status:" (progressBar (Just curFrameName) curFrameStatus)
-                    , labeledValue "Finished frames:" (progressBar (Just finishedFrameLabel) finishedFrames)
+                    , labeledValue "Current frame status:" (updateAttrMap (applyAttrMappings [(progressCompleteAttr, white `on` blue)]) $
+                                                            progressBar (Just curFrameName) curFrameStatus)
+                    , labeledValue "Finished frames:" (updateAttrMap (applyAttrMappings [(progressCompleteAttr, black `on` yellow)]) $
+                                                       progressBar (Just finishedFrameLabel) finishedFrames)
                     , fill ' '
                     ]
-             , vBorder
-             , hLimit 30 $ vBox $ str "Nodes:" : (mkNodeEntry <$> M.assocs (st^.nodes))
+             , (str [bsIntersectionT unicode]) <=> vBorder
+             , hLimit 40 $ hBorderWithLabel "Nodes"
+                           <=> (vBox $ mkNodeEntry <$> M.assocs (st^.nodes))
+                           <=> fill ' '
              ]
 
 mValue :: Maybe Widget -> Widget
@@ -331,11 +350,11 @@ drawPreConfig cfg =
                 , showValue "Stop frame:" (argFrameStop cfg)
                 , showValue "Force shadows:" (argForceShadows cfg)
                 ]
-         , vBox [ showValue "Nodes:" (argRenderNodes cfg)
-                , showValue "Samples per chunk:" (argSamplesPerChunk cfg)
+         , vBox [ showValue "Samples per chunk:" (argSamplesPerChunk cfg)
                 , showValue "Rows per chunk:" (argRowsPerChunk cfg)
                 , showValue "Render mode:" (argRenderMode cfg)
                 , showValue "Trace depth:" (argTraceMaxDepth cfg)
+                , padRight Max " "
                 ]
          ]
 
