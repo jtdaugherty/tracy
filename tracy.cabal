@@ -23,7 +23,6 @@ library
   GHC-Options:         -O2 -Wall -funbox-strict-fields
   build-depends:
     AC-Colour >= 1.1.6,
-    GLUT,
     GLFW-b,
     OpenGL,
     aeson,
@@ -75,7 +74,6 @@ library
     Tracy.Types
     Tracy.Util
     Tracy.DataHandlers.FileHandler
-    Tracy.DataHandlers.GUIHandler
     Tracy.DataHandlers.GLFWHandler
     Tracy.InfoHandlers.ConsoleHandler
     Tracy.Lights.Ambient
@@ -125,7 +123,6 @@ executable tracy-bench
   build-depends:
     criterion,
     AC-Colour >= 1.1.6,
-    GLUT,
     OpenGL,
     aeson,
     aeson-pretty,

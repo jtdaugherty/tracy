@@ -13,7 +13,7 @@ import Tracy.Types
 import Tracy.SceneLoader
 
 import Tracy.DataHandlers.FileHandler
-import Tracy.DataHandlers.GUIHandler
+import Tracy.DataHandlers.GLFWHandler
 import Tracy.InfoHandlers.ConsoleHandler
 
 import Tracy.RenderManagers.Local
@@ -196,4 +196,6 @@ main = do
 
         case UseGUI `elem` os of
             False -> fileHandler dChan
-            True -> guiHandler dChan
+            True -> do
+                stopMVar <- newEmptyMVar
+                glfwHandler stopMVar dChan
