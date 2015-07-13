@@ -31,6 +31,7 @@ import Brick.Main
 import Brick.Util
 import Brick.AttrMap
 import Brick.Widgets.Core
+import Brick.Widgets.ProgressBar
 import Brick.Widgets.Border
 import Brick.Widgets.Border.Style
 
@@ -237,6 +238,17 @@ appEvent st (Info i) =
 appEvent st GUIShutdown = halt st
 appEvent st _ = continue st
 
+nodeStateAttr :: NodeState -> AttrName
+nodeStateAttr Connecting = "nodeStateConnecting"
+nodeStateAttr Connected = "nodeStateConnected"
+nodeStateAttr Ready = "nodeStateReady"
+
+statusFinishedAttr :: AttrName
+statusFinishedAttr = "statusFinished"
+
+statusStartedAttr :: AttrName
+statusStartedAttr = "statusStarted"
+
 drawUI :: St -> [Widget]
 drawUI st = [withBorderStyle unicode ui]
     where
@@ -246,41 +258,9 @@ drawUI st = [withBorderStyle unicode ui]
                   ]
 
 mkNodeEntry :: (String, NodeState) -> Widget
-mkNodeEntry (name, st) = (str $ take 25 name) <+> (padLeft Max (withAttr (nodeStateAttr st) $ str $ show st))
-
-nodeStateAttr :: NodeState -> AttrName
-nodeStateAttr Connecting = "nodeStateConnecting"
-nodeStateAttr Connected = "nodeStateConnected"
-nodeStateAttr Ready = "nodeStateReady"
-
-progressCompleteAttr :: AttrName
-progressCompleteAttr = "progressComplete"
-
-progressIncompleteAttr :: AttrName
-progressIncompleteAttr = "progressIncomplete"
-
-statusFinishedAttr :: AttrName
-statusFinishedAttr = "statusFinished"
-
-statusStartedAttr :: AttrName
-statusStartedAttr = "statusStarted"
-
-progressBar :: Maybe String -> Float -> Widget
-progressBar mLabel progress =
-    Widget Unlimited Fixed $ do
-        c <- getContext
-        let barWidth = c^.availW
-            label = maybe "" id mLabel
-            labelWidth = length label
-            spacesWidth = barWidth - labelWidth
-            leftPart = replicate (spacesWidth `div` 2) ' '
-            rightPart = replicate (barWidth - (labelWidth + length leftPart)) ' '
-            fullBar = leftPart <> label <> rightPart
-            completeWidth = round $ progress * toEnum barWidth
-            completePart = take completeWidth fullBar
-            incompletePart = drop completeWidth fullBar
-        render $ (withAttr progressCompleteAttr $ str completePart) <+>
-                 (withAttr progressIncompleteAttr $ str incompletePart)
+mkNodeEntry (name, st) =
+    (str $ take 25 name) <+>
+    (padLeft Max (withAttr (nodeStateAttr st) $ str $ show st))
 
 drawInfoState :: PreConfig -> InfoState -> Widget
 drawInfoState pcfg st =
