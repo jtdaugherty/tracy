@@ -118,6 +118,11 @@ glfwHandler stopMvar chan = withGLFWInit $ do
     G.setKeyCallback window (Just handleKeys)
     G.setFramebufferSizeCallback window (Just resizeFb)
 
+    (wx, wy) <- G.getWindowSize window
+    (fbx, fby) <- G.getFramebufferSize window
+    let (xZoom, yZoom) = (toEnum fbx / toEnum wx, toEnum fby / toEnum wy)
+    GL.pixelZoom $= (xZoom, yZoom)
+
     (fbW, fbH) <- G.getFramebufferSize window
     resizeFb window fbW fbH
 
