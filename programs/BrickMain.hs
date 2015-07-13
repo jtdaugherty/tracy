@@ -276,12 +276,12 @@ drawInfoState pcfg st =
                 Just stop -> "0/" <> show stop
             Just (Frame cur) -> case argFrameStop pcfg of
                 Nothing -> "1/1"
-                Just stop -> (show $ cur - (argFrameStart pcfg)) <> "/" <> show (stop - (argFrameStart pcfg) + 1)
+                Just stop -> (show $ cur - (argFrameStart pcfg) + 1) <> "/" <> show (stop - (argFrameStart pcfg) + 1)
         finishedFrames = case st^.lastFrameFinished of
             Nothing -> 0.0
             Just (Frame cur) -> case argFrameStop pcfg of
                 Nothing -> 1.0
-                Just stop -> (toEnum $ cur - (argFrameStart pcfg)) / (toEnum $ stop - (argFrameStart pcfg))
+                Just stop -> (toEnum $ cur - (argFrameStart pcfg) + 1) / (toEnum $ stop - (argFrameStart pcfg))
         estTimeRemaining = case st^.lastChunkFinished of
             Nothing -> "-"
             Just (_, _, _, diffTime) ->
