@@ -40,7 +40,7 @@ fileHandler chan = do
             DFinished frameNum -> do
                 vec <- vectorFromMergeBuffer merged
                 let vec2 = SV.map maxToOne vec
-                writeImage vec2 rows cols (buildFilename sceneName frameNum)
+                writeImage vec2 cols rows (buildFilename sceneName frameNum)
                 -- Reset sample count state
                 work sCountMap
             DShutdown -> return ()
@@ -50,8 +50,8 @@ fileHandler chan = do
   work sCountMap
 
 writeImage :: SV.Vector Color -> Int -> Int -> FilePath -> IO ()
-writeImage dat rows cols filename = do
+writeImage dat cols rows filename = do
   let imgBytes = B.concat $ (getColorBytes <$> (SV.toList dat))
-      img = packRGBA32ToBMP (fromEnum rows) (fromEnum cols) imgBytes
+      img = packRGBA32ToBMP (fromEnum cols) (fromEnum rows) imgBytes
 
   writeBMP filename img

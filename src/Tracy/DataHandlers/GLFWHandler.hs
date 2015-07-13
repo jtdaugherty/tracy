@@ -97,7 +97,7 @@ glfwHandler stopMvar chan = withGLFWInit $ do
                     -- Write the current accumulation buffer to disk
                     vec <- vectorFromMergeBuffer combinedArray
                     let vec2 = SV.map maxToOne vec
-                    writeImage vec2 rows cols (buildFilename sceneName frameNum)
+                    writeImage vec2 cols rows (buildFilename sceneName frameNum)
 
                     -- Start over with a new sample count map
                     return $ Just $ work sCountMap
