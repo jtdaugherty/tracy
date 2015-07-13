@@ -5,7 +5,7 @@ module Tracy.DataHandlers.GLFWHandler
 
 import Control.Applicative
 import Control.Concurrent.Chan
-import Control.Concurrent (threadDelay)
+import Control.Concurrent
 import Control.Monad
 import qualified Data.Map as M
 import qualified Data.Vector.Storable as SV
@@ -48,8 +48,8 @@ withWindow mkWindow f = do
 windowTitle :: Int -> String -> String
 windowTitle fn sceneName = sceneName ++ " (frame " ++ show fn ++ ")"
 
-glfwHandler :: Chan DataEvent -> IO ()
-glfwHandler chan = withGLFWInit $ do
+glfwHandler :: MVar () -> Chan DataEvent -> IO ()
+glfwHandler stopMvar chan = withGLFWInit $ do
   DSceneName sceneName <- readChan chan
   DSampleRoot _ <- readChan chan
   DImageSize (Width cols) (Height rows) <- readChan chan
@@ -68,7 +68,8 @@ glfwHandler chan = withGLFWInit $ do
     let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat (0::Int)
         work sampleCounts = do
           shouldClose <- G.windowShouldClose window
-          when (not shouldClose) $ do
+          shouldStop <- not <$> isEmptyMVar stopMvar
+          when (not $ shouldClose || shouldStop) $ do
             ev <- readChan chan
             next <- case ev of
                 DStarted (Frame fn) -> do
@@ -100,7 +101,13 @@ glfwHandler chan = withGLFWInit $ do
 
                     -- Start over with a new sample count map
                     return $ Just $ work sCountMap
-                DShutdown -> threadDelay 1000000 >> (return $ Just $ work sampleCounts) -- return Nothing
+                DShutdown -> do
+                    let waitForQuit = do
+                            shouldClose <- G.windowShouldClose window
+                            e <- not <$> isEmptyMVar stopMvar
+                            when (not $ shouldClose || e) $ G.pollEvents >> threadDelay 100000 >> waitForQuit
+                    waitForQuit
+                    return Nothing
                 _ -> return $ Just $ work sampleCounts
 
             G.pollEvents

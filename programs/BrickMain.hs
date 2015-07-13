@@ -7,12 +7,16 @@ import Control.Concurrent
 import Control.Monad
 import Control.Lens
 import Data.Default
+import Data.Monoid
+import qualified Data.Map as M
 import System.Console.GetOpt
 import System.Environment
 import System.Exit
 import GHC.Conc
+import Data.Time.Clock
 
-import Tracy.Main
+import Tracy.Main hiding (render)
+import qualified Tracy.Main as TM
 import Tracy.Types
 import Tracy.SceneLoader
 
@@ -24,8 +28,9 @@ import Tracy.RenderManagers.Network
 
 import Graphics.Vty
 import Brick.Main
+import Brick.Util
 import Brick.AttrMap
-import Brick.Widgets.Core hiding (render)
+import Brick.Widgets.Core
 import Brick.Widgets.Border
 
 data Arg = Help
@@ -156,19 +161,74 @@ data AppEvent = Info InfoEvent
               | GUIShutdown
 
 data St =
-    St { _eventLog :: [InfoEvent]
+    St { _renderConfig :: RenderConfig
+       , _preConfig :: PreConfig
+       , _infoState :: InfoState
        }
 
+data NodeState =
+    Connecting
+    | Connected
+    | Ready
+    deriving (Show)
+
+data InfoState =
+    InfoState { _sceneName :: Maybe String
+              , _frameRange :: Maybe (Frame, Frame)
+              , _numObjects :: Maybe Count
+              , _shadows :: Maybe Bool
+              , _numCPUs :: Maybe Count
+              , _lastChunkFinished :: Maybe (Frame, Count, Count, NominalDiffTime)
+              , _lastFrameFinished :: Maybe Frame
+              , _nodes :: M.Map String NodeState
+              , _startTime :: Maybe UTCTime
+              , _finishTime :: Maybe UTCTime
+              , _totalTime :: Maybe NominalDiffTime
+              , _imageSize :: Maybe (Width, Height)
+              , _loadedMeshes :: Maybe Count
+              , _meshesLoaded :: Bool
+              , _setScene :: Bool
+              , _started :: Bool
+              , _finished :: Bool
+              }
+
 makeLenses ''St
+makeLenses ''InfoState
 
 theMap :: AttrMap
 theMap = attrMap defAttr
-    [
+    [ (progressCompleteAttr,            white `on` blue)
+    , (progressIncompleteAttr,          defAttr)
     ]
 
 appEvent :: St -> AppEvent -> EventM (Next St)
 appEvent st (VtyEvent (EvKey KEsc [])) = halt st
-appEvent st (Info i) = continue $ st & eventLog %~ (i:)
+appEvent st (VtyEvent (EvKey (KChar 'q') [])) = halt st
+appEvent st (Info i) =
+    case i of
+        ISampleRoot _ -> continue st
+        ITraceMaxDepth _ -> continue st
+        IConnected node -> continue $ st & infoState.nodes.at node .~ Just Connected
+        IConnecting node -> continue $ st & infoState.nodes.at node .~ Just Connecting
+        INodeReady node -> continue $ st & infoState.nodes.at node .~ Just Ready
+        ISceneName name -> continue $ st & infoState.sceneName .~ Just name
+        IFrameRange range -> continue $ st & infoState.frameRange .~ Just range
+        INumObjects n -> continue $ st & infoState.numObjects .~ Just n
+        IShadows s -> continue $ st & infoState.shadows .~ Just s
+        INumCPUs n -> continue $ st & infoState.numCPUs .~ Just n
+        IChunkFinished fn start stop total -> continue $ st &  infoState.lastChunkFinished .~ Just (fn, start, stop, total)
+        IStartTime start -> continue $ st & infoState.startTime .~ Just start
+        IFinishTime finish -> continue $ st & infoState.finishTime .~ Just finish
+        ITotalTime total -> continue $ st & infoState.totalTime .~ Just total
+        IImageSize w h -> continue $ st & infoState.imageSize .~ Just (w, h)
+        ILoadedMeshes n -> continue $ st & infoState.loadedMeshes .~ Just n
+                                         & infoState.meshesLoaded .~ True
+        ILoadingMeshes -> continue $ st & infoState.meshesLoaded .~ False
+        ISettingScene -> continue $ st & infoState.setScene .~ True
+        IStarted -> continue $ st & infoState.started .~ True
+        IFinished fn -> continue $ st & infoState.lastFrameFinished .~ Just fn
+        IShutdown -> continue $ st & infoState.finished .~ True
+
 appEvent st GUIShutdown = halt st
 appEvent st _ = continue st
 
@@ -177,12 +237,107 @@ drawUI st = [ui]
     where
         ui = vBox [ "Tracy"
                   , hBorder
-                  , vBox $ (str . show) <$> st^.eventLog
-                  , fill ' '
+                  , drawPreConfig $ st^.preConfig
+                  , hBorderWithLabel "Rendering Status"
+                  , drawInfoState (st^.preConfig) (st^.infoState)
                   ]
 
-initialState :: St
-initialState = St []
+mkNodeEntry :: (String, NodeState) -> Widget
+mkNodeEntry (name, st) = (str name) <+> (padLeft Max (str $ show st))
+
+progressCompleteAttr :: AttrName
+progressCompleteAttr = "progressComplete"
+
+progressIncompleteAttr :: AttrName
+progressIncompleteAttr = "progressIncomplete"
+
+progressBar :: Maybe String -> Float -> Widget
+progressBar mLabel progress =
+    Widget Unlimited Fixed $ do
+        c <- getContext
+        let barWidth = c^.availW
+            label = maybe "" id mLabel
+            labelWidth = length label
+            spacesWidth = barWidth - labelWidth
+            leftPart = replicate (spacesWidth `div` 2) ' '
+            rightPart = replicate (barWidth - (labelWidth + length leftPart)) ' '
+            fullBar = leftPart <> label <> rightPart
+            completeWidth = round $ progress * toEnum barWidth
+            completePart = take completeWidth fullBar
+            incompletePart = drop completeWidth fullBar
+        render $ (withAttr progressCompleteAttr $ str completePart) <+>
+                 (withAttr progressIncompleteAttr $ str incompletePart)
+
+drawInfoState :: PreConfig -> InfoState -> Widget
+drawInfoState pcfg st =
+    let curFrameStatus = case st^.lastChunkFinished of
+            Nothing -> 0.0
+            Just (_, Count fin, Count total, _) -> toEnum fin / toEnum total
+        curFrameName = case st^.lastChunkFinished of
+            Nothing -> "-"
+            Just (Frame fn, _, _, _) -> "Frame " <> show fn
+        finishedFrameLabel = case st^.lastFrameFinished of
+            Nothing -> case argFrameStop pcfg of
+                Nothing -> "0/1"
+                Just stop -> "0/" <> show stop
+            Just (Frame cur) -> case argFrameStop pcfg of
+                Nothing -> "1/1"
+                Just stop -> (show $ cur - (argFrameStart pcfg)) <> "/" <> show (stop - (argFrameStart pcfg) + 1)
+        finishedFrames = case st^.lastFrameFinished of
+            Nothing -> 0.0
+            Just (Frame cur) -> case argFrameStop pcfg of
+                Nothing -> 1.0
+                Just stop -> (toEnum $ cur - (argFrameStart pcfg)) / (toEnum $ stop - (argFrameStart pcfg))
+    in hBox [ vBox [ labeledValue "Status:" (if st^.finished
+                                             then "finished"
+                                             else if st^.started
+                                                     then "started"
+                                                     else "-")
+                    , labeledValue "Scene name:" (str $ maybe "-" id $ st^.sceneName)
+                    , labeledValue "Start time:" (mValue $ str <$> show <$> st^.startTime)
+                    , labeledValue "Finish time:" (mValue $ str <$> show <$> st^.finishTime)
+                    , labeledValue "Total time:" (mValue $ str <$> show <$> st^.totalTime)
+                    , labeledValue "# objects:" (mValue $ str <$> show <$> st^.numObjects)
+                    , labeledValue "Loaded meshes:" (mValue $ str <$> show <$> st^.loadedMeshes)
+                    , labeledValue "Shadows:" (mValue $ str <$> show <$> st^.shadows)
+                    , labeledValue "Image size:" (mValue $ str <$> show <$> st^.imageSize)
+                    , labeledValue "Current frame status:" (progressBar (Just curFrameName) curFrameStatus)
+                    , labeledValue "Finished frames:" (progressBar (Just finishedFrameLabel) finishedFrames)
+                    , fill ' '
+                    ]
+             , vBorder
+             , hLimit 30 $ vBox $ str "Nodes:" : (mkNodeEntry <$> M.assocs (st^.nodes))
+             ]
+
+mValue :: Maybe Widget -> Widget
+mValue Nothing = str "-"
+mValue (Just w) = w
+
+labeledValue :: String -> Widget -> Widget
+labeledValue label a = padRight Max $
+                       (hLimit 25 $ padRight Max $ str label) <+>
+                       (padRight Max a)
+
+showValue :: (Show a) => String -> a -> Widget
+showValue label a = padRight Max $
+                    (hLimit 25 $ padRight Max $ str label) <+>
+                    (padRight Max $ str $ show a)
+
+drawPreConfig :: PreConfig -> Widget
+drawPreConfig cfg =
+    hBox [ vBox [ showValue "Sample root:" (argSampleRoot cfg)
+                , showValue "CPU count:" (argCpuCount cfg)
+                , showValue "Start frame:" (argFrameStart cfg)
+                , showValue "Stop frame:" (argFrameStop cfg)
+                , showValue "Force shadows:" (argForceShadows cfg)
+                ]
+         , vBox [ showValue "Nodes:" (argRenderNodes cfg)
+                , showValue "Samples per chunk:" (argSamplesPerChunk cfg)
+                , showValue "Rows per chunk:" (argRowsPerChunk cfg)
+                , showValue "Render mode:" (argRenderMode cfg)
+                , showValue "Trace depth:" (argTraceMaxDepth cfg)
+                ]
+         ]
 
 app :: App St AppEvent
 app =
@@ -244,14 +399,34 @@ main = do
                                   else ( length $ argRenderNodes preCfg
                                        , networkRenderManager (argRenderNodes preCfg) iChan
                                        )
-            frameRange = ( Frame $ argFrameStart preCfg
+            cfgFrameRange = ( Frame $ argFrameStart preCfg
                          , case argFrameStop preCfg of
                              Nothing -> Frame $ argFrameStart preCfg
                              Just f -> Frame f
                          )
 
+        let initialState = St renderCfg preCfg initInfoState
+            initInfoState = InfoState { _sceneName = Nothing
+                                      , _frameRange = Nothing
+                                      , _numObjects = Nothing
+                                      , _shadows = Nothing
+                                      , _numCPUs = Nothing
+                                      , _lastChunkFinished = Nothing
+                                      , _lastFrameFinished = Nothing
+                                      , _nodes = M.empty
+                                      , _startTime = Nothing
+                                      , _finishTime = Nothing
+                                      , _totalTime = Nothing
+                                      , _imageSize = Nothing
+                                      , _loadedMeshes = Nothing
+                                      , _meshesLoaded = False
+                                      , _setScene = False
+                                      , _started = False
+                                      , _finished = False
+                                      }
+
         _ <- forkIO $ brickHandler iChan appChan
-        _ <- forkIO $ render toRender renderCfg configuredSceneDesc frameRange numNodes manager iChan dChan
+        _ <- forkIO $ TM.render toRender renderCfg configuredSceneDesc cfgFrameRange numNodes manager iChan dChan
 
         case UseGUI `elem` os of
             False -> do
@@ -259,10 +434,12 @@ main = do
                 void $ customMain (mkVty def) appChan app initialState
             True -> do
                 mv <- newEmptyMVar
+                stopMVar <- newEmptyMVar
                 void $ forkIO $ do
                     void $ customMain (mkVty def) appChan app initialState
+                    putMVar stopMVar ()
                     putMVar mv ()
 
-                glfwHandler dChan
+                glfwHandler stopMVar dChan
                 writeChan appChan GUIShutdown
                 void $ takeMVar mv

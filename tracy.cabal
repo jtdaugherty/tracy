@@ -171,6 +171,8 @@ executable tracy-brick
     lens,
     tracy,
     brick,
+    containers,
+    time,
     vty,
     data-default
 
