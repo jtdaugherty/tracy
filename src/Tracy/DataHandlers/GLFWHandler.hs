@@ -103,9 +103,9 @@ glfwHandler stopMvar chan = withGLFWInit $ do
                     return $ Just $ work sCountMap
                 DShutdown -> do
                     let waitForQuit = do
-                            shouldClose <- G.windowShouldClose window
+                            wsc <- G.windowShouldClose window
                             e <- not <$> isEmptyMVar stopMvar
-                            when (not $ shouldClose || e) $ G.pollEvents >> threadDelay 100000 >> waitForQuit
+                            when (not $ wsc || e) $ G.pollEvents >> threadDelay 100000 >> waitForQuit
                     waitForQuit
                     return Nothing
                 _ -> return $ Just $ work sampleCounts
