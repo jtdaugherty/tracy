@@ -14,10 +14,6 @@ Flag bench
     Description:     Build with benchmarking support
     Default:         False
 
-Flag brick
-    Description:     Build with brick-based manager program
-    Default:         False
-
 library
   Hs-Source-Dirs:      src
   GHC-Options:         -O2 -Wall -funbox-strict-fields
@@ -155,13 +151,9 @@ executable tracy-bench
   C-Sources:
     cbits/average.c
 
-executable tracy-brick
-  if flag(brick)
-    Buildable:     True
-  else
-    Buildable:     False
+executable tracy
   Hs-Source-Dirs:      programs
-  Main-is:             BrickMain.hs
+  Main-is:             Main.hs
   GHC-Options:         -O2 -Wall -threaded
   build-depends:
     base == 4.*,
@@ -172,15 +164,6 @@ executable tracy-brick
     time,
     vty,
     data-default
-
-executable tracy
-  Hs-Source-Dirs:      programs
-  Main-is:             Main.hs
-  GHC-Options:         -O2 -Wall -threaded
-  build-depends:
-    base == 4.*,
-    lens,
-    tracy
 
 executable tracy-node
   Hs-Source-Dirs:      programs
