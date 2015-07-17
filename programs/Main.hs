@@ -312,7 +312,7 @@ drawInfoState pcfg st =
                                                        progressBar (Just finishedFrameLabel) finishedFrames)
                     , fill ' '
                     ]
-             , (str [bsIntersectionT unicode]) <=> vBorder
+             , (str [bsIntersectT unicode]) <=> vBorder
              , hLimit 40 $ hBorderWithLabel "Nodes"
                            <=> (vBox $ mkNodeEntry <$> M.assocs (st^.nodes))
                            <=> fill ' '
