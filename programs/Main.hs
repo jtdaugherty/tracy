@@ -30,6 +30,7 @@ import Graphics.Vty
 import Brick.Main
 import Brick.Util
 import Brick.AttrMap
+import Brick.Types
 import Brick.Widgets.Core
 import Brick.Widgets.ProgressBar
 import Brick.Widgets.Border
@@ -252,7 +253,7 @@ statusStartedAttr = "statusStarted"
 drawUI :: St -> [Widget]
 drawUI st = [withBorderStyle unicode ui]
     where
-        ui = vBox [ hBorderWithLabel "tracy"
+        ui = vBox [ hBorderWithLabel $ str "tracy"
                   , drawPreConfig $ st^.preConfig
                   , drawInfoState (st^.preConfig) (st^.infoState)
                   ]
@@ -291,12 +292,12 @@ drawInfoState pcfg st =
                     s = (t `mod` 3600) `mod` 60
                     totalStr = show h <> "h " <> show m <> "m " <> show s <> "s"
                 in totalStr
-    in hBox [ vBox [ hBorderWithLabel "Rendering Status"
+    in hBox [ vBox [ hBorderWithLabel $ str "Rendering Status"
                    , labeledValue "Status:" (if st^.finished
-                                             then withAttr statusFinishedAttr "finished"
+                                             then withAttr statusFinishedAttr $ str "finished"
                                              else if st^.started
-                                                     then withAttr statusStartedAttr "rendering"
-                                                     else "-")
+                                                     then withAttr statusStartedAttr $ str "rendering"
+                                                     else str "-")
                     , labeledValue "Scene name:" (str $ maybe "-" id $ st^.sceneName)
                     , labeledValue "Start time:" (mValue $ str <$> show <$> st^.startTime)
                     , labeledValue "Est. time remaining:" (str estTimeRemaining)
@@ -313,7 +314,7 @@ drawInfoState pcfg st =
                     , fill ' '
                     ]
              , (str [bsIntersectT unicode]) <=> vBorder
-             , hLimit 40 $ hBorderWithLabel "Nodes"
+             , hLimit 40 $ hBorderWithLabel (str "Nodes")
                            <=> (vBox $ mkNodeEntry <$> M.assocs (st^.nodes))
                            <=> fill ' '
              ]
@@ -344,7 +345,7 @@ drawPreConfig cfg =
                 , showValue "Rows per chunk:" (argRowsPerChunk cfg)
                 , showValue "Render mode:" (argRenderMode cfg)
                 , showValue "Trace depth:" (argTraceMaxDepth cfg)
-                , padRight Max " "
+                , padRight Max $ str " "
                 ]
          ]
 
