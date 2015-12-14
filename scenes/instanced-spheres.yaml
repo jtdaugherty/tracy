@@ -42,7 +42,7 @@ world:
           normal: V3 0 1 0
           material:
               type: matte
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1
         - type: instances
           master:
               type: sphere
@@ -50,7 +50,7 @@ world:
               radius: 40.0
               material:
                   type: phong
-                  color: Colour 1 1 1
+                  diffuseColor: Colour 1 1 1
                   ks: 0.5
                   exp: 50
           objects:
@@ -74,12 +74,12 @@ world:
               - transform: [ Translate 50 50 0 ]
                 material:
                     type: phong
-                    color: Colour 1 0 0
+                    diffuseColor: Colour 1 0 0
                     ks: 0.5
                     exp: 50
               - transform: [ Translate 50 -50 0 ]
                 material:
                     type: phong
-                    color: Colour 0 1 0
+                    diffuseColor: Colour 0 1 0
                     ks: 0.5
                     exp: 50

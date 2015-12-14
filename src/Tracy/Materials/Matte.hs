@@ -1,5 +1,6 @@
 module Tracy.Materials.Matte
-  ( matteFromColor
+  ( matteFromTexture
+  , matteFromColor
   , matte
   )
   where
@@ -10,11 +11,17 @@ import Data.Colour
 
 import Tracy.Types
 import Tracy.BRDF.Lambertian
+import Tracy.Textures.ConstantColor
 
 matteFromColor :: Color -> Material
-matteFromColor c = matte
-        (lambertian c 0.25)
-        (lambertian c 0.65)
+matteFromColor c =
+    let t = constantColor c
+    in matte (lambertian t 0.25) (lambertian t 0.65)
+
+matteFromTexture :: Texture -> Material
+matteFromTexture t = matte
+        (lambertian t 0.25)
+        (lambertian t 0.65)
 
 matte :: BRDF -> BRDF -> Material
 matte ambBrdf diffBrdf =

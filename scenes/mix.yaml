@@ -9,7 +9,7 @@ aliases:
       expR: 1
     - &refl
       type: matte
-      color: Colour 0.5 0.5 1
+      diffuseColor: Colour 0.5 0.5 1
     - &mat
       type: mix
       amount: 0.0
@@ -73,7 +73,7 @@ world:
           normal: V3 0 1 0
           material:
               type: matte
-              color: Colour 0.6 0.6 0.6
+              diffuseColor: Colour 0.6 0.6 0.6
         - <<: *sphere
           center: V3 -210 50 0
           material:

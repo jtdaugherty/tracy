@@ -241,6 +241,10 @@ data Material =
              , _getLe :: Shade -> Color
              }
 
+data Texture =
+    Texture { _getColor :: Shade -> Color
+            }
+
 data BBox =
     BBox { _bboxP0 :: !(V3 Double)
          , _bboxP1 :: !(V3 Double)
@@ -381,14 +385,18 @@ data LightDesc =
     | Environment Bool MaterialDesc
     deriving (Eq, Show, Generic)
 
+data TextureDesc =
+    ConstantColor Color
+    deriving (Eq, Show, Generic)
+
 data MaterialDesc =
-      Matte Color
+      Matte TextureDesc
     | Mix AnimDouble MaterialDesc MaterialDesc
     | Add MaterialDesc MaterialDesc
-    | Phong Color Double Double
+    | Phong TextureDesc Double Double
     | Emissive Color Double
-    | Reflective Color Double Double Color Double
-    | GlossyReflective Color Double Double Color Double Double
+    | Reflective TextureDesc Double Double TextureDesc Double
+    | GlossyReflective TextureDesc Double Double TextureDesc Double Double
     deriving (Eq, Show, Generic)
 
 data CameraDesc =
@@ -473,6 +481,7 @@ instance Serialize CameraDesc where
 instance Serialize ObjectDesc where
 instance Serialize LightDesc where
 instance Serialize MaterialDesc where
+instance Serialize TextureDesc where
 instance Serialize TransformationDesc where
 instance Serialize InstanceDesc where
 instance Serialize TracerDesc where
@@ -588,14 +597,26 @@ instance Y.FromJSON Color where
     parseJSON (Y.String s) = parseReadsT s "Invalid Colour value"
     parseJSON _ = fail "Expected string for Color value"
 
+instance Y.FromJSON TextureDesc where
+    parseJSON (Y.Object v) = do
+        t <- v Y..: "type"
+        case t of
+            "constant" -> ConstantColor <$> v Y..: "color"
+            t' -> fail $ "Unsupported texture type: " ++ (show $ T.unpack t')
+    parseJSON _ = fail "Expected object for TextureDesc"
+
+parseColorOrTexture :: T.Text -> Y.Object -> Y.Parser TextureDesc
+parseColorOrTexture pfx v =
+    (ConstantColor <$> v Y..: (pfx <> "Color")) <|> (v Y..: (pfx <> "Texture"))
+
 instance Y.FromJSON MaterialDesc where
     parseJSON (Y.Object v) = do
         t <- v Y..: "type"
         case t of
-            "phong" -> Phong <$> v Y..: "color"
+            "phong" -> Phong <$> parseColorOrTexture "diffuse" v
                              <*> v Y..: "ks"
                              <*> v Y..: "exp"
-            "matte" -> Matte <$> v Y..: "color"
+            "matte" -> Matte <$> parseColorOrTexture "diffuse" v
             "add" -> Add <$> v Y..: "first"
                          <*> v Y..: "second"
             "mix" -> Mix <$> v Y..: "amount"
@@ -603,15 +624,15 @@ instance Y.FromJSON MaterialDesc where
                          <*> v Y..: "second"
             "emissive" -> Emissive <$> v Y..: "color"
                                    <*> v Y..: "strength"
-            "reflective" -> Reflective <$> v Y..: "baseColor"
+            "reflective" -> Reflective <$> parseColorOrTexture "base" v
                                        <*> v Y..: "ks"
                                        <*> v Y..: "exp"
-                                       <*> v Y..: "reflectiveColor"
+                                       <*> parseColorOrTexture "reflective" v
                                        <*> v Y..: "reflectiveStrength"
-            "glossyReflective" -> GlossyReflective <$> v Y..: "baseColor"
+            "glossyReflective" -> GlossyReflective <$> parseColorOrTexture "base" v
                                                    <*> v Y..: "ks"
                                                    <*> v Y..: "exp"
-                                                   <*> v Y..: "reflectiveColor"
+                                                   <*> parseColorOrTexture "reflective" v
                                                    <*> v Y..: "kr"
                                                    <*> v Y..: "expR"
             t' -> fail $ "Unsupported material type: " ++ (show $ T.unpack t')
@@ -736,6 +757,7 @@ makeLenses ''Camera
 makeLenses ''ThinLens
 makeLenses ''Tracer
 makeLenses ''TraceData
+makeLenses ''Texture
 makeLenses ''LightDir
 makeLenses ''ObjectAreaLightImpl
 makeLenses ''SampleData

@@ -24,30 +24,30 @@ phong ambBrdf diffBrdf glossyBrdf =
              , _getLe = const cBlack
              }
 
-phongFromColor :: Color -> Double -> Double -> Material
-phongFromColor c ks e = phong
-         (lambertian c 0.25)
-         (lambertian c 0.65)
-         (glossySpecular c ks e)
+phongFromColor :: Texture -> Double -> Double -> Material
+phongFromColor t ks e = phong
+         (lambertian t 0.25)
+         (lambertian t 0.65)
+         (glossySpecular t ks e)
 
-reflective :: Color -> Double -> Double -> Color -> Double -> Material
-reflective c ks e cr kr =
-    let ambBrdf = lambertian c 0.25
-        diffBrdf = lambertian c 0.65
-        glossyBrdf = glossySpecular c ks e
-        reflBrdf = perfectSpecular cr kr
+reflective :: Texture -> Double -> Double -> Texture -> Double -> Material
+reflective td ks e tr kr =
+    let ambBrdf = lambertian td 0.25
+        diffBrdf = lambertian td 0.65
+        glossyBrdf = glossySpecular td ks e
+        reflBrdf = perfectSpecular tr kr
     in Material { _doShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
                 , _doAreaShading = reflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
                 , _doPathShading = reflectivePathShading reflBrdf
                 , _getLe = const cBlack
                 }
 
-glossyReflective :: Color -> Double -> Double -> Color -> Double -> Double -> Material
-glossyReflective c ks e cr kr er =
-    let ambBrdf = lambertian c 0.25
-        diffBrdf = lambertian c 0.25
-        glossyBrdf = glossySpecular c ks e
-        reflBrdf = glossySpecular cr kr er
+glossyReflective :: Texture -> Double -> Double -> Texture -> Double -> Double -> Material
+glossyReflective td ks e tr kr er =
+    let ambBrdf = lambertian td 0.25
+        diffBrdf = lambertian td 0.25
+        glossyBrdf = glossySpecular td ks e
+        reflBrdf = glossySpecular tr kr er
     in Material { _doShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf lightContrib
                 , _doAreaShading = glossyReflectiveShading ambBrdf diffBrdf glossyBrdf reflBrdf areaLightContrib
                 , _doPathShading = glossyReflectivePathShading glossyBrdf

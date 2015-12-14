@@ -30,6 +30,8 @@ import Tracy.Objects.Triangle
 import Tracy.Objects.Mesh
 import Tracy.Objects.Instance
 
+import Tracy.Textures.ConstantColor
+
 import Tracy.Lights.Ambient
 import Tracy.Lights.AmbientOccluder
 import Tracy.Lights.Area
@@ -131,13 +133,19 @@ lightFromDesc mg fn (Area sh oDesc p) = do
       _ -> fail "Could not create area light from multiple objects"
 
 materialFromDesc :: Frame -> MaterialDesc -> LoadM Material
-materialFromDesc _ (Matte c) = return $ matteFromColor c
+materialFromDesc _ (Matte td) = matteFromTexture <$> textureFromDesc td
 materialFromDesc fn (Mix amt m1 m2) = mix (animate fn amt) <$> materialFromDesc fn m1 <*> materialFromDesc fn m2
 materialFromDesc fn (Add m1 m2) = add <$> materialFromDesc fn m1 <*> materialFromDesc fn m2
-materialFromDesc _ (Phong c ks e) = return $ phongFromColor c ks e
-materialFromDesc _ (Reflective c ks e cr kr) = return $ reflective c ks e cr kr
-materialFromDesc _ (GlossyReflective c ks e cr kr er) = return $ glossyReflective c ks e cr kr er
+materialFromDesc _ (Phong t ks e) =
+    phongFromColor <$> textureFromDesc t <*> pure ks <*> pure e
+materialFromDesc _ (Reflective td ks e tr kr) =
+    reflective <$> textureFromDesc td <*> pure ks <*> pure e <*> textureFromDesc tr <*> pure kr
+materialFromDesc _ (GlossyReflective td ks e tr kr er) =
+    glossyReflective <$> textureFromDesc td <*> pure ks <*> pure e <*> textureFromDesc tr <*> pure kr <*> pure er
 materialFromDesc _ (Emissive c e) = return $ emissive c e
+
+textureFromDesc :: TextureDesc -> LoadM Texture
+textureFromDesc (ConstantColor c) = return $ constantColor c
 
 tracerFromDesc :: TracerDesc -> LoadM Tracer
 tracerFromDesc RayCastTracer = return rayCastTracer

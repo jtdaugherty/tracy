@@ -42,6 +42,6 @@ world:
           radius: 85.0
           material:
               type: phong
-              color: Colour 1 0 0
+              diffuseColor: Colour 1 0 0
               ks: 0.5
               exp: 50

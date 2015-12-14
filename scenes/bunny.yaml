@@ -63,10 +63,10 @@ world:
               type: phong
               ks: 0.5
               exp: 100
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1
         - type: plane
           origin: V3 0 0 0.1
           normal: V3 0 0 1
           material:
               type: matte
-              color: Colour 0 1 0
+              diffuseColor: Colour 0 1 0

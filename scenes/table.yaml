@@ -42,7 +42,7 @@ world:
           path: meshes/table/table.ply
           material:
               type: phong
-              color: Colour 0.392 0.28627 0
+              diffuseColor: Colour 0.392 0.28627 0
               ks: 0.5
               exp: 100
         - type: grid
@@ -80,48 +80,48 @@ world:
                 path: meshes/table/ico1.ply
                 material:
                     type: matte
-                    color: Colour 1 1 0
+                    diffuseColor: Colour 1 1 0
         - type: mesh
           path: meshes/table/chairLeft.ply
           material:
               type: phong
-              color: Colour 1 0.3098 0
+              diffuseColor: Colour 1 0.3098 0
               ks: 1.0
               exp: 100000
         - type: mesh
           path: meshes/table/chairRight.ply
           material:
               type: phong
-              color: Colour 1 0.3098 0
+              diffuseColor: Colour 1 0.3098 0
               ks: 1.0
               exp: 100000
         - type: mesh
           path: meshes/table/plane_back.ply
           material:
               type: matte
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1
         - type: mesh
           path: meshes/table/plane_front.ply
           material:
               type: matte
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1
         - type: mesh
           path: meshes/table/plane_bottom.ply
           material:
               type: matte
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1
         - type: mesh
           path: meshes/table/plane_top.ply
           material:
               type: matte
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1
         - type: mesh
           path: meshes/table/plane_left.ply
           material:
               type: matte
-              color: Colour 0.26275 0.592157 0.878431
+              diffuseColor: Colour 0.26275 0.592157 0.878431
         - type: mesh
           path: meshes/table/plane_right.ply
           material:
               type: matte
-              color: Colour 0.26275 0.592157 0.878431
+              diffuseColor: Colour 0.26275 0.592157 0.878431

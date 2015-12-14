@@ -40,4 +40,4 @@ world:
           path: meshes/cube.ply
           material:
               type: matte
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1

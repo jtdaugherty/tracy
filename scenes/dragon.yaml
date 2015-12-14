@@ -40,7 +40,7 @@ world:
               doubleSided: false
               material:
                   type: emissive
-                  color: Colour 1 1 1
+                  diffuseColor: Colour 1 1 1
                   strength: 200
 
     objects:
@@ -59,4 +59,4 @@ world:
           normal: V3 0 1 0
           material:
               type: matte
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1

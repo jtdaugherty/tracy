@@ -42,4 +42,4 @@ world:
               type: phong
               ks: 0.5
               exp: 50
-              color: Colour 1 1 1
+              diffuseColor: Colour 1 1 1

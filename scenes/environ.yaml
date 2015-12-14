@@ -47,26 +47,26 @@ world:
           normal: V3 0 1 0
           material:
               type: matte
-              color: Colour 0.6 0.6 1
+              diffuseColor: Colour 0.6 0.6 1
         - type: sphere
           center: V3 -100 40 -10
           radius: 40
           material:
               type: matte
-              color: Colour 1 0.5098 0
+              diffuseColor: Colour 1 0.5098 0
         - type: sphere
           center: V3 100 40 -10
           radius: 40
           material:
               type: matte
-              color: Colour 0 0.74902 1
+              diffuseColor: Colour 0 0.74902 1
         - type: rect
           corner: V3 -150 0 -50
           over: V3 300 0 0
           up: V3 0 200 0
           material:
               type: matte
-              color: Colour 0.8 0.8 0.8
+              diffuseColor: Colour 0.8 0.8 0.8
         - type: sphere
           center: V3 0 50 0
           radius: 50

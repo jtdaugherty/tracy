@@ -10,15 +10,15 @@ import Data.Colour
 import Tracy.Types
 import Tracy.Constants
 
-lambertian :: Color -> Double -> BRDF
-lambertian cd kd =
-    BRDF (lambFunc cd kd) (lambSample cd kd) (lambRhoFunc cd kd)
+lambertian :: Texture -> Double -> BRDF
+lambertian t kd =
+    BRDF (lambFunc t kd) (lambSample t kd) (lambRhoFunc t kd)
 
-lambFunc :: Color -> Double -> Shade -> V3 Double -> V3 Double -> Color
-lambFunc cd kd _ _ _ = (grey kd) * cd * (grey invPI)
+lambFunc :: Texture -> Double -> Shade -> V3 Double -> V3 Double -> Color
+lambFunc t kd sh _ _ = (grey kd) * ((t^.getColor) sh) * (grey invPI)
 
-lambSample :: Color -> Double -> Shade -> V3 Double -> TraceM (Double, Color, V3 Double)
-lambSample cd kd sh _ = do
+lambSample :: Texture -> Double -> Shade -> V3 Double -> TraceM (Double, Color, V3 Double)
+lambSample t kd sh _ = do
     sp <- view tdHemiSample
 
     let w = sh^.normal
@@ -28,9 +28,9 @@ lambSample cd kd sh _ = do
         pdf = (sh^.normal) `dot` (wi ^* invPI)
 
     return ( pdf
-           , grey kd * cd * (grey invPI)
+           , grey kd * ((t^.getColor) sh) * (grey invPI)
            , wi
            )
 
-lambRhoFunc :: Color -> Double -> Shade -> V3 Double -> Color
-lambRhoFunc cd kd _ _ = grey kd * cd
+lambRhoFunc :: Texture -> Double -> Shade -> V3 Double -> Color
+lambRhoFunc t kd sh _ = grey kd * ((t^.getColor) sh)

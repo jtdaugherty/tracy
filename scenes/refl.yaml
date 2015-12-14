@@ -78,7 +78,7 @@ world:
                   radius: 40
                   material:
                       type: matte
-                      color: Colour 1 1 1
+                      diffuseColor: Colour 1 1 1
               objects:
                   - transform: [ Translate -90 0 0 ]
                     material:

@@ -95,6 +95,7 @@ library
     Tracy.Objects.Triangle
     Tracy.RenderManagers.Local
     Tracy.RenderManagers.Network
+    Tracy.Textures.ConstantColor
 
 executable tracy-loader
   Hs-Source-Dirs:      programs

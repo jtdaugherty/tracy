@@ -47,7 +47,7 @@ world:
           normal: V3 0 1 0
           material:
               type: matte
-              color: Colour 0 1 0
+              diffuseColor: Colour 0 1 0
         - type: bvh
           objects:
               - type: tri
@@ -56,49 +56,49 @@ world:
                 v3: V3 (-50) 75 0
                 material:
                     type: matte
-                    color: Colour 1 1 1
+                    diffuseColor: Colour 1 1 1
               - type: box
                 from: V3 -150 0 -75
                 to: V3 -100 75 -25
                 material:
                     type: matte
-                    color: Colour 1 1 1
+                    diffuseColor: Colour 1 1 1
               - type: box
                 from: V3 -150 0 25
                 to: V3 -100 75 75
                 material:
                     type: matte
-                    color: Colour 1 1 0
+                    diffuseColor: Colour 1 1 0
               - type: box
                 from: V3 100 0 -100
                 to: V3 150 50 -50
                 material:
                     type: matte
-                    color: Colour 1 0 0
+                    diffuseColor: Colour 1 0 0
               - type: box
                 from: V3 100 0 0
                 to: V3 150 50 50
                 material:
                     type: matte
-                    color: Colour 0 1 1
+                    diffuseColor: Colour 0 1 1
               - type: sphere
                 center: V3 50 5 0
                 radius: 10.0
                 material:
                     type: matte
-                    color: Colour 1 0 1
+                    diffuseColor: Colour 1 0 1
               - type: sphere
                 center: V3 -50 10 0
                 radius: 15
                 material:
                     type: matte
-                    color: Colour 1 1 0
+                    diffuseColor: Colour 1 1 0
               - type: sphere
                 center: V3 0 0 11
                 radius: 30.0
                 material:
                     type: matte
-                    color: Colour 0 0 1
+                    diffuseColor: Colour 0 0 1
               - type: torus
                 transform: [ Translate 0 10 0 ]
                 outerRadius: 80
