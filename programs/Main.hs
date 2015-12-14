@@ -189,7 +189,9 @@ data InfoState =
               , _totalTime :: Maybe NominalDiffTime
               , _imageSize :: Maybe (Width, Height)
               , _loadedMeshes :: Maybe Count
+              , _loadedTextures :: Maybe Count
               , _meshesLoaded :: Bool
+              , _texturesLoaded :: Bool
               , _setScene :: Bool
               , _started :: Bool
               , _finished :: Bool
@@ -230,7 +232,10 @@ appEvent st (Info i) =
         IImageSize w h -> continue $ st & infoState.imageSize .~ Just (w, h)
         ILoadedMeshes n -> continue $ st & infoState.loadedMeshes .~ Just n
                                          & infoState.meshesLoaded .~ True
+        ILoadedTextures n -> continue $ st & infoState.loadedTextures .~ Just n
+                                           & infoState.texturesLoaded .~ True
         ILoadingMeshes -> continue $ st & infoState.meshesLoaded .~ False
+        ILoadingTextures -> continue $ st & infoState.texturesLoaded .~ False
         ISettingScene -> continue $ st & infoState.setScene .~ True
         IStarted -> continue $ st & infoState.started .~ True
         IFinished fn -> continue $ st & infoState.lastFrameFinished .~ Just fn
@@ -305,6 +310,7 @@ drawInfoState pcfg st =
                     , labeledValue "Total time:" (mValue $ str <$> show <$> st^.totalTime)
                     , labeledValue "# objects:" (mValue $ str <$> show <$> fromEnum <$> st^.numObjects)
                     , labeledValue "Loaded meshes:" (mValue $ str <$> show <$> fromEnum <$> st^.loadedMeshes)
+                    , labeledValue "Loaded textures:" (mValue $ str <$> show <$> fromEnum <$> st^.loadedTextures)
                     , labeledValue "Shadows:" (mValue $ str <$> show <$> st^.shadows)
                     , labeledValue "Image size:" (mValue $ str <$> show <$> st^.imageSize)
                     , labeledValue "Current frame status:" (updateAttrMap (applyAttrMappings [(progressCompleteAttr, white `on` blue)]) $
@@ -430,6 +436,8 @@ main = do
                                       , _imageSize = Nothing
                                       , _loadedMeshes = Nothing
                                       , _meshesLoaded = False
+                                      , _loadedTextures = Nothing
+                                      , _texturesLoaded = False
                                       , _setScene = False
                                       , _started = False
                                       , _finished = False

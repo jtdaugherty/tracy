@@ -53,6 +53,8 @@ defaultShade =
           , _material = error "no material set on Shade"
           , _shadeRay = Ray (V3 0 0 0) (V3 0 0 0)
           , _depth = Depth 0
+          , _mappingU = 0
+          , _mappingV = 0
           }
 
 clamp :: (Ord a) => a -> a -> a -> a

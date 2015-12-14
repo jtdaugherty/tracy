@@ -31,6 +31,8 @@ import Tracy.Objects.Mesh
 import Tracy.Objects.Instance
 
 import Tracy.Textures.ConstantColor
+import Tracy.Textures.ImageTexture
+import Tracy.TextureMapping.Spherical
 
 import Tracy.Lights.Ambient
 import Tracy.Lights.AmbientOccluder
@@ -45,23 +47,23 @@ import Tracy.Transformations
 
 type LoadM a = Either String a
 
-sceneFromDesc :: SceneDesc -> MeshGroup -> Frame -> Either String (Scene ThinLens)
-sceneFromDesc sd mg fn = runSceneFromDesc sd mg fn
+sceneFromDesc :: SceneDesc -> ImageGroup -> MeshGroup -> Frame -> Either String (Scene ThinLens)
+sceneFromDesc sd ig mg fn = runSceneFromDesc sd ig mg fn
 
-runSceneFromDesc :: SceneDesc -> MeshGroup -> Frame -> LoadM (Scene ThinLens)
-runSceneFromDesc sd mg fn =
-    Scene <$> (worldFromDesc mg fn    $ sd^.sceneDescWorld)
+runSceneFromDesc :: SceneDesc -> ImageGroup -> MeshGroup -> Frame -> LoadM (Scene ThinLens)
+runSceneFromDesc sd ig mg fn =
+    Scene <$> (worldFromDesc ig mg fn $ sd^.sceneDescWorld)
           <*> (cameraFromDesc fn      $ sd^.sceneDescCamera)
           <*> (tracerFromDesc         $ sd^.sceneDescTracer)
 
-worldFromDesc :: MeshGroup -> Frame -> WorldDesc -> LoadM World
-worldFromDesc mg fn wd =
-    World <$> (viewPlaneFromDesc fn  $ wd^.wdViewPlane)
-          <*> (pure                  $ wd^.wdBgColor)
-          <*> (objectsFromDesc mg fn $ wd^.wdObjects)
-          <*> (lightsFromDesc mg fn  $ wd^.wdLights)
-          <*> (lightFromDesc mg fn   $ wd^.wdAmbient)
-          <*> (pure                  $ wd^.wdWorldShadows)
+worldFromDesc :: ImageGroup -> MeshGroup -> Frame -> WorldDesc -> LoadM World
+worldFromDesc ig mg fn wd =
+    World <$> (viewPlaneFromDesc fn     $ wd^.wdViewPlane)
+          <*> (pure                     $ wd^.wdBgColor)
+          <*> (objectsFromDesc ig mg fn $ wd^.wdObjects)
+          <*> (lightsFromDesc ig mg fn  $ wd^.wdLights)
+          <*> (lightFromDesc ig mg fn   $ wd^.wdAmbient)
+          <*> (pure                     $ wd^.wdWorldShadows)
 
 viewPlaneFromDesc :: Frame -> ViewPlaneDesc -> LoadM ViewPlane
 viewPlaneFromDesc _ vpd =
@@ -73,40 +75,40 @@ viewPlaneFromDesc _ vpd =
         (vpd^.vpMaxDepth)
         <$> (v2SamplerFromDesc $ vpd^.vpPixelSampler)
 
-objectsFromDesc :: MeshGroup -> Frame -> [ObjectDesc] -> LoadM [Object]
-objectsFromDesc mg fn os = concat <$> sequenceA (objectFromDesc mg fn <$> os)
+objectsFromDesc :: ImageGroup -> MeshGroup -> Frame -> [ObjectDesc] -> LoadM [Object]
+objectsFromDesc ig mg fn os = concat <$> sequenceA (objectFromDesc ig mg fn <$> os)
 
 single :: LoadM b -> LoadM [b]
 single v = (:[]) <$> v
 
-objectFromDesc :: MeshGroup -> Frame -> ObjectDesc -> LoadM [Object]
-objectFromDesc _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc fn m
-objectFromDesc _ fn (Torus r1 r2 m) = single $ torus r1 r2 <$> materialFromDesc fn m
-objectFromDesc _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc fn m
-objectFromDesc _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc fn m
-objectFromDesc _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc fn m
-objectFromDesc _ fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc fn m
-objectFromDesc _ fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc fn m
-objectFromDesc mg fn (Mesh src m) = do
+objectFromDesc :: ImageGroup -> MeshGroup -> Frame -> ObjectDesc -> LoadM [Object]
+objectFromDesc ig _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc ig fn m
+objectFromDesc ig _ fn (Torus r1 r2 m) = single $ torus r1 r2 <$> materialFromDesc ig fn m
+objectFromDesc ig _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc ig fn m
+objectFromDesc ig _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc ig fn m
+objectFromDesc ig _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc ig fn m
+objectFromDesc ig _ fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc ig fn m
+objectFromDesc ig _ fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc ig fn m
+objectFromDesc ig mg fn (Mesh src m) = do
     mData <- case M.lookup src mg of
                Just md -> return md
                Nothing -> fail $ "Could not find preloaded mesh for " ++ show src
-    theMesh <- mesh mData <$> materialFromDesc fn m
+    theMesh <- mesh mData <$> materialFromDesc ig fn m
     return [theMesh]
-objectFromDesc mg fn (Grid os) = single $ grid <$> V.fromList <$> (concat <$> sequenceA (objectFromDesc mg fn <$> os))
-objectFromDesc mg fn (BVH os) = single $ bvh <$> (concat <$> sequenceA (objectFromDesc mg fn <$> os))
-objectFromDesc mg fn (Instances oDesc is) = do
-    v <- objectFromDesc mg fn oDesc
-    ids <- sequenceA $ instanceDataFromDesc fn <$> is
+objectFromDesc ig mg fn (Grid os) = single $ grid <$> V.fromList <$> (concat <$> sequenceA (objectFromDesc ig mg fn <$> os))
+objectFromDesc ig mg fn (BVH os) = single $ bvh <$> (concat <$> sequenceA (objectFromDesc ig mg fn <$> os))
+objectFromDesc ig mg fn (Instances oDesc is) = do
+    v <- objectFromDesc ig mg fn oDesc
+    ids <- sequenceA $ instanceDataFromDesc ig fn <$> is
     case v of
         [o] -> return $ (\(t, m) -> inst t m o) <$> ids
         _ -> error "Error: Instances of (multiple) Instances not allowed"
 
-instanceDataFromDesc :: Frame -> InstanceDesc -> LoadM (Transformation, Maybe Material)
-instanceDataFromDesc fn (ID tDesc mDesc) = do
+instanceDataFromDesc :: ImageGroup -> Frame -> InstanceDesc -> LoadM (Transformation, Maybe Material)
+instanceDataFromDesc ig fn (ID tDesc mDesc) = do
     mResult <- case mDesc of
                    Nothing -> return Nothing
-                   Just md -> Just <$> materialFromDesc fn md
+                   Just md -> Just <$> materialFromDesc ig fn md
     ts <- sequenceA (transformationFromDesc <$> tDesc)
     return (mconcat ts, mResult)
 
@@ -118,34 +120,45 @@ transformationFromDesc (RotateX v) = return $ rotateX v
 transformationFromDesc (RotateY v) = return $ rotateY v
 transformationFromDesc (RotateZ v) = return $ rotateZ v
 
-lightsFromDesc :: MeshGroup -> Frame -> [LightDesc] -> LoadM [Light]
-lightsFromDesc mg fn ls = sequenceA (lightFromDesc mg fn <$> ls)
+lightsFromDesc :: ImageGroup -> MeshGroup -> Frame -> [LightDesc] -> LoadM [Light]
+lightsFromDesc ig mg fn ls = sequenceA (lightFromDesc ig mg fn <$> ls)
 
-lightFromDesc :: MeshGroup -> Frame -> LightDesc -> LoadM Light
-lightFromDesc _ _ (Ambient s c) = return $ ambientLight s c
-lightFromDesc _ _ (AmbientOccluder c min_amt s) = return $ ambientOccluder c min_amt s
-lightFromDesc _ _ (Point sh ls c loc) = return $ pointLight sh ls c loc
-lightFromDesc _ fn (Environment sh m) = environmentLight sh <$> (materialFromDesc fn m)
-lightFromDesc mg fn (Area sh oDesc p) = do
-    v <- objectFromDesc mg fn oDesc
+lightFromDesc :: ImageGroup -> MeshGroup -> Frame -> LightDesc -> LoadM Light
+lightFromDesc _ _ _ (Ambient s c) = return $ ambientLight s c
+lightFromDesc _ _ _ (AmbientOccluder c min_amt s) = return $ ambientOccluder c min_amt s
+lightFromDesc _ _ _ (Point sh ls c loc) = return $ pointLight sh ls c loc
+lightFromDesc ig _ fn (Environment sh m) = environmentLight sh <$> (materialFromDesc ig fn m)
+lightFromDesc ig mg fn (Area sh oDesc p) = do
+    v <- objectFromDesc ig mg fn oDesc
     case v of
       [o] -> return $ areaLight sh o p
       _ -> fail "Could not create area light from multiple objects"
 
-materialFromDesc :: Frame -> MaterialDesc -> LoadM Material
-materialFromDesc _ (Matte td) = matteFromTexture <$> textureFromDesc td
-materialFromDesc fn (Mix amt m1 m2) = mix (animate fn amt) <$> materialFromDesc fn m1 <*> materialFromDesc fn m2
-materialFromDesc fn (Add m1 m2) = add <$> materialFromDesc fn m1 <*> materialFromDesc fn m2
-materialFromDesc _ (Phong t ks e) =
-    phongFromColor <$> textureFromDesc t <*> pure ks <*> pure e
-materialFromDesc _ (Reflective td ks e tr kr) =
-    reflective <$> textureFromDesc td <*> pure ks <*> pure e <*> textureFromDesc tr <*> pure kr
-materialFromDesc _ (GlossyReflective td ks e tr kr er) =
-    glossyReflective <$> textureFromDesc td <*> pure ks <*> pure e <*> textureFromDesc tr <*> pure kr <*> pure er
-materialFromDesc _ (Emissive c e) = return $ emissive c e
+materialFromDesc :: ImageGroup -> Frame -> MaterialDesc -> LoadM Material
+materialFromDesc ig _ (Matte td) = matteFromTexture <$> textureFromDesc ig td
+materialFromDesc ig fn (Mix amt m1 m2) = mix (animate fn amt) <$> materialFromDesc ig fn m1 <*> materialFromDesc ig fn m2
+materialFromDesc ig fn (Add m1 m2) = add <$> materialFromDesc ig fn m1 <*> materialFromDesc ig fn m2
+materialFromDesc ig _ (Phong t ks e) =
+    phongFromColor <$> textureFromDesc ig t <*> pure ks <*> pure e
+materialFromDesc ig _ (Reflective td ks e tr kr) =
+    reflective <$> textureFromDesc ig td <*> pure ks <*> pure e <*> textureFromDesc ig tr <*> pure kr
+materialFromDesc ig _ (GlossyReflective td ks e tr kr er) =
+    glossyReflective <$> textureFromDesc ig td <*> pure ks <*> pure e <*> textureFromDesc ig tr <*> pure kr <*> pure er
+materialFromDesc _ _ (Emissive c e) = return $ emissive c e
 
-textureFromDesc :: TextureDesc -> LoadM Texture
-textureFromDesc (ConstantColor c) = return $ constantColor c
+textureFromDesc :: ImageGroup -> TextureDesc -> LoadM Texture
+textureFromDesc _ (ConstantColor c) = return $ constantColor c
+textureFromDesc ig (ImageTexture fp mappingDesc) = do
+    img <- case M.lookup fp ig of
+        Just img -> return img
+        Nothing -> fail $ "Could not find image at path " ++ show fp
+    mapping <- case mappingDesc of
+        Nothing -> return Nothing
+        Just md -> Just <$> mappingFromDesc md
+    return $ imageTexture mapping img
+
+mappingFromDesc :: MappingDesc -> LoadM TextureMapping
+mappingFromDesc Spherical = return sphericalMapping
 
 tracerFromDesc :: TracerDesc -> LoadM Tracer
 tracerFromDesc RayCastTracer = return rayCastTracer

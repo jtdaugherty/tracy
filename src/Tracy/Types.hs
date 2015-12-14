@@ -24,6 +24,7 @@ import Foreign.Ptr
 import Data.Vector.Cereal ()
 import qualified Data.Yaml as Y
 import qualified Data.Text as T
+import Codec.Picture (Image(..), DynamicImage(..), PixelRGB8, decodePng, encodePng)
 
 type Color = Colour
 
@@ -64,7 +65,9 @@ data InfoEvent =
     | ITotalTime NominalDiffTime
     | IImageSize Width Height
     | ILoadedMeshes Count
+    | ILoadedTextures Count
     | ILoadingMeshes
+    | ILoadingTextures
     | ISettingScene
     | IStarted
     | IFinished Frame
@@ -83,15 +86,16 @@ data DataEvent =
     deriving (Eq, Show)
 
 data JobRequest =
-      SetScene RenderConfig SceneDesc MeshGroup (VU.Vector Word32) [(Row, Row)]
+      SetScene RenderConfig SceneDesc ImageGroup MeshGroup (VU.Vector Word32) [(Row, Row)]
     | SetFrame Frame
     | RenderRequest (Row, Row) (Int, Int)
     | FrameFinished
     | RenderFinished
     | Shutdown
-    deriving (Generic, Show)
+    deriving (Generic)
 
 type MeshGroup = Map MeshSource MeshData
+type ImageGroup = Map FilePath ImageData
 
 data JobResponse =
       JobError String
@@ -140,6 +144,8 @@ data Shade =
           , _material :: Material
           , _shadeRay :: !Ray
           , _depth :: !Depth
+          , _mappingU :: Double
+          , _mappingV :: Double
           }
 
 data Ray =
@@ -244,6 +250,10 @@ data Material =
 data Texture =
     Texture { _getColor :: Shade -> Color
             }
+
+data TextureMapping =
+    TextureMapping { _getTexelCoordinates :: V3 Double -> Int -> Int -> (Int, Int)
+                   }
 
 data BBox =
     BBox { _bboxP0 :: !(V3 Double)
@@ -350,6 +360,11 @@ data WorldDesc =
               }
     deriving (Eq, Show, Generic)
 
+data ImageData =
+    ImageData { _imageBuffer :: Image PixelRGB8
+              }
+    deriving (Generic)
+
 data MeshData =
     MeshData { meshVertices :: V.Vector (V3 Double, V3 Double)
              , meshFaces :: V.Vector (V.Vector Int)
@@ -387,6 +402,11 @@ data LightDesc =
 
 data TextureDesc =
     ConstantColor Color
+    | ImageTexture FilePath (Maybe MappingDesc)
+    deriving (Eq, Show, Generic)
+
+data MappingDesc =
+    Spherical
     deriving (Eq, Show, Generic)
 
 data MaterialDesc =
@@ -411,6 +431,57 @@ data CameraDesc =
                    , _thinLensSampler :: V2SamplerDesc
                    }
     deriving (Eq, Show, Generic)
+
+class HasTextureImages a where
+    findTextureImages :: a -> [FilePath]
+
+instance HasTextureImages InstanceDesc where
+    findTextureImages (ID _ (Just m)) = findTextureImages m
+    findTextureImages _ = []
+
+instance HasTextureImages a => HasTextureImages [a] where
+    findTextureImages = concat . (findTextureImages <$>)
+
+instance HasTextureImages TextureDesc where
+    findTextureImages (ImageTexture fp _) = [fp]
+    findTextureImages _ = []
+
+instance HasTextureImages MaterialDesc where
+    findTextureImages (Matte td) = findTextureImages td
+    findTextureImages (Mix _ m1 m2) = findTextureImages m1 ++ findTextureImages m2
+    findTextureImages (Add m1 m2) = findTextureImages m1 ++ findTextureImages m2
+    findTextureImages (Phong td _ _) = findTextureImages td
+    findTextureImages (Reflective t1 _ _ t2 _) = findTextureImages t1 ++ findTextureImages t2
+    findTextureImages (GlossyReflective t1 _ _ t2 _ _) = findTextureImages t1 ++ findTextureImages t2
+    findTextureImages _ = []
+
+instance HasTextureImages ObjectDesc where
+    findTextureImages (Sphere _ _ m) = findTextureImages m
+    findTextureImages (Torus _ _ m) = findTextureImages m
+    findTextureImages (ConcaveSphere _ _ m) = findTextureImages m
+    findTextureImages (Rectangle _ _ _ _ m) = findTextureImages m
+    findTextureImages (Triangle _ _ _ m) = findTextureImages m
+    findTextureImages (Box _ _ m) = findTextureImages m
+    findTextureImages (Plane _ _ m) = findTextureImages m
+    findTextureImages (Mesh _ m) = findTextureImages m
+    findTextureImages (Instances o is) = concat [ findTextureImages o
+                                                , concat $ findTextureImages <$> is
+                                                ]
+    findTextureImages (Grid os) = concat $ findTextureImages <$> os
+    findTextureImages (BVH os) = concat $ findTextureImages <$> os
+
+instance HasTextureImages LightDesc where
+    findTextureImages (Environment _ m) = findTextureImages m
+    findTextureImages _ = []
+
+instance HasTextureImages WorldDesc where
+    findTextureImages w = concat [ findTextureImages (_wdObjects w)
+                                 , findTextureImages (_wdAmbient w)
+                                 , findTextureImages (_wdLights w)
+                                 ]
+
+instance HasTextureImages SceneDesc where
+    findTextureImages sd = findTextureImages $ _sceneDescWorld sd
 
 class HasMeshes a where
     findMeshes :: a -> [MeshSource]
@@ -482,6 +553,7 @@ instance Serialize ObjectDesc where
 instance Serialize LightDesc where
 instance Serialize MaterialDesc where
 instance Serialize TextureDesc where
+instance Serialize MappingDesc where
 instance Serialize TransformationDesc where
 instance Serialize InstanceDesc where
 instance Serialize TracerDesc where
@@ -493,6 +565,15 @@ instance Serialize Transformation where
 instance Serialize AnimV3 where
 instance Serialize AnimDouble where
 instance Serialize MeshSource where
+
+instance Serialize ImageData where
+    get = ImageData <$> do
+            v <- get
+            case decodePng v of
+                Left s -> fail s
+                Right (ImageRGB8 img) -> return img
+                Right _ -> fail "Wrong image type"
+    put img = put (encodePng $ _imageBuffer img)
 
 instance Serialize MeshData where
     get = MeshData <$> (V.fromList <$> get) <*> get
@@ -602,8 +683,17 @@ instance Y.FromJSON TextureDesc where
         t <- v Y..: "type"
         case t of
             "constant" -> ConstantColor <$> v Y..: "color"
+            "image" -> ImageTexture <$> v Y..: "path"
+                                    <*> v Y..:? "mapping"
             t' -> fail $ "Unsupported texture type: " ++ (show $ T.unpack t')
     parseJSON _ = fail "Expected object for TextureDesc"
+
+instance Y.FromJSON MappingDesc where
+    parseJSON (Y.String s) =
+        case s of
+            "spherical" -> return Spherical
+            _ -> fail $ "Unknown texture mapping type: " ++ show s
+    parseJSON _ = fail "Expected string for MappingDesc"
 
 parseColorOrTexture :: T.Text -> Y.Object -> Y.Parser TextureDesc
 parseColorOrTexture pfx v =
@@ -758,6 +848,8 @@ makeLenses ''ThinLens
 makeLenses ''Tracer
 makeLenses ''TraceData
 makeLenses ''Texture
+makeLenses ''TextureMapping
+makeLenses ''ImageData
 makeLenses ''LightDir
 makeLenses ''ObjectAreaLightImpl
 makeLenses ''SampleData

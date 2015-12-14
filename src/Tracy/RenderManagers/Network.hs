@@ -25,7 +25,7 @@ networkNodeThread connStr iChan jobReq jobResp readyNotify = withContext $ \ctx 
                 Left e -> writeChan jobResp (connStr, JobError e)
                 Right r -> writeChan jobResp (connStr, r)
             case ev of
-                SetScene _ _ _ _ _ -> readyNotify >> worker
+                SetScene _ _ _ _ _ _ -> readyNotify >> worker
                 SetFrame _ -> worker
                 RenderRequest _ _ -> readyNotify >> worker
                 RenderFinished -> worker
@@ -47,7 +47,7 @@ networkRenderManager nodes iChan jobReq jobResp = do
         chanReader = do
             req <- readChan jobReq
             case req of
-                SetScene _ _ _ _ _ -> do
+                SetScene _ _ _ _ _ _ -> do
                     sendToAll req
                     chanReader
                 SetFrame _ -> do

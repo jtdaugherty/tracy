@@ -33,6 +33,7 @@ library
     diagrams-solve,
     distributive,
     either,
+    JuicyPixels,
     lens,
     linear >= 1.17,
     mtl,
@@ -96,6 +97,8 @@ library
     Tracy.RenderManagers.Local
     Tracy.RenderManagers.Network
     Tracy.Textures.ConstantColor
+    Tracy.Textures.ImageTexture
+    Tracy.TextureMapping.Spherical
 
 executable tracy-loader
   Hs-Source-Dirs:      programs

@@ -11,6 +11,7 @@ import qualified Data.Map as M
 
 import Tracy.Types
 import Tracy.Objects.Mesh (loadMeshes)
+import Tracy.Textures.ImageTexture (loadTextureImages)
 
 defaultRenderConfig :: RenderConfig
 defaultRenderConfig =
@@ -75,12 +76,15 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
                                (Height $ fromEnum $ w^.wdViewPlane.vpVres)
   writeChan dChan $ DRowRanges rowRanges
 
-  writeChan iChan ILoadingMeshes
-
   -- Preload meshes
+  writeChan iChan ILoadingMeshes
   !mg <- loadMeshes s
-
   writeChan iChan $ ILoadedMeshes $ Count $ M.size mg
+
+  -- Preload texture images
+  writeChan iChan ILoadingTextures
+  !ig <- loadTextureImages s
+  writeChan iChan $ ILoadedTextures $ Count $ M.size ig
 
   reqChan <- newChan
   respChan <- newChan
@@ -179,7 +183,7 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
 
   -- Set the scene
   writeChan iChan ISettingScene
-  writeChan reqChan $ SetScene renderCfg s mg rngSeedV rowRanges
+  writeChan reqChan $ SetScene renderCfg s ig mg rngSeedV rowRanges
 
   -- Wait for all nodes to finish setting up, then start the
   -- request/response loop

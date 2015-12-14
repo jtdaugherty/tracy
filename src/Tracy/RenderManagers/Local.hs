@@ -21,9 +21,9 @@ localNodeName :: String
 localNodeName = "<in-process renderer>"
 
 localSetSceneAndRender :: Chan JobRequest -> Chan (String, JobResponse) -> RenderConfig
-                       -> SceneDesc -> MeshGroup -> SampleData -> M.Map Int [V.Vector Int]
+                       -> SceneDesc -> ImageGroup -> MeshGroup -> SampleData -> M.Map Int [V.Vector Int]
                        -> IO ()
-localSetSceneAndRender jobReq jobResp cfg sDesc mg sampleData sampleIndexMap = do
+localSetSceneAndRender jobReq jobResp cfg sDesc ig mg sampleData sampleIndexMap = do
     let processRequests builtScene = do
           let baseWorld = builtScene^.sceneWorld
               shadowWorld = case cfg^.forceShadows of
@@ -53,7 +53,7 @@ localSetSceneAndRender jobReq jobResp cfg sDesc mg sampleData sampleIndexMap = d
           ev <- readChan jobReq
           case ev of
               SetFrame fn -> do
-                case sceneFromDesc sDesc mg fn of
+                case sceneFromDesc sDesc ig mg fn of
                     Right s -> do
                         writeChan jobResp (localNodeName, SetFrameAck)
                         continue <- processRequests s
@@ -63,7 +63,7 @@ localSetSceneAndRender jobReq jobResp cfg sDesc mg sampleData sampleIndexMap = d
                                                 )
               RenderFinished -> writeChan jobResp (localNodeName, JobAck)
               _ -> writeChan jobResp ( localNodeName
-                                     , JobError $ "Unexpected request; expected SetFrame, got " ++ (show ev)
+                                     , JobError "Unexpected request; expected SetFrame!"
                                      )
 
     processFrames
@@ -73,13 +73,13 @@ localRenderManager jobReq jobResp = do
     let waitForJob = do
           reqEv <- readChan jobReq
           case reqEv of
-              SetScene cfg sDesc mg seedV rowRanges -> do
+              SetScene cfg sDesc ig mg seedV rowRanges -> do
                   -- NOTE: this creates a "bogus" scene for frame 1 even
                   -- though we won't use this frame (necessarily). This
                   -- is just so we can get access to the samplers and
                   -- other details that will not (or should not) change
                   -- per frame.
-                  case sceneFromDesc sDesc mg (Frame 1) of
+                  case sceneFromDesc sDesc ig mg (Frame 1) of
                       Right s -> do
                           let pxSampler = s^.sceneWorld.viewPlane.pixelSampler
                               sqSampler = correlatedMultiJittered
@@ -107,7 +107,7 @@ localRenderManager jobReq jobResp = do
                                                     )
                           writeChan jobResp (localNodeName, SetSceneAck)
 
-                          localSetSceneAndRender jobReq jobResp cfg sDesc mg sampleData sampleIndexMap
+                          localSetSceneAndRender jobReq jobResp cfg sDesc ig mg sampleData sampleIndexMap
                       Left e -> writeChan jobResp (localNodeName, JobError e)
                   waitForJob
               Shutdown -> do

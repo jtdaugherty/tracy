@@ -37,6 +37,7 @@ consoleHandler chan = do
                                                  ]
                                 in output "Sampler root" msg
             ILoadedMeshes (Count n) -> outputS "Loaded meshes" n
+            ILoadedTextures (Count n) -> outputS "Loaded textures" n
             ILoadingMeshes -> output_ "Loading meshes..."
             INumObjects (Count n) -> outputS "Objects" n
             ITraceMaxDepth (Depth v) -> outputS "Maximum trace depth" v
