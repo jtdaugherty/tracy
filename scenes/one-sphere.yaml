@@ -46,6 +46,5 @@ world:
               diffuseTexture:
                   type: image
                   path: textures/marble.png
-                  mapping: spherical
               ks: 0.3
               exp: 50
