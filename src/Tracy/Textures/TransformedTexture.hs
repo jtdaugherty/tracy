@@ -4,7 +4,6 @@ module Tracy.Textures.TransformedTexture
 where
 
 import Control.Lens
-import Linear
 
 import Tracy.Types
 import Tracy.Util
@@ -17,4 +16,4 @@ transformedTexture trans t =
 transformedGetColor :: Transformation -> Texture -> Shade -> Color
 transformedGetColor trans t sh =
     let Trans (_, tInverse) = trans
-    in (t^.getColor) (sh & localHitPoint %~ (toV3 . (tInverse !*) . toV4))
+    in (t^.getColor) (sh & localHitPoint %~ (tInverse !*.))

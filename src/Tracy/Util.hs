@@ -14,6 +14,8 @@ module Tracy.Util
   , createMergeBuffer
   , mergeChunks
   , vectorFromMergeBuffer
+
+  , (!*.)
   ) where
 
 import Control.Applicative
@@ -106,3 +108,8 @@ toV4 v = V4 (v^._x) (v^._y) (v^._z) 0
 
 toV3 :: V4 a -> V3 a
 toV3 v = V3 (v^._x) (v^._y) (v^._z)
+
+(!*.) :: M44 Double -> V3 Double -> V3 Double
+m !*. v = toV3 $ m !* v'
+    where
+      v' = V4 (v^._x) (v^._y) (v^._z) 1

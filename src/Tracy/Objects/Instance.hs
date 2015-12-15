@@ -63,11 +63,6 @@ transBBox tForward box =
 
     in BBox (V3 minX minY minZ) (V3 maxX maxY maxZ)
 
-(!*.) :: M44 Double -> V3 Double -> V3 Double
-m !*. v = toV3 $ m !* v'
-    where
-      v' = V4 (v^._x) (v^._y) (v^._z) 1
-
 instShadowHit :: M44 Double -> Material -> Object -> Ray -> Maybe Double
 instShadowHit matrix mat o r = snd <$> instHit matrix mat o r
 
