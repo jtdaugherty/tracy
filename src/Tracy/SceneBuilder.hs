@@ -83,9 +83,9 @@ single :: LoadM b -> LoadM [b]
 single v = (:[]) <$> v
 
 objectFromDesc :: ImageGroup -> MeshGroup -> Frame -> ObjectDesc -> LoadM [Object]
-objectFromDesc ig _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Sphere m) = single $ sphere <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Torus r1 r2 m) = single $ torus r1 r2 <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (ConcaveSphere m) = single $ concaveSphere <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc ig fn m Nothing

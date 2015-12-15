@@ -19,8 +19,6 @@ aliases:
           *refl
     - &sphere
       type: sphere
-      center: V3 0 0 0
-      radius: 50
       material:
           *mat
 
@@ -62,8 +60,7 @@ world:
     objects:
         # Light source
         - type: concaveSphere
-          center: V3 0 0 0
-          radius: 10000
+          transform: [ScaleUni 10000]
           material:
               type: emissive
               strength: 1
@@ -75,27 +72,27 @@ world:
               type: matte
               diffuseColor: Colour 0.6 0.6 0.6
         - <<: *sphere
-          center: V3 -210 50 0
+          transform: [Translate -210 50 0, ScaleUni 50]
           material:
               <<: *mat
               amount: 1
         - <<: *sphere
-          center: V3 -105 50 0
+          transform: [Translate -105 50 0, ScaleUni 50]
           material:
               <<: *mat
               amount: 0.75
         - <<: *sphere
-          center: V3 0 50 0
+          transform: [Translate 0 50 0, ScaleUni 50]
           material:
               <<: *mat
               amount: 0.5
         - <<: *sphere
-          center: V3 105 50 0
+          transform: [Translate 105 50 0, ScaleUni 50]
           material:
               <<: *mat
               amount: 0.25
         - <<: *sphere
-          center: V3 210 50 0
+          transform: [Translate 210 50 0, ScaleUni 50]
           material:
               <<: *mat
               amount: 0

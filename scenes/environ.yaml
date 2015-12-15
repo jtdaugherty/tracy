@@ -36,8 +36,7 @@ world:
     objects:
         # Light source
         - type: concaveSphere
-          center: V3 0 0 0
-          radius: 10000
+          transform: [ScaleUni 10000]
           material:
               type: emissive
               strength: 1
@@ -49,14 +48,12 @@ world:
               type: matte
               diffuseColor: Colour 0.6 0.6 1
         - type: sphere
-          center: V3 -100 40 -10
-          radius: 40
+          transform: [Translate -100 40 -10, ScaleUni 40]
           material:
               type: matte
               diffuseColor: Colour 1 0.5098 0
         - type: sphere
-          center: V3 100 40 -10
-          radius: 40
+          transform: [Translate 100 40 -10, ScaleUni 40]
           material:
               type: matte
               diffuseColor: Colour 0 0.74902 1
@@ -68,8 +65,7 @@ world:
               type: matte
               diffuseColor: Colour 0.8 0.8 0.8
         - type: sphere
-          center: V3 0 50 0
-          radius: 50
+          transform: [Translate 0 50 0, ScaleUni 50]
           material:
               type: reflective
               baseColor: Colour 0.7 0.7 1

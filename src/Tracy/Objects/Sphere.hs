@@ -13,37 +13,41 @@ import Tracy.Constants
 import Tracy.Util
 import Tracy.BoundingBox
 
-sphere :: V3 Double -> Double -> Material -> Object
-sphere p rad m =
+sphere :: Material -> Object
+sphere m =
     Object { _objectMaterial = m
-           , _hit = hitSphere p rad m
-           , _shadow_hit = shadowHitSphere p rad
-           , _bounding_box = Just $ sphereBBox p rad
+           , _hit = hitSphere m
+           , _shadow_hit = shadowHitSphere
+           , _bounding_box = Just sphereBBox
            , _areaLightImpl = Nothing
            }
 
-concaveSphere :: V3 Double -> Double -> Material -> Object
-concaveSphere p rad m =
+concaveSphere :: Material -> Object
+concaveSphere m =
     Object { _objectMaterial = m
-           , _hit = \r -> (\(sh, f) -> (sh & normal .~ (sh^.normal ^* (-1)), f)) <$> hitSphere p rad m r
-           , _shadow_hit = shadowHitSphere p rad
-           , _bounding_box = Just $ sphereBBox p rad
+           , _hit = \r -> (\(sh, f) -> (sh & normal .~ (sh^.normal ^* (-1)), f)) <$> hitSphere m r
+           , _shadow_hit = shadowHitSphere
+           , _bounding_box = Just sphereBBox
            , _areaLightImpl = Nothing
            }
 
-sphereBBox :: V3 Double -> Double -> BBox
-sphereBBox p rad = boundingBox p0 p1
+sphereBBox :: BBox
+sphereBBox = boundingBox p0 p1
     where
       delta = 0.00001
+      rad = 1
+      p = V3 0 0 0
       p0 = V3 (p^._x - rad - delta) (p^._y - rad - delta) (p^._z - rad - delta)
       p1 = V3 (p^._x + rad + delta) (p^._y + rad + delta) (p^._z + rad + delta)
 
-shadowHitSphere :: V3 Double -> Double -> Ray -> Maybe Double
+shadowHitSphere :: Ray -> Maybe Double
 shadowHitSphere = _hitSphere
 
-_hitSphere :: V3 Double -> Double -> Ray -> Maybe Double
-_hitSphere p rad ray =
-    let temp = ray^.origin - p
+_hitSphere :: Ray -> Maybe Double
+_hitSphere ray =
+    let p = V3 0 0 0
+        rad = 1
+        temp = ray^.origin - p
         a = (ray^.direction) `dot` (ray^.direction)
         b = (2 * temp) `dot` (ray^.direction)
         c = (temp `dot` temp) - rad * rad
@@ -61,13 +65,14 @@ _hitSphere p rad ray =
                  then Just t2
                  else Nothing
 
-hitSphere :: V3 Double -> Double -> Material -> Ray
-          -> Maybe (Shade, Double)
-hitSphere p rad mat ray = makeShade <$> _hitSphere p rad ray
+hitSphere :: Material -> Ray -> Maybe (Shade, Double)
+hitSphere mat ray = makeShade <$> _hitSphere ray
     where
         makeShade tval = (sh, tval)
             where
               temp = ray^.origin - p
+              p = V3 0 0 0
+              rad = 1
               sh = defaultShade { _localHitPoint = ray^.origin + (tval *^ ray^.direction)
                                 , _material = mat
                                 , _normal = (temp + (tval *^ ray^.direction)) ^/ rad

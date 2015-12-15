@@ -82,20 +82,17 @@ world:
                     type: matte
                     diffuseColor: Colour 0 1 1
               - type: sphere
-                center: V3 50 5 0
-                radius: 10.0
+                transform: [Translate 50 5 0, ScaleUni 10]
                 material:
                     type: matte
                     diffuseColor: Colour 1 0 1
               - type: sphere
-                center: V3 -50 10 0
-                radius: 15
+                transform: [Translate -50 10 0, ScaleUni 15]
                 material:
                     type: matte
                     diffuseColor: Colour 1 1 0
               - type: sphere
-                center: V3 0 0 11
-                radius: 30.0
+                transform: [Translate 0 0 11, ScaleUni 30]
                 material:
                     type: matte
                     diffuseColor: Colour 0 0 1

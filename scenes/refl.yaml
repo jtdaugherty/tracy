@@ -74,13 +74,11 @@ world:
             - type: instances
               master:
                   type: sphere
-                  center: V3 0 40 0
-                  radius: 40
                   material:
                       type: matte
                       diffuseColor: Colour 1 1 1
               objects:
-                  - transform: [ Translate -90 0 0 ]
+                  - transform: [ Translate -90 40 0, ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 0 0 1
@@ -89,7 +87,7 @@ world:
                         reflectiveColor: Colour 1 1 1
                         kr: 0.8
                         expR: 10
-                  - transform: [ Translate 0 0 0 ]
+                  - transform: [ Translate 0 40 0, ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 1 1 1
@@ -98,7 +96,7 @@ world:
                         reflectiveColor: Colour 1 1 1
                         kr: 0.9
                         expR: 500
-                  - transform: [ Translate 90 0 0 ]
+                  - transform: [ Translate 90 40 0, ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 1 1 0
@@ -107,7 +105,7 @@ world:
                         reflectiveColor: Colour 1 1 1
                         kr: 0.8
                         expR: 100000
-                  - transform: [ Translate (-90) 0 90 ]
+                  - transform: [ Translate (-90) 40 90, ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 1 0 0
@@ -116,7 +114,7 @@ world:
                         reflectiveColor: Colour 1 1 1
                         kr: 0.8
                         expR: 10
-                  - transform: [ Translate 0 0 90 ]
+                  - transform: [ Translate 0 40 90, ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 0 1 0
@@ -125,7 +123,7 @@ world:
                         reflectiveColor: Colour 1 1 1
                         kr: 0.9
                         expR: 500
-                  - transform: [ Translate 90 0 90 ]
+                  - transform: [ Translate 90 40 90, ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 1 0 1
@@ -134,7 +132,7 @@ world:
                         reflectiveColor: Colour 1 1 1
                         kr: 0.8
                         expR: 100000
-                  - transform: [ Translate (-90) 0 (-90) ]
+                  - transform: [ Translate (-90) 40 (-90), ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 1 1 0
@@ -143,7 +141,7 @@ world:
                         reflectiveColor: Colour 1 1 1
                         kr: 0.9
                         expR: 10
-                  - transform: [ Translate 0 0 (-90) ]
+                  - transform: [ Translate 0 40 (-90), ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 0 0 0
@@ -152,7 +150,7 @@ world:
                         reflectiveColor: Colour 1 1 1
                         kr: 0.9
                         expR: 500
-                  - transform: [ Translate 90 0 (-90) ]
+                  - transform: [ Translate 90 40 (-90), ScaleUni 40 ]
                     material:
                         type: glossyReflective
                         baseColor: Colour 0 1 1

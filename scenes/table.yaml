@@ -48,8 +48,7 @@ world:
         - type: grid
           objects:
               - type: sphere
-                center: V3 0.10225 4.449909 -1.18322
-                radius: 0.811
+                transform: [Translate 0.10225 4.449909 -1.18322, ScaleUni 0.811]
                 material:
                     type: reflective
                     baseColor: Colour 0.3 0.3 0.3

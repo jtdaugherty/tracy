@@ -372,9 +372,9 @@ data MeshData =
     deriving (Eq, Show)
 
 data ObjectDesc =
-      Sphere (V3 Double) Double MaterialDesc
+      Sphere MaterialDesc
     | Torus Double Double MaterialDesc
-    | ConcaveSphere (V3 Double) Double MaterialDesc
+    | ConcaveSphere MaterialDesc
     | Rectangle (V3 Double) (V3 Double) (V3 Double) Bool MaterialDesc
     | Triangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
     | Box (V3 Double) (V3 Double) MaterialDesc
@@ -456,9 +456,9 @@ instance HasTextureImages MaterialDesc where
     findTextureImages _ = []
 
 instance HasTextureImages ObjectDesc where
-    findTextureImages (Sphere _ _ m) = findTextureImages m
+    findTextureImages (Sphere m) = findTextureImages m
     findTextureImages (Torus _ _ m) = findTextureImages m
-    findTextureImages (ConcaveSphere _ _ m) = findTextureImages m
+    findTextureImages (ConcaveSphere m) = findTextureImages m
     findTextureImages (Rectangle _ _ _ _ m) = findTextureImages m
     findTextureImages (Triangle _ _ _ m) = findTextureImages m
     findTextureImages (Box _ _ m) = findTextureImages m
@@ -773,9 +773,7 @@ instance Y.FromJSON ObjectDesc where
                 "torus" -> Torus <$> v Y..: "outerRadius"
                                  <*> v Y..: "innerRadius"
                                  <*> (pure mat)
-                "sphere" -> Sphere <$> v Y..: "center"
-                                   <*> v Y..: "radius"
-                                   <*> (pure mat)
+                "sphere" -> Sphere <$> (pure mat)
                 "plane" -> Plane <$> v Y..: "origin"
                                  <*> v Y..: "normal"
                                  <*> (pure mat)
@@ -793,9 +791,7 @@ instance Y.FromJSON ObjectDesc where
                                     <*> v Y..: "up"
                                     <*> (v Y..: "doubleSided" <|> pure True)
                                     <*> (pure mat)
-                "concaveSphere" -> ConcaveSphere <$> v Y..: "center"
-                                                 <*> v Y..: "radius"
-                                                 <*> (pure mat)
+                "concaveSphere" -> ConcaveSphere <$> (pure mat)
                 t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')
 
             (trans::Maybe [TransformationDesc]) <- v Y..:? "transform"
