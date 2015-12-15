@@ -28,6 +28,8 @@ Features:
    - Glossy specular reflection
    - Mix (blended materials)
    - Image textures
+   - Planar checkers
+   - Spherical checkers
  * Texture mapping:
    - Rectangular
    - Tiled (planar)
