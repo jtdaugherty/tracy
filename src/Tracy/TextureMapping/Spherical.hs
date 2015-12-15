@@ -12,8 +12,9 @@ sphericalMapping :: TextureMapping
 sphericalMapping = TextureMapping doMapping
 
 doMapping :: V3 Double -> Int -> Int -> (Int, Int)
-doMapping hp imgHres imgVres =
-    let theta = acos (hp^._y)
+doMapping hp' imgHres imgVres =
+    let hp = signorm hp'
+        theta = acos (hp^._y)
         phi' = atan2 (hp^._x) (hp^._z)
         phi = if phi' < 0
               then phi' + (2 * pi)

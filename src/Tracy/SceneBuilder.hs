@@ -34,6 +34,7 @@ import Tracy.Textures.ConstantColor
 import Tracy.Textures.TransformedTexture
 import Tracy.Textures.ImageTexture
 import Tracy.Textures.PlaneChecker
+import Tracy.Textures.SphereChecker
 import Tracy.TextureMapping.Spherical
 import Tracy.TextureMapping.Tile
 
@@ -151,7 +152,14 @@ materialFromDesc _ _ (Emissive c e) _ = return $ emissive c e
 
 textureFromDesc :: ImageGroup -> TextureDesc -> Maybe Transformation -> LoadM Texture
 textureFromDesc _ (ConstantColor c) _ = return $ constantColor c
-textureFromDesc _ (PlaneChecker sz) _ = return $ planeChecker sz
+textureFromDesc _ (PlaneChecker sz) trans =
+    case trans of
+        Nothing -> return $ planeChecker sz
+        Just tr -> return $ transformedTexture tr $ planeChecker sz
+textureFromDesc _ (SphereChecker cnt) trans = do
+    case trans of
+        Nothing -> return $ sphereChecker cnt
+        Just tr -> return $ transformedTexture tr $ sphereChecker cnt
 textureFromDesc ig (ImageTexture fp mappingDesc) trans = do
     img <- case M.lookup fp ig of
         Just img -> return img

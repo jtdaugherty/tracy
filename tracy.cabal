@@ -98,6 +98,7 @@ library
     Tracy.RenderManagers.Network
     Tracy.Textures.ConstantColor
     Tracy.Textures.PlaneChecker
+    Tracy.Textures.SphereChecker
     Tracy.Textures.TransformedTexture
     Tracy.Textures.ImageTexture
     Tracy.TextureMapping.Spherical

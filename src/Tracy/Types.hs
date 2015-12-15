@@ -404,6 +404,7 @@ data TextureDesc =
     ConstantColor Color
     | ImageTexture FilePath (Maybe MappingDesc)
     | PlaneChecker Double
+    | SphereChecker Double
     deriving (Eq, Show, Generic)
 
 data MappingDesc =
@@ -686,6 +687,7 @@ instance Y.FromJSON TextureDesc where
         case t of
             "constant" -> ConstantColor <$> v Y..: "color"
             "planeChecker" -> PlaneChecker <$> v Y..: "size"
+            "sphereChecker" -> SphereChecker <$> v Y..: "count"
             "image" -> ImageTexture <$> v Y..: "path"
                                     <*> v Y..:? "mapping"
             t' -> fail $ "Unsupported texture type: " ++ (show $ T.unpack t')
