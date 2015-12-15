@@ -97,6 +97,7 @@ library
     Tracy.RenderManagers.Local
     Tracy.RenderManagers.Network
     Tracy.Textures.ConstantColor
+    Tracy.Textures.TransformedTexture
     Tracy.Textures.ImageTexture
     Tracy.TextureMapping.Spherical
 

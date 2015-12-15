@@ -31,6 +31,7 @@ import Tracy.Objects.Mesh
 import Tracy.Objects.Instance
 
 import Tracy.Textures.ConstantColor
+import Tracy.Textures.TransformedTexture
 import Tracy.Textures.ImageTexture
 import Tracy.TextureMapping.Spherical
 
@@ -82,18 +83,18 @@ single :: LoadM b -> LoadM [b]
 single v = (:[]) <$> v
 
 objectFromDesc :: ImageGroup -> MeshGroup -> Frame -> ObjectDesc -> LoadM [Object]
-objectFromDesc ig _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc ig fn m
-objectFromDesc ig _ fn (Torus r1 r2 m) = single $ torus r1 r2 <$> materialFromDesc ig fn m
-objectFromDesc ig _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc ig fn m
-objectFromDesc ig _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc ig fn m
-objectFromDesc ig _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc ig fn m
-objectFromDesc ig _ fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc ig fn m
-objectFromDesc ig _ fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc ig fn m
+objectFromDesc ig _ fn (Sphere c r m) = single $ sphere c r <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Torus r1 r2 m) = single $ torus r1 r2 <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (ConcaveSphere c r m) = single $ concaveSphere c r <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Box v1 v2 m) = single $ box v1 v2 <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig mg fn (Mesh src m) = do
     mData <- case M.lookup src mg of
                Just md -> return md
                Nothing -> fail $ "Could not find preloaded mesh for " ++ show src
-    theMesh <- mesh mData <$> materialFromDesc ig fn m
+    theMesh <- mesh mData <$> materialFromDesc ig fn m Nothing
     return [theMesh]
 objectFromDesc ig mg fn (Grid os) = single $ grid <$> V.fromList <$> (concat <$> sequenceA (objectFromDesc ig mg fn <$> os))
 objectFromDesc ig mg fn (BVH os) = single $ bvh <$> (concat <$> sequenceA (objectFromDesc ig mg fn <$> os))
@@ -106,10 +107,10 @@ objectFromDesc ig mg fn (Instances oDesc is) = do
 
 instanceDataFromDesc :: ImageGroup -> Frame -> InstanceDesc -> LoadM (Transformation, Maybe Material)
 instanceDataFromDesc ig fn (ID tDesc mDesc) = do
+    ts <- sequenceA (transformationFromDesc <$> tDesc)
     mResult <- case mDesc of
                    Nothing -> return Nothing
-                   Just md -> Just <$> materialFromDesc ig fn md
-    ts <- sequenceA (transformationFromDesc <$> tDesc)
+                   Just md -> Just <$> materialFromDesc ig fn md (Just $ mconcat ts)
     return (mconcat ts, mResult)
 
 transformationFromDesc :: TransformationDesc -> LoadM Transformation
@@ -127,35 +128,37 @@ lightFromDesc :: ImageGroup -> MeshGroup -> Frame -> LightDesc -> LoadM Light
 lightFromDesc _ _ _ (Ambient s c) = return $ ambientLight s c
 lightFromDesc _ _ _ (AmbientOccluder c min_amt s) = return $ ambientOccluder c min_amt s
 lightFromDesc _ _ _ (Point sh ls c loc) = return $ pointLight sh ls c loc
-lightFromDesc ig _ fn (Environment sh m) = environmentLight sh <$> (materialFromDesc ig fn m)
+lightFromDesc ig _ fn (Environment sh m) = environmentLight sh <$> (materialFromDesc ig fn m Nothing)
 lightFromDesc ig mg fn (Area sh oDesc p) = do
     v <- objectFromDesc ig mg fn oDesc
     case v of
       [o] -> return $ areaLight sh o p
       _ -> fail "Could not create area light from multiple objects"
 
-materialFromDesc :: ImageGroup -> Frame -> MaterialDesc -> LoadM Material
-materialFromDesc ig _ (Matte td) = matteFromTexture <$> textureFromDesc ig td
-materialFromDesc ig fn (Mix amt m1 m2) = mix (animate fn amt) <$> materialFromDesc ig fn m1 <*> materialFromDesc ig fn m2
-materialFromDesc ig fn (Add m1 m2) = add <$> materialFromDesc ig fn m1 <*> materialFromDesc ig fn m2
-materialFromDesc ig _ (Phong t ks e) =
-    phongFromColor <$> textureFromDesc ig t <*> pure ks <*> pure e
-materialFromDesc ig _ (Reflective td ks e tr kr) =
-    reflective <$> textureFromDesc ig td <*> pure ks <*> pure e <*> textureFromDesc ig tr <*> pure kr
-materialFromDesc ig _ (GlossyReflective td ks e tr kr er) =
-    glossyReflective <$> textureFromDesc ig td <*> pure ks <*> pure e <*> textureFromDesc ig tr <*> pure kr <*> pure er
-materialFromDesc _ _ (Emissive c e) = return $ emissive c e
+materialFromDesc :: ImageGroup -> Frame -> MaterialDesc -> Maybe Transformation -> LoadM Material
+materialFromDesc ig _ (Matte td) trans = matteFromTexture <$> textureFromDesc ig td trans
+materialFromDesc ig fn (Mix amt m1 m2) trans = mix (animate fn amt) <$> materialFromDesc ig fn m1 trans <*> materialFromDesc ig fn m2 trans
+materialFromDesc ig fn (Add m1 m2) trans = add <$> materialFromDesc ig fn m1 trans <*> materialFromDesc ig fn m2 trans
+materialFromDesc ig _ (Phong t ks e) trans =
+    phongFromColor <$> textureFromDesc ig t trans <*> pure ks <*> pure e
+materialFromDesc ig _ (Reflective td ks e tr kr) trans =
+    reflective <$> textureFromDesc ig td trans <*> pure ks <*> pure e <*> textureFromDesc ig tr trans <*> pure kr
+materialFromDesc ig _ (GlossyReflective td ks e tr kr er) trans =
+    glossyReflective <$> textureFromDesc ig td trans <*> pure ks <*> pure e <*> textureFromDesc ig tr trans <*> pure kr <*> pure er
+materialFromDesc _ _ (Emissive c e) _ = return $ emissive c e
 
-textureFromDesc :: ImageGroup -> TextureDesc -> LoadM Texture
-textureFromDesc _ (ConstantColor c) = return $ constantColor c
-textureFromDesc ig (ImageTexture fp mappingDesc) = do
+textureFromDesc :: ImageGroup -> TextureDesc -> Maybe Transformation -> LoadM Texture
+textureFromDesc _ (ConstantColor c) _ = return $ constantColor c
+textureFromDesc ig (ImageTexture fp mappingDesc) trans = do
     img <- case M.lookup fp ig of
         Just img -> return img
         Nothing -> fail $ "Could not find image at path " ++ show fp
     mapping <- case mappingDesc of
         Nothing -> return Nothing
         Just md -> Just <$> mappingFromDesc md
-    return $ imageTexture mapping img
+    case trans of
+        Nothing -> return $ imageTexture mapping img
+        Just tr -> return $ transformedTexture tr $ imageTexture mapping img
 
 mappingFromDesc :: MappingDesc -> LoadM TextureMapping
 mappingFromDesc Spherical = return sphericalMapping

@@ -801,7 +801,7 @@ instance Y.FromJSON ObjectDesc where
             (trans::Maybe [TransformationDesc]) <- v Y..:? "transform"
             case trans of
                 Nothing -> return obj
-                Just tds -> return $ Instances obj [ID tds Nothing]
+                Just tds -> return $ Instances obj [ID tds (Just mat)]
 
     parseJSON _ = fail "Expected object for ObjectDesc"
 
