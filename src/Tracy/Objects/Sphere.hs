@@ -26,9 +26,9 @@ concaveSphere :: Material -> Object
 concaveSphere m = (sphere m) { _hit = concaveSphereHit m }
 
 concaveSphereHit :: Material -> Ray -> Maybe (Shade, Double)
-concaveSphereHit m r = flipNormal <$> hitSphere m r
+concaveSphereHit m r = concaveNormal <$> hitSphere m r
     where
-        flipNormal (sh, t) = (sh & normal %~ (^* (-1)), t)
+        concaveNormal (sh, t) = (sh & normal %~ (^* (-1)), t)
 
 sphereBBox :: BBox
 sphereBBox = boundingBox p0 p1
