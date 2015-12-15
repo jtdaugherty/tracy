@@ -377,7 +377,7 @@ data ObjectDesc =
     | ConcaveSphere MaterialDesc
     | Rectangle (V3 Double) (V3 Double) (V3 Double) Bool MaterialDesc
     | Triangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
-    | Box (V3 Double) (V3 Double) MaterialDesc
+    | Box MaterialDesc
     | Plane (V3 Double) (V3 Double) MaterialDesc
     | Mesh MeshSource MaterialDesc
     | Instances ObjectDesc [InstanceDesc]
@@ -461,7 +461,7 @@ instance HasTextureImages ObjectDesc where
     findTextureImages (ConcaveSphere m) = findTextureImages m
     findTextureImages (Rectangle _ _ _ _ m) = findTextureImages m
     findTextureImages (Triangle _ _ _ m) = findTextureImages m
-    findTextureImages (Box _ _ m) = findTextureImages m
+    findTextureImages (Box m) = findTextureImages m
     findTextureImages (Plane _ _ m) = findTextureImages m
     findTextureImages (Mesh _ m) = findTextureImages m
     findTextureImages (Instances o is) = concat [ findTextureImages o
@@ -777,9 +777,7 @@ instance Y.FromJSON ObjectDesc where
                 "plane" -> Plane <$> v Y..: "origin"
                                  <*> v Y..: "normal"
                                  <*> (pure mat)
-                "box" -> Box <$> v Y..: "from"
-                             <*> v Y..: "to"
-                             <*> (pure mat)
+                "box" -> Box <$> (pure mat)
                 "tri" -> Triangle <$> v Y..: "v1"
                                   <*> v Y..: "v2"
                                   <*> v Y..: "v3"

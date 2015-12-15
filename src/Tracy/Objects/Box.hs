@@ -9,9 +9,9 @@ import Tracy.Types
 import Tracy.BoundingBox
 import Tracy.Util
 
-box :: V3 Double -> V3 Double -> Material -> Object
-box p0 p1 m =
-    let bbox = boundingBox p0 p1
+box :: Material -> Object
+box m =
+    let bbox = boundingBox (V3 (-0.5) (-0.5) (-0.5)) (V3 0.5 0.5 0.5)
     in Object { _objectMaterial = m
               , _hit = hitBox bbox m
               , _shadow_hit = shadowHitBox bbox

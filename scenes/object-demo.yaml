@@ -58,26 +58,22 @@ world:
                     type: matte
                     diffuseColor: Colour 1 1 1
               - type: box
-                from: V3 -150 0 -75
-                to: V3 -100 75 -25
+                transform: [Translate -122 33 -75, Scale 50 75 25]
                 material:
                     type: matte
                     diffuseColor: Colour 1 1 1
               - type: box
-                from: V3 -150 0 25
-                to: V3 -100 75 75
+                transform: [Translate -122 33 25, Scale 50 75 25]
                 material:
                     type: matte
                     diffuseColor: Colour 1 1 0
               - type: box
-                from: V3 100 0 -100
-                to: V3 150 50 -50
+                transform: [Translate 125 25 -100, ScaleUni 50]
                 material:
                     type: matte
                     diffuseColor: Colour 1 0 0
               - type: box
-                from: V3 100 0 0
-                to: V3 150 50 50
+                transform: [Translate 125 25 0, ScaleUni 50]
                 material:
                     type: matte
                     diffuseColor: Colour 0 1 1
