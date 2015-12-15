@@ -39,9 +39,13 @@ world:
     objects:
         - type: sphere
           center: V3 0 0 0
-          radius: 85.0
+          radius: 1
+          transform: [ScaleUni 40.0]
           material:
               type: phong
-              diffuseColor: Colour 1 0 0
-              ks: 0.5
+              diffuseTexture:
+                  type: image
+                  path: textures/marble.png
+                  mapping: spherical
+              ks: 0.3
               exp: 50
