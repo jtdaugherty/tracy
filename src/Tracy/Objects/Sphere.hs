@@ -69,7 +69,17 @@ hitSphere mat ray = makeShade <$> _hitSphere ray
     where
         makeShade tval = (sh, tval)
             where
-              sh = defaultShade { _localHitPoint = ray^.origin + (tval *^ ray^.direction)
+              hp = ray^.origin + (tval *^ ray^.direction)
+              theta = acos (hp^._y)
+              phi' = atan2 (hp^._x) (hp^._z)
+              phi = if phi' < 0
+                    then phi' + (2 * pi)
+                    else phi'
+              u = phi * invTWOPI
+              v = 1 - theta * invPI
+              sh = defaultShade { _localHitPoint = hp
                                 , _material = mat
-                                , _normal = (ray^.origin + (tval *^ ray^.direction))
+                                , _normal = hp
+                                , _mappingU = u
+                                , _mappingV = v
                                 }
