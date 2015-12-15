@@ -27,6 +27,11 @@ Features:
    - Perfect specular reflection
    - Glossy specular reflection
    - Mix (blended materials)
+   - Image textures
+ * Texture mapping:
+   - Rectangular
+   - Tiled (planar)
+   - Spherical
  * Object instancing
  * Object transformations
  * Samplers:
