@@ -55,8 +55,7 @@ world:
               kr: 0.5
               expR: 70
         - type: plane
-          origin: V3 0 0.002 0
-          normal: V3 0 1 0
+          transform: [Translate 0 0.002 0]
           material:
               type: matte
               diffuseColor: Colour 1 1 1

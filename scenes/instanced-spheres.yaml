@@ -38,8 +38,7 @@ world:
 
     objects:
         - type: plane
-          origin: V3 0 -100 0
-          normal: V3 0 1 0
+          transform: [Translate 0 -100 0]
           material:
               type: matte
               diffuseColor: Colour 1 1 1

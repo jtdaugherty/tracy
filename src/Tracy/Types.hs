@@ -378,7 +378,7 @@ data ObjectDesc =
     | Rectangle (V3 Double) (V3 Double) (V3 Double) Bool MaterialDesc
     | Triangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
     | Box MaterialDesc
-    | Plane (V3 Double) (V3 Double) MaterialDesc
+    | Plane MaterialDesc
     | Mesh MeshSource MaterialDesc
     | Instances ObjectDesc [InstanceDesc]
     | Grid [ObjectDesc]
@@ -462,7 +462,7 @@ instance HasTextureImages ObjectDesc where
     findTextureImages (Rectangle _ _ _ _ m) = findTextureImages m
     findTextureImages (Triangle _ _ _ m) = findTextureImages m
     findTextureImages (Box m) = findTextureImages m
-    findTextureImages (Plane _ _ m) = findTextureImages m
+    findTextureImages (Plane m) = findTextureImages m
     findTextureImages (Mesh _ m) = findTextureImages m
     findTextureImages (Instances o is) = concat [ findTextureImages o
                                                 , concat $ findTextureImages <$> is
@@ -774,9 +774,7 @@ instance Y.FromJSON ObjectDesc where
                                  <*> v Y..: "innerRadius"
                                  <*> (pure mat)
                 "sphere" -> Sphere <$> (pure mat)
-                "plane" -> Plane <$> v Y..: "origin"
-                                 <*> v Y..: "normal"
-                                 <*> (pure mat)
+                "plane" -> Plane <$> pure mat
                 "box" -> Box <$> (pure mat)
                 "tri" -> Triangle <$> v Y..: "v1"
                                   <*> v Y..: "v2"

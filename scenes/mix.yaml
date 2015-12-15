@@ -66,8 +66,6 @@ world:
               strength: 1
               color: Colour 1 1 1
         - type: plane
-          origin: V3 0 0 0
-          normal: V3 0 1 0
           material:
               type: matte
               diffuseColor: Colour 0.6 0.6 0.6

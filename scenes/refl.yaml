@@ -59,8 +59,6 @@ world:
               color: Colour 1 1 1
               strength: 3
         - type: plane
-          origin: V3 0 0 0
-          normal: V3 0 1 0
           material:
               type: glossyReflective
               baseColor: Colour 1 1 1

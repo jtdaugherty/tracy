@@ -89,7 +89,7 @@ objectFromDesc ig _ fn (ConcaveSphere m) = single $ concaveSphere <$> materialFr
 objectFromDesc ig _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Box m) = single $ box <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (Plane c norm m) = single $ plane c norm <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Plane m) = single $ plane <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig mg fn (Mesh src m) = do
     mData <- case M.lookup src mg of
                Just md -> return md
