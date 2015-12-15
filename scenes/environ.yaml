@@ -56,9 +56,7 @@ world:
               type: matte
               diffuseColor: Colour 0 0.74902 1
         - type: rect
-          corner: V3 -150 0 -50
-          over: V3 300 0 0
-          up: V3 0 200 0
+          transform: [Translate 0 0 -50, RotateX 1.57, Scale 200 1 200]
           material:
               type: matte
               diffuseColor: Colour 0.8 0.8 0.8

@@ -375,7 +375,7 @@ data ObjectDesc =
       Sphere MaterialDesc
     | Torus Double Double MaterialDesc
     | ConcaveSphere MaterialDesc
-    | Rectangle (V3 Double) (V3 Double) (V3 Double) Bool MaterialDesc
+    | Rectangle Bool MaterialDesc
     | Triangle (V3 Double) (V3 Double) (V3 Double) MaterialDesc
     | Box MaterialDesc
     | Plane MaterialDesc
@@ -459,7 +459,7 @@ instance HasTextureImages ObjectDesc where
     findTextureImages (Sphere m) = findTextureImages m
     findTextureImages (Torus _ _ m) = findTextureImages m
     findTextureImages (ConcaveSphere m) = findTextureImages m
-    findTextureImages (Rectangle _ _ _ _ m) = findTextureImages m
+    findTextureImages (Rectangle _ m) = findTextureImages m
     findTextureImages (Triangle _ _ _ m) = findTextureImages m
     findTextureImages (Box m) = findTextureImages m
     findTextureImages (Plane m) = findTextureImages m
@@ -782,10 +782,7 @@ instance Y.FromJSON ObjectDesc where
                                   <*> (pure mat)
                 "mesh" -> Mesh <$> v Y..: "path"
                                <*> (pure mat)
-                "rect" -> Rectangle <$> v Y..: "corner"
-                                    <*> v Y..: "over"
-                                    <*> v Y..: "up"
-                                    <*> (v Y..: "doubleSided" <|> pure True)
+                "rect" -> Rectangle <$> (v Y..: "doubleSided" <|> pure True)
                                     <*> (pure mat)
                 "concaveSphere" -> ConcaveSphere <$> (pure mat)
                 t' -> fail $ "Unsupported object type: " ++ (show $ T.unpack t')

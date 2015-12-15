@@ -30,9 +30,7 @@ world:
 
     objects:
         - type: rect
-          corner: V3 -2.5 8 0
-          over: V3 5 0 0
-          up: V3 0 0 5
+          transform: [Translate 0 8 0, ScaleUni 2.5, RotateX 3.1415]
           doubleSided: false
           material:
               type: emissive

@@ -86,7 +86,7 @@ objectFromDesc :: ImageGroup -> MeshGroup -> Frame -> ObjectDesc -> LoadM [Objec
 objectFromDesc ig _ fn (Sphere m) = single $ sphere <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Torus r1 r2 m) = single $ torus r1 r2 <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (ConcaveSphere m) = single $ concaveSphere <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (Rectangle p0 a b dbl m) = single $ rectangle p0 a b dbl <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Rectangle dbl m) = single $ rectangle dbl <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Box m) = single $ box <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig _ fn (Plane m) = single $ plane <$> materialFromDesc ig fn m Nothing

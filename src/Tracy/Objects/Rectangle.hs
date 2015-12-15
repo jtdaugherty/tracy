@@ -23,9 +23,12 @@ data Rect =
          , rectDoubleSided :: Bool
          }
 
-rectangle :: V3 Double -> V3 Double -> V3 Double -> Bool -> Material -> Object
-rectangle p a b dbl mat =
+rectangle :: Bool -> Material -> Object
+rectangle dbl mat =
     let area = norm a * norm b
+        p = V3 (-1) 0 (-1)
+        a = V3 0 0 2
+        b = V3 2 0 0
         r = Rect { rectP0 = p
                  , rectA = a
                  , rectB = b

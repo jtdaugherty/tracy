@@ -1,7 +1,7 @@
 tracer: AreaLightTracer
 camera:
-    eye: V3 -0.1 0.1 0.2
-    lookAt: V3 0 0.15 0
+    eye: V3 -100 100 200
+    lookAt: V3 0 150 0
     up: V3 0 1 0
     exposure: 1.0
     zoom: 1.0
@@ -34,18 +34,22 @@ world:
           shadows: true
           object:
               type: rect
-              corner: V3 0 1 0
-              over: V3 0.1 0 0
-              up: V3 0 0 0.1
-              doubleSided: false
+              transform: [Translate 0 1000 0, ScaleUni 500, RotateX 3.14]
+              doubleSided: true
               material:
                   type: emissive
-                  diffuseColor: Colour 1 1 1
-                  strength: 200
+                  color: Colour 1 1 1
+                  strength: 500000
 
     objects:
+        - type: plane
+          transform: [Translate 0 0 0]
+          material:
+              type: matte
+              diffuseColor: Colour 1 1 1
         - type: mesh
           path: meshes/dragon.ply
+          transform: [ScaleUni 1000]
           material:
               type: glossyReflective
               ks: 0.5
@@ -54,8 +58,3 @@ world:
               reflectiveColor: Colour 1 1 1
               kr: 0.5
               expR: 70
-        - type: plane
-          transform: [Translate 0 0.002 0]
-          material:
-              type: matte
-              diffuseColor: Colour 1 1 1

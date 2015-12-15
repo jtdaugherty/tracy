@@ -40,9 +40,7 @@ world:
           invArea: 200000
           object:
               type: rect
-              corner: V3 -100 300 0
-              over: V3 200 0 0
-              up: V3 0.0 30.901697 95.10565
+              transform: [Translate -100 300 0, ScaleUni 100, RotateX 3.1415]
               doubleSided: false
               material:
                   type: emissive
@@ -51,9 +49,7 @@ world:
 
     objects:
         - type: rect
-          corner: V3 -100 300 0
-          over: V3 200 0 0
-          up: V3 0.0 30.901697 95.10565
+          transform: [Translate -100 300 0, ScaleUni 100, RotateX 3.1415]
           material:
               type: emissive
               color: Colour 1 1 1
