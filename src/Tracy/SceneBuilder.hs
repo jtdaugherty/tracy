@@ -86,21 +86,30 @@ single :: LoadM b -> LoadM [b]
 single v = (:[]) <$> v
 
 objectFromDesc :: ImageGroup -> MeshGroup -> Frame -> ObjectDesc -> LoadM [Object]
-objectFromDesc ig _ fn (Sphere m) = single $ sphere <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (Torus r1 r2 m) = single $ torus r1 r2 <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (ConcaveSphere m) = single $ concaveSphere <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (Rectangle dbl m) = single $ rectangle dbl <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (Triangle v1 v2 v3 m) = single $ tri v1 v2 v3 <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (Box m) = single $ box <$> materialFromDesc ig fn m Nothing
-objectFromDesc ig _ fn (Plane m) = single $ plane <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Sphere m) =
+    single $ sphere <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Torus r1 r2 m) =
+    single $ torus r1 r2 <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (ConcaveSphere m) =
+    single $ concaveSphere <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Rectangle dbl m) =
+    single $ rectangle dbl <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Triangle v1 v2 v3 m) =
+    single $ tri v1 v2 v3 <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Box m) =
+    single $ box <$> materialFromDesc ig fn m Nothing
+objectFromDesc ig _ fn (Plane m) =
+    single $ plane <$> materialFromDesc ig fn m Nothing
 objectFromDesc ig mg fn (Mesh src m) = do
     mData <- case M.lookup src mg of
                Just md -> return md
                Nothing -> fail $ "Could not find preloaded mesh for " ++ show src
     theMesh <- mesh mData <$> materialFromDesc ig fn m Nothing
     return [theMesh]
-objectFromDesc ig mg fn (Grid os) = single $ grid <$> V.fromList <$> (concat <$> sequenceA (objectFromDesc ig mg fn <$> os))
-objectFromDesc ig mg fn (BVH os) = single $ bvh <$> (concat <$> sequenceA (objectFromDesc ig mg fn <$> os))
+objectFromDesc ig mg fn (Grid os) =
+    single $ grid <$> V.fromList <$> (concat <$> sequenceA (objectFromDesc ig mg fn <$> os))
+objectFromDesc ig mg fn (BVH os) =
+    single $ bvh <$> (concat <$> sequenceA (objectFromDesc ig mg fn <$> os))
 objectFromDesc ig mg fn (Instances oDesc is) = do
     v <- objectFromDesc ig mg fn oDesc
     ids <- sequenceA $ instanceDataFromDesc ig fn <$> is
@@ -128,10 +137,14 @@ lightsFromDesc :: ImageGroup -> MeshGroup -> Frame -> [LightDesc] -> LoadM [Ligh
 lightsFromDesc ig mg fn ls = sequenceA (lightFromDesc ig mg fn <$> ls)
 
 lightFromDesc :: ImageGroup -> MeshGroup -> Frame -> LightDesc -> LoadM Light
-lightFromDesc _ _ _ (Ambient s c) = return $ ambientLight s c
-lightFromDesc _ _ _ (AmbientOccluder c min_amt s) = return $ ambientOccluder c min_amt s
-lightFromDesc _ _ _ (Point sh ls c loc) = return $ pointLight sh ls c loc
-lightFromDesc ig _ fn (Environment sh m) = environmentLight sh <$> (materialFromDesc ig fn m Nothing)
+lightFromDesc _ _ _ (Ambient s c) =
+    return $ ambientLight s c
+lightFromDesc _ _ _ (AmbientOccluder c min_amt s) =
+    return $ ambientOccluder c min_amt s
+lightFromDesc _ _ _ (Point sh ls c loc) =
+    return $ pointLight sh ls c loc
+lightFromDesc ig _ fn (Environment sh m) =
+    environmentLight sh <$> (materialFromDesc ig fn m Nothing)
 lightFromDesc ig mg fn (Area sh oDesc p) = do
     v <- objectFromDesc ig mg fn oDesc
     case v of
@@ -139,9 +152,12 @@ lightFromDesc ig mg fn (Area sh oDesc p) = do
       _ -> fail "Could not create area light from multiple objects"
 
 materialFromDesc :: ImageGroup -> Frame -> MaterialDesc -> Maybe Transformation -> LoadM Material
-materialFromDesc ig _ (Matte td) trans = matteFromTexture <$> textureFromDesc ig td trans
-materialFromDesc ig fn (Mix amt m1 m2) trans = mix (animate fn amt) <$> materialFromDesc ig fn m1 trans <*> materialFromDesc ig fn m2 trans
-materialFromDesc ig fn (Add m1 m2) trans = add <$> materialFromDesc ig fn m1 trans <*> materialFromDesc ig fn m2 trans
+materialFromDesc ig _ (Matte td) trans =
+    matteFromTexture <$> textureFromDesc ig td trans
+materialFromDesc ig fn (Mix amt m1 m2) trans =
+    mix (animate fn amt) <$> materialFromDesc ig fn m1 trans <*> materialFromDesc ig fn m2 trans
+materialFromDesc ig fn (Add m1 m2) trans =
+    add <$> materialFromDesc ig fn m1 trans <*> materialFromDesc ig fn m2 trans
 materialFromDesc ig _ (Phong t ks e) trans =
     phongFromColor <$> textureFromDesc ig t trans <*> pure ks <*> pure e
 materialFromDesc ig _ (Reflective td ks e tr kr) trans =
