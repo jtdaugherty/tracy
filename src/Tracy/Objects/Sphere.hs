@@ -23,13 +23,12 @@ sphere m =
            }
 
 concaveSphere :: Material -> Object
-concaveSphere m =
-    Object { _objectMaterial = m
-           , _hit = \r -> (\(sh, f) -> (sh & normal .~ (sh^.normal ^* (-1)), f)) <$> hitSphere m r
-           , _shadow_hit = shadowHitSphere
-           , _bounding_box = Just sphereBBox
-           , _areaLightImpl = Nothing
-           }
+concaveSphere m = (sphere m) { _hit = concaveSphereHit m }
+
+concaveSphereHit :: Material -> Ray -> Maybe (Shade, Double)
+concaveSphereHit m r = flipNormal <$> hitSphere m r
+    where
+        flipNormal (sh, t) = (sh & normal %~ (^* (-1)), t)
 
 sphereBBox :: BBox
 sphereBBox = boundingBox p0 p1
@@ -70,10 +69,7 @@ hitSphere mat ray = makeShade <$> _hitSphere ray
     where
         makeShade tval = (sh, tval)
             where
-              temp = ray^.origin - p
-              p = V3 0 0 0
-              rad = 1
               sh = defaultShade { _localHitPoint = ray^.origin + (tval *^ ray^.direction)
                                 , _material = mat
-                                , _normal = (temp + (tval *^ ray^.direction)) ^/ rad
+                                , _normal = (ray^.origin + (tval *^ ray^.direction))
                                 }
