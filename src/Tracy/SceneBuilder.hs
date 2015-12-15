@@ -155,15 +155,28 @@ materialFromDesc :: ImageGroup -> Frame -> MaterialDesc -> Maybe Transformation 
 materialFromDesc ig _ (Matte td) trans =
     matteFromTexture <$> textureFromDesc ig td trans
 materialFromDesc ig fn (Mix amt m1 m2) trans =
-    mix (animate fn amt) <$> materialFromDesc ig fn m1 trans <*> materialFromDesc ig fn m2 trans
+    mix (animate fn amt) <$> materialFromDesc ig fn m1 trans
+                         <*> materialFromDesc ig fn m2 trans
 materialFromDesc ig fn (Add m1 m2) trans =
-    add <$> materialFromDesc ig fn m1 trans <*> materialFromDesc ig fn m2 trans
+    add <$> materialFromDesc ig fn m1 trans
+        <*> materialFromDesc ig fn m2 trans
 materialFromDesc ig _ (Phong t ks e) trans =
-    phongFromColor <$> textureFromDesc ig t trans <*> pure ks <*> pure e
+    phongFromColor <$> textureFromDesc ig t trans
+                   <*> pure ks
+                   <*> pure e
 materialFromDesc ig _ (Reflective td ks e tr kr) trans =
-    reflective <$> textureFromDesc ig td trans <*> pure ks <*> pure e <*> textureFromDesc ig tr trans <*> pure kr
+    reflective <$> textureFromDesc ig td trans
+               <*> pure ks
+               <*> pure e
+               <*> textureFromDesc ig tr trans
+               <*> pure kr
 materialFromDesc ig _ (GlossyReflective td ks e tr kr er) trans =
-    glossyReflective <$> textureFromDesc ig td trans <*> pure ks <*> pure e <*> textureFromDesc ig tr trans <*> pure kr <*> pure er
+    glossyReflective <$> textureFromDesc ig td trans
+                     <*> pure ks
+                     <*> pure e
+                     <*> textureFromDesc ig tr trans
+                     <*> pure kr
+                     <*> pure er
 materialFromDesc _ _ (Emissive c e) _ = return $ emissive c e
 
 textureFromDesc :: ImageGroup -> TextureDesc -> Maybe Transformation -> LoadM Texture
