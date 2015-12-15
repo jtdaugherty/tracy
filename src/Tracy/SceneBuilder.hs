@@ -34,6 +34,7 @@ import Tracy.Textures.ConstantColor
 import Tracy.Textures.TransformedTexture
 import Tracy.Textures.ImageTexture
 import Tracy.TextureMapping.Spherical
+import Tracy.TextureMapping.Tile
 
 import Tracy.Lights.Ambient
 import Tracy.Lights.AmbientOccluder
@@ -162,6 +163,7 @@ textureFromDesc ig (ImageTexture fp mappingDesc) trans = do
 
 mappingFromDesc :: MappingDesc -> LoadM TextureMapping
 mappingFromDesc Spherical = return sphericalMapping
+mappingFromDesc (Tile s) = return $ tileMapping s
 
 tracerFromDesc :: TracerDesc -> LoadM Tracer
 tracerFromDesc RayCastTracer = return rayCastTracer

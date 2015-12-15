@@ -407,7 +407,8 @@ data TextureDesc =
 
 data MappingDesc =
     Spherical
-    deriving (Eq, Show, Generic)
+    | Tile Double
+    deriving (Eq, Show, Generic, Read)
 
 data MaterialDesc =
       Matte TextureDesc
@@ -692,7 +693,7 @@ instance Y.FromJSON MappingDesc where
     parseJSON (Y.String s) =
         case s of
             "spherical" -> return Spherical
-            _ -> fail $ "Unknown texture mapping type: " ++ show s
+            _ -> parseReadsT s "Invalid mapping string"
     parseJSON _ = fail "Expected string for MappingDesc"
 
 parseColorOrTexture :: T.Text -> Y.Object -> Y.Parser TextureDesc
