@@ -1,6 +1,3 @@
-- Acceleration aids
-  * Implement bounding volume hierarchy support
-
 - Benchmarks
   * Generate vectors of random values in Samplers.hs to improve
     performance
@@ -19,10 +16,9 @@
 - Effects
   * Materials:
     * Blinn
-  * Refraction
+  * Refraction/caustics
   * Textures
-    * Procedural
-    * Image-based
+    * Procedural (noise/wood/marble)
   * More global illumination techniques (bidir path tracing, metropolis
     light transport)
 
@@ -40,5 +36,4 @@
 - Animation
   * animate more things, add more animated value types
 
-- GUI
-  * Keystroke to trigger a reload scenes from disk and re-render
+- GUI * Keystroke to trigger a reload scenes from disk and re-render
