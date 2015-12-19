@@ -144,8 +144,8 @@ data Shade =
           , _material :: Material
           , _shadeRay :: !Ray
           , _depth :: !Depth
-          , _mappingU :: Double
-          , _mappingV :: Double
+          , _mappingU :: Maybe Double
+          , _mappingV :: Maybe Double
           }
 
 data Ray =
@@ -366,8 +366,8 @@ data ImageData =
     deriving (Generic)
 
 data MeshData =
-    MeshData { meshVertices :: V.Vector (V3 Double, V3 Double)
-             , meshFaces :: V.Vector (V.Vector Int)
+    MeshData { meshVertices :: !(V.Vector (V3 Double, V3 Double, Maybe (V2 Double)))
+             , meshFaces :: !(V.Vector (V.Vector Int))
              }
     deriving (Eq, Show)
 

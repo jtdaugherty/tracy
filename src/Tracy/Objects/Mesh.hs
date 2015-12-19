@@ -50,7 +50,13 @@ loadMesh (MeshFile filename) = do
 
         vVecs = V.map mkVec vs
         mkVec vals = ( V3 (toDouble $ vals V.! 0) (toDouble $ vals V.! 1) (toDouble $ vals V.! 2)
+                     -- ^ Vertex position
                      , V3 (toDouble $ vals V.! 3) (toDouble $ vals V.! 4) (toDouble $ vals V.! 5)
+                     -- ^ Vertex normal
+                     , if V.length vals >= 8
+                       then Just $ V2 (toDouble $ vals V.! 6) (toDouble $ vals V.! 7)
+                       else Nothing
+                     -- ^ Vertex UV mapping coordinates (if any)
                      )
 
         -- Vector (Vector Scalar) -> Vector (Vector Int)

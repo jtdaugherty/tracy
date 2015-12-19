@@ -95,8 +95,8 @@ rectHit rect ray =
         sh = defaultShade { _localHitPoint = p
                           , _normal = newNormal
                           , _material = rectMaterial rect
-                          , _mappingU = (p^._z + 1) / 2
-                          , _mappingV = (p^._x + 1) / 2
+                          , _mappingU = Just $ (p^._z + 1) / 2
+                          , _mappingV = Just $ (p^._x + 1) / 2
                           }
         newNormal = if rectDoubleSided rect
                     then flipNormal (ray^.direction) (rectNormal rect)

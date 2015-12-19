@@ -80,6 +80,6 @@ hitSphere mat ray = makeShade <$> _hitSphere ray
               sh = defaultShade { _localHitPoint = hp
                                 , _material = mat
                                 , _normal = hp
-                                , _mappingU = u
-                                , _mappingV = v
+                                , _mappingU = Just u
+                                , _mappingV = Just v
                                 }

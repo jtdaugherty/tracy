@@ -34,6 +34,7 @@ Features:
    - Rectangular
    - Tiled (planar)
    - Spherical
+   - Interpolated mesh UV coordinates
  * Object instancing
  * Object transformations
  * Samplers:

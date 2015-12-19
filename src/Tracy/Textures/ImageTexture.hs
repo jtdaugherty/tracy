@@ -29,9 +29,14 @@ imageTexture mm img =
 
 imageGetColor :: Maybe TextureMapping -> ImageData -> Shade -> Color
 imageGetColor Nothing img sh =
-    let row = fromEnum $ (sh^.mappingV) * (toEnum $ imageHeight (img^.imageBuffer) - 1)
-        col = fromEnum $ (sh^.mappingU) * (toEnum $ imageWidth  (img^.imageBuffer) - 1)
-    in imageGetColorAt img row col
+    case (sh^.mappingU, sh^.mappingV) of
+        (Just u, Just v) ->
+            let row = fromEnum (v * (toEnum $ imageHeight (img^.imageBuffer) - 1))
+                col = fromEnum (u * (toEnum $ imageWidth  (img^.imageBuffer) - 1))
+            in if row < 0 || col < 0 || row > (imageHeight (img^.imageBuffer)) - 1 || col > (imageWidth (img^.imageBuffer)) - 1
+               then cRed
+               else imageGetColorAt img row col
+        _ -> cRed
 imageGetColor (Just theMapping) img sh =
     let (row, col) = (theMapping^.getTexelCoordinates) (sh^.localHitPoint)
                      (imageWidth (img^.imageBuffer))
@@ -41,7 +46,7 @@ imageGetColor (Just theMapping) img sh =
        else imageGetColorAt img row col
 
 imageGetColorAt :: ImageData -> Int -> Int -> Color
-imageGetColorAt img row col = pixelToColor $ pixelAt (img^.imageBuffer) row col
+imageGetColorAt img row col = pixelToColor $ pixelAt (img^.imageBuffer) col row
 
 pixelToColor :: PixelRGB8 -> Colour
 pixelToColor (PixelRGB8 r g b) =

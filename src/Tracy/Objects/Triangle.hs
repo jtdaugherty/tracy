@@ -15,15 +15,15 @@ import Tracy.Constants
 tri :: V3 Double -> V3 Double -> V3 Double -> Material -> Object
 tri v0 v1 v2 mat =
     let n = signorm $ cross (v1 - v0) (v2 - v0)
-    in triWithNormals (v0, n) (v1, n) (v2, n) mat
+    in triWithNormals (v0, n, Nothing) (v1, n, Nothing) (v2, n, Nothing) mat
 
-triWithNormals :: (V3 Double, V3 Double)
-               -> (V3 Double, V3 Double)
-               -> (V3 Double, V3 Double)
+triWithNormals :: (V3 Double, V3 Double, Maybe (V2 Double))
+               -> (V3 Double, V3 Double, Maybe (V2 Double))
+               -> (V3 Double, V3 Double, Maybe (V2 Double))
                -> Material -> Object
-triWithNormals (v0, n0) (v1, n1) (v2, n2) mat =
+triWithNormals (v0, n0, uv0) (v1, n1, uv1) (v2, n2, uv2) mat =
     Object { _objectMaterial = mat
-           , _hit = hitTriangle v0 v1 v2 n0 n1 n2 mat
+           , _hit = hitTriangle v0 v1 v2 n0 n1 n2 uv0 uv1 uv2 mat
            , _shadow_hit = shadowHitTriangle v0 v1 v2
            , _bounding_box = Just $ triBBox v0 v1 v2
            , _areaLightImpl = Nothing
@@ -34,6 +34,12 @@ interpolateNormal n0 n1 n2 beta tgamma =
     signorm $ (1 - beta - tgamma) *^ n0 +
               beta *^ n1 +
               tgamma *^ n2
+
+interpolateUV :: V2 Double -> V2 Double -> V2 Double -> Double -> Double -> V2 Double
+interpolateUV uv0 uv1 uv2 beta tgamma =
+    (1 - beta - tgamma) *^ uv0 +
+    beta *^ uv1 +
+    tgamma *^ uv2
 
 triBBox :: V3 Double -> V3 Double -> V3 Double -> BBox
 triBBox v0 v1 v2 =
@@ -50,11 +56,12 @@ triBBox v0 v1 v2 =
 
 _hitTriangle :: V3 Double -> V3 Double -> V3 Double
              -> V3 Double -> V3 Double -> V3 Double
-             -> Ray -> Maybe (Double, V3 Double)
-_hitTriangle v0 v1 v2 n0 n1 n2 ray =
+             -> Maybe (V2 Double) -> Maybe (V2 Double) -> Maybe (V2 Double)
+             -> Ray -> Maybe (Double, V3 Double, Maybe (V2 Double))
+_hitTriangle v0 v1 v2 n0 n1 n2 uv0 uv1 uv2 ray =
         if beta < 0 || tgamma < 0 || beta + tgamma > 1 || t < epsilon
            then Nothing
-           else Just (t, theNormal)
+           else Just (t, theNormal, theUV)
     where
         t = e3 * inv_denom
         e3 = a * p - b * r + d * s
@@ -82,18 +89,27 @@ _hitTriangle v0 v1 v2 n0 n1 n2 ray =
         k = ray^.direction._z
         l = v0^._z - ray^.origin._z
         theNormal = interpolateNormal n0 n1 n2 beta tgamma
+        theUV = interpolateUV <$> uv0 <*> uv1 <*> uv2 <*> pure beta <*> pure tgamma
 
-hitTriangle :: V3 Double -> V3 Double -> V3 Double -> V3 Double
-            -> V3 Double -> V3 Double
+hitTriangle :: V3 Double -> V3 Double -> V3 Double
+            -> V3 Double -> V3 Double -> V3 Double
+            -> Maybe (V2 Double) -> Maybe (V2 Double) -> Maybe (V2 Double)
             -> Material -> Ray -> Maybe (Shade, Double)
-hitTriangle v0 v1 v2 n0 n1 n2 m ray =
-    let mkShade t n = defaultShade { _localHitPoint = ray^.origin + (t *^ ray^.direction)
-                                   , _normal = n
-                                   , _material = m
-                                   }
-    in case _hitTriangle v0 v1 v2 n0 n1 n2 ray of
+hitTriangle v0 v1 v2 n0 n1 n2 uv0 uv1 uv2 m ray =
+    let mkShade t n uv =
+            defaultShade { _localHitPoint = ray^.origin + (t *^ ray^.direction)
+                         , _normal = n
+                         , _material = m
+                         , _mappingU = (^._x) <$> uv
+                         , _mappingV = (^._y) <$> uv
+                         }
+    in case _hitTriangle v0 v1 v2 n0 n1 n2 uv0 uv1 uv2 ray of
           Nothing -> Nothing
-          Just (t, n) -> Just (mkShade t n, t)
+          Just (t, n, uv) -> Just (mkShade t n uv, t)
 
 shadowHitTriangle :: V3 Double -> V3 Double -> V3 Double -> Ray -> Maybe Double
-shadowHitTriangle v0 v1 v2 r = fst <$> _hitTriangle v0 v1 v2 undefined undefined undefined r
+shadowHitTriangle v0 v1 v2 r =
+    let fst3 (a, _, _) = a
+    in fst3 <$> _hitTriangle v0 v1 v2
+                  undefined undefined undefined
+                  undefined undefined undefined r
