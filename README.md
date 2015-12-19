@@ -35,10 +35,10 @@ Features:
 | Demo | Image |
 |------|-------|
 | Basic shapes with ambient occlusion | <a href="demos/demo1.png"><img src="/demos/demo.png" width="100" height="100"/></a> |
-| Thin-lens view with specular highlights and ambient occlusion | <a href="demos/demo2.png"><img src="/demos/demo2.png" width="100" height="100"/></a> |
-| Stanford Bunny mesh | <a href="demos/demo3.png"><img src="/demos/demo3.png" width="100" height="100"/></a> |
-| Dragon mesh | <a href="demos/demo4.png"><img src="/demos/demo4.png" width="100" height="100"/></a> |
-| Area lights | <a href="demos/demo5.png"><img src="/demos/demo5.png" width="100" height="100"/></a> |
-| Perfect and glossy specular reflection | <a href="demos/demo6.png"><img src="/demos/demo6.png" width="100" height="100"/></a> |
-| Table and chairs, path-traced | <a href="demos/demo8.png"><img src="/demos/demo8.png" width="100" height="100"/></a> |
-| Blended materials | <a href="demos/demo9.png"><img src="/demos/demo9.png" width="100" height="100"/></a> |
+| Thin-lens depth of field            | <a href="demos/demo2.png"><img src="/demos/demo2.png" width="100" height="100"/></a> |
+| Stanford Bunny                      | <a href="demos/demo3.png"><img src="/demos/demo3.png" width="100" height="100"/></a> |
+| Dragon mesh                         | <a href="demos/demo4.png"><img src="/demos/demo4.png" width="100" height="100"/></a> |
+| Area lights                         | <a href="demos/demo5.png"><img src="/demos/demo5.png" width="100" height="100"/></a> |
+| Specular reflection                 | <a href="demos/demo6.png"><img src="/demos/demo6.png" width="100" height="100"/></a> |
+| Path-traced table and chairs        | <a href="demos/demo8.png"><img src="/demos/demo8.png" width="100" height="100"/></a> |
+| Blended materials                   | <a href="demos/demo9.png"><img src="/demos/demo9.png" width="100" height="100"/></a> |
