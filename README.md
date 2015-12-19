@@ -4,75 +4,33 @@ tracy - a Haskell ray tracer
 
 Features:
 
- * Basic idealized primitives:
-   - Triangles
-   - Spheres (and concave spheres with inverted normals for scene
-     lighting)
-   - Boxes
-   - Planes
-   - Tori
-   - Rectangles
-   - Triangle meshes
- * Triangle mesh shading:
-   - Flat
-   - Smooth shading (if vertex normals are available in mesh data)
- * Triangle mesh file formats:
-   - PLY
- * Acceleration aids:
-   - Regular grids
-   - Bounding volume hierarchies
- * Materials and shading:
-   - Phong
-   - Matte
-   - Perfect specular reflection
-   - Glossy specular reflection
-   - Mix (blended materials)
-   - Image textures
-   - Planar checkers
-   - Spherical checkers
- * Texture mapping:
-   - Rectangular
-   - Tiled (planar)
-   - Spherical
-   - Interpolated mesh UV coordinates
+ * Basic idealized primitives: triangles, spheres, concave spheres,
+   boxes, planes, tori, rectangles, triangle meshes
+ * Mesh shading modes: flat, smooth (when vertex normals are available),
+   textured (when UV coordinates are available)
+ * Mesh file formats: PLY
+ * Acceleration aids: regular grids, bounding volume hierarchies
+ * Materials and shading: phong, matte, perfect specular reflection,
+   glossy specular reflection, blended materials
+ * Image-based textures
+ * Procedural textures: planar checkers, spherical checkers
+ * Texture mappings: rectangular, tiled (planar), spherical
  * Object instancing
  * Object transformations
- * Samplers:
-   - Regular
-   - Random
-   - Jittered
-   - Multi-jittered
-   - Correlated Multi-jittered
- * Global illumation:
-   - Ambient occlusion (approximation technique)
-   - Path-tracing support
- * Cameras:
-   - Thin-lens camera
- * Light source types:
-   - Ambient
-   - Point (with hard shadows)
-   - Area lights (supported geometry: rectangles with area-light tracer,
-     any geometry with path tracer)
-   - Environment lights
- * User interface:
-   - Console output with status information
-   - Live GUI with progressive rendering
- * Scene representation:
-   - YAML-based file format
-   - Network (de)serialization
- * Animation:
-   - Renders animation frame sequences locally or on network nodes
-     (frames can be stitched into movies using external tools; see
-     `scripts/`)
-   - Linear interpolation of float values, rotational interpolation of
-     vectors for some object fields
- * Engine:
-   - Multi-core rendering via Haskell's `parMap` evaluation strategy
-   - Multi-host rendering (run `tracy -d tcp://slave:9000` on the master,
-     `tracy-node` on the slave(s))
- * Other:
-   - Sampler debugging program to test sample distribution for various
-     sampling methods
+ * Samplers: regular, random, jittered, multi-jittered, correlated
+   multi-jittered
+ * Global illumation: ambient occlusion, path-tracing
+ * Cameras: thin-lens
+ * Light source types: ambient, point, area (rectangles only),
+   environment
+ * Console output with status information
+ * Live GUI window with progressive rendering
+ * YAML-based scene file format
+ * Basic animation support for some scalar and vector parameters
+ * Multi-core rendering engine using Haskell's `parMap` evaluation
+   strategy
+ * Network rendering (run `tracy -d tcp://slave:9000` on the master,
+   `tracy-node` on the slave(s))
 
 Basic shapes with ambient occlusion:
 ![demo](/demos/demo.png)
