@@ -32,26 +32,21 @@ Features:
  * Network rendering (run `tracy -d tcp://slave:9000` on the master,
    `tracy-node` on the slave(s))
 
-Basic shapes with ambient occlusion:
-![demo](/demos/demo.png)
-
-Thin-lens view with specular highlights and ambient occlusion:
-![demo2](/demos/demo2.png)
-
-Stanford Bunny mesh:
-![demo3](/demos/demo3.png)
-
-Dragon mesh:
-![demo4](/demos/demo4.png)
-
-Area lights:
-![demo5](/demos/demo5.png)
-
-Perfect and glossy specular reflection:
-![demo6](/demos/demo6.png)
-
-Table and chairs, path-traced:
-![demo8](/demos/demo8.png)
-
-Blended materials:
-![demo9](/demos/demo9.png)
+| Demo | Image |
+|------|-------|
+| Basic shapes with ambient occlusion | <a href="demos/demo1.png"><img src="/demos/demo.png" width="100" height="100"/></a> |
+|------|-------|
+| Thin-lens view with specular highlights and ambient occlusion | <a href="demos/demo2.png"><img src="/demos/demo2.png" width="100" height="100"/></a> |
+|------|-------|
+| Stanford Bunny mesh | <a href="demos/demo3.png"><img src="/demos/demo3.png" width="100" height="100"/></a> |
+|------|-------|
+| Dragon mesh | <a href="demos/demo4.png"><img src="/demos/demo4.png" width="100" height="100"/></a> |
+|------|-------|
+| Area lights | <a href="demos/demo5.png"><img src="/demos/demo5.png" width="100" height="100"/></a> |
+|------|-------|
+| Perfect and glossy specular reflection | <a href="demos/demo6.png"><img src="/demos/demo6.png" width="100" height="100"/></a> |
+|------|-------|
+| Table and chairs, path-traced: <a href="demos/demo8.png"><img src="/demos/demo8.png" width="100" height="100"/></a> |
+|------|-------|
+| Blended materials | <a href="demos/demo9.png"><img src="/demos/demo9.png" width="100" height="100"/></a> |
+|------|-------|
