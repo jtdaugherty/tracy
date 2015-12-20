@@ -42,4 +42,4 @@ Features:
 | Specular reflection                 | <a href="demos/demo6.png"><img src="/demos/demo6.png" width="150" height="150"/></a> |
 | Path-traced table and chairs        | <a href="demos/demo8.png"><img src="/demos/demo8.png" width="150" height="150"/></a> |
 | Blended materials                   | <a href="demos/demo9.png"><img src="/demos/demo9.png" width="150" height="150"/></a> |
-| Textures                            | <a href="demos/demo9.png"><img src="/demos/demo10.png" width="150" height="150"/></a> |
+| Textures                            | <a href="demos/demo10.png"><img src="/demos/demo10.png" width="150" height="150"/></a> |
