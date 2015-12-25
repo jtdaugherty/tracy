@@ -1,3 +1,11 @@
+- Misc
+  * Specify samples per pixel as square, not square root, and compute
+    square root automatically
+  * Update protocol to support ready-state changes for nodes
+  * Update console UI to show node details (current chunk, number of
+    CPUs, etc.) below rendering job status
+  * Consider using more types to clean up protocol state transitions
+
 - Benchmarks
   * Generate vectors of random values in Samplers.hs to improve
     performance
