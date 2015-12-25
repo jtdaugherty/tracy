@@ -54,7 +54,7 @@ data Arg = Help
 
 data PreConfig =
     PreConfig { argSampleRoot :: Double
-              , argCpuCount :: Int
+              , argCpuCount :: Maybe Int
               , argFrameStart :: Int
               , argFrameStop :: Maybe Int
               , argForceShadows :: Maybe Bool
@@ -69,7 +69,7 @@ defaultPreConfig :: IO PreConfig
 defaultPreConfig = do
     n <- getNumProcessors
     return $ PreConfig { argSampleRoot = 1
-                       , argCpuCount = n
+                       , argCpuCount = Just n
                        , argForceShadows = Nothing
                        , argRenderNodes = []
                        , argFrameStart = 1
@@ -148,7 +148,7 @@ updateConfig c (CPUs s) = do
                                   , "\nAvailable: " ++ show avail
                                   ]
                 exitFailure
-            return $ c { argCpuCount = cnt }
+            return $ c { argCpuCount = Just cnt }
         _ -> usage >> exitFailure
 
 usage :: IO a
@@ -342,7 +342,9 @@ showValue label a = padRight Max $
 drawPreConfig :: PreConfig -> Widget
 drawPreConfig cfg =
     hBox [ vBox [ showValue "Sample root:" (argSampleRoot cfg)
-                , showValue "CPU count:" (argCpuCount cfg)
+                , case argCpuCount cfg of
+                    Nothing -> emptyWidget
+                    Just c -> showValue "CPU count:" c
                 , showValue "Start frame:" (argFrameStart cfg)
                 , showValue "Stop frame:" (argFrameStop cfg)
                 , showValue "Force shadows:" (argForceShadows cfg)
@@ -378,7 +380,11 @@ main = do
   let (os, rest, _) = getOpt Permute opts args
 
   defPreCfg <- defaultPreConfig
-  preCfg <- foldM updateConfig defPreCfg os
+  preCfg <- do
+      unfixed <- foldM updateConfig defPreCfg os
+      case null $ argRenderNodes unfixed of
+          True -> return unfixed
+          False -> return $ unfixed { argCpuCount = Nothing }
 
   when (Help `elem` os) usage
   when (length rest /= 1) usage
@@ -388,7 +394,9 @@ main = do
 
   let [toRender] = rest
 
-  setNumCapabilities $ argCpuCount preCfg
+  case argCpuCount preCfg of
+      Just c -> setNumCapabilities c
+      Nothing -> return ()
 
   result <- loadSceneDesc toRender
   case result of
