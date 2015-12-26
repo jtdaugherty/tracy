@@ -1,0 +1,85 @@
+tracer: PathTracer
+camera:
+    eye:
+        type: lerpRotY
+        fromFrame: 1
+        toFrame: 200
+        from: V3 -100 100 300
+        angle: 6.2831853 # 2 pi
+    lookAt: V3 0 50 0
+    up: V3 0 1 0
+    exposure: 1.0
+    zoom: 1.0
+    vpDist: 500
+    fpDist: 500
+    lensRadius: 0
+    lensSampler: UnitDisk CorrelatedMultiJittered
+
+world:
+    viewPlane:
+        hres: 800
+        vres: 800
+        pixelSize: 1.0
+        gamma: 1.0
+        inverseGamma: 1.0
+        maxDepth: 10
+        pixelSampler: CorrelatedMultiJittered
+
+    bgColor: Colour 0 0 0
+    shadows: true
+
+    ambient:
+        type: ambient
+        color: Colour 1 1 1
+        strength: 1
+
+    objects:
+        # Light source
+        - type: concaveSphere
+          transform: [ScaleUni 10000]
+          material:
+              type: emissive
+              strength: 1
+              color: Colour 1 0.9765 0.87059
+        - type: plane
+          material:
+              type: phong
+              ks: 0.3
+              exp: 100
+              diffuseTexture:
+                  type: planeChecker
+                  size: 100
+        - type: rect
+          transform: [Translate 0 400 0, RotateX 3.14, ScaleUni 100]
+          material:
+              type: emissive
+              strength: 7
+              color: Colour 1 1 1
+        - type: sphere
+          transform: [Translate -100 40 -10, ScaleUni 40]
+          material:
+              type: phong
+              ks: 0.9
+              exp: 3000
+              diffuseTexture:
+                  type: image
+                  path: textures/marble.png
+                  mapping: spherical
+        - type: sphere
+          transform: [Translate 100 40 -10, ScaleUni 40]
+          material:
+              type: matte
+              diffuseTexture:
+                  type: image
+                  path: textures/earth-nasa.png
+        - type: sphere
+          transform: [Translate 0 50 0, ScaleUni 50]
+          material:
+              type: reflective
+              baseColor: Colour 0.7 0.7 1
+              ks: 0.7
+              exp: 100
+              reflectiveTexture:
+                  type: sphereChecker
+                  count: 10
+              reflectiveStrength: 0.8
