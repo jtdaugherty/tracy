@@ -5,6 +5,8 @@
   * Update console UI to show node details (current chunk, number of
     CPUs, etc.) below rendering job status
   * Consider using more types to clean up protocol state transitions
+  * Texture interpolation (rather than rounding UV coordinates to
+    texels, interpolate)
 
 - Benchmarks
   * Generate vectors of random values in Samplers.hs to improve
