@@ -19,8 +19,9 @@
   * Support specifying a custom output filename prefix on the command
     line
   * Support specifying different output file formats on the command line
+  * Use juicypixels to emit output image files instead of BMP
   * Support movie file output when rendering more than one frame
-    (ffmpeg + juicypixels?)
+    (ffmpeg-light)
 
 - Benchmarks
   * Generate vectors of random values in Samplers.hs to improve
