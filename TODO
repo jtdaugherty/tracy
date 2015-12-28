@@ -1,12 +1,23 @@
 - Misc
-  * Specify samples per pixel as square, not square root, and compute
-    square root automatically
   * Update protocol to support ready-state changes for nodes
+  * Use more types to clean up protocol state transitions to avoid
+    impossible states (draw protocol state transition diagram to help
+    tease apart legal states and protocol phases)
   * Update console UI to show node details (current chunk, number of
     CPUs, etc.) below rendering job status
-  * Consider using more types to clean up protocol state transitions
   * Texture interpolation (rather than rounding UV coordinates to
     texels, interpolate)
+  * Interactive console and UI keys:
+    * Reload from disk and re-render
+      * With current settings
+      * With a higher sample count
+      * With a lower sample count
+  * Bump (height) mapping
+  * Support specifying a custom output filename prefix on the command
+    line
+  * Support specifying different output file formats on the command line
+  * Support movie file output when rendering more than one frame
+    (ffmpeg + juicypixels?)
 
 - Benchmarks
   * Generate vectors of random values in Samplers.hs to improve
@@ -45,5 +56,3 @@
 
 - Animation
   * animate more things, add more animated value types
-
-- GUI * Keystroke to trigger a reload scenes from disk and re-render
