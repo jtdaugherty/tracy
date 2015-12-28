@@ -43,6 +43,7 @@ library
     parallel,
     ply-loader >= 0.4,
     scientific,
+    silently,
     stm,
     text,
     time,
