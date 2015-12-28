@@ -29,7 +29,7 @@ import Codec.Picture (Image(..), DynamicImage(..), PixelRGB8, decodePng, encodeP
 type Color = Colour
 
 newtype Frame = Frame Int
-              deriving (Eq, Show, Generic, Enum, Num)
+              deriving (Eq, Show, Generic, Enum, Num, Ord)
 
 newtype Row = Row Int
               deriving (Eq, Show, Generic, Enum, Ord)
@@ -80,6 +80,7 @@ data DataEvent =
     | DChunkFinished (Row, Row) Count (SV.Vector Colour)
     | DImageSize Width Height
     | DRowRanges [(Row, Row)]
+    | DFrameRange (Frame, Frame)
     | DStarted Frame
     | DFinished Frame
     | DShutdown

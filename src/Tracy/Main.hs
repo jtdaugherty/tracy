@@ -75,6 +75,7 @@ render sceneName renderCfg s frameRange numNodes renderManager iChan dChan = do
   writeChan dChan $ DImageSize (Width $ fromEnum $ w^.wdViewPlane.vpHres)
                                (Height $ fromEnum $ w^.wdViewPlane.vpVres)
   writeChan dChan $ DRowRanges rowRanges
+  writeChan dChan $ DFrameRange frameRange
 
   -- Preload meshes
   writeChan iChan ILoadingMeshes

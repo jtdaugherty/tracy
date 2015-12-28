@@ -1,7 +1,8 @@
 module Tracy.DataHandlers.FileHandler
   ( fileHandler
   , writeImage
-  , buildFilename
+  , buildImageFilename
+  , buildMovieFilename
   )
   where
 
@@ -15,8 +16,11 @@ import qualified Data.Vector.Storable as SV
 import Tracy.Types
 import Tracy.Util
 
-buildFilename :: String -> Frame -> FilePath
-buildFilename sn (Frame fn) = sn ++ "-" ++ show fn ++ ".bmp"
+buildImageFilename :: String -> Frame -> FilePath
+buildImageFilename sn (Frame fn) = sn ++ "-" ++ show fn ++ ".bmp"
+
+buildMovieFilename :: String -> Frame -> Frame -> FilePath
+buildMovieFilename sn _ _ = sn ++ ".mov"
 
 fileHandler :: Chan DataEvent -> IO ()
 fileHandler chan = do
@@ -24,6 +28,8 @@ fileHandler chan = do
   DSampleRoot _ <- readChan chan
   DImageSize (Width cols) (Height rows) <- readChan chan
   DRowRanges rowRanges <- readChan chan
+  -- XXX right now we don't support movie output in the file handler
+  DFrameRange _ <- readChan chan
 
   merged <- createMergeBuffer rows cols
 
@@ -40,7 +46,7 @@ fileHandler chan = do
             DFinished frameNum -> do
                 vec <- vectorFromMergeBuffer merged
                 let vec2 = SV.map maxToOne vec
-                writeImage vec2 cols rows (buildFilename sceneName frameNum)
+                writeImage vec2 cols rows (buildImageFilename sceneName frameNum)
                 -- Reset sample count state
                 work sCountMap
             DShutdown -> return ()
