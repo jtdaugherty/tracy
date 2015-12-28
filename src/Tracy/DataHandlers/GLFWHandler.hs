@@ -15,15 +15,10 @@ import Foreign.Storable
 import Foreign.Ptr
 import Data.Colour
 import System.IO (hPutStrLn, stderr)
-import Data.Word (Word8)
 
 import qualified Graphics.Rendering.OpenGL as GL
 import Graphics.Rendering.OpenGL (($=))
 import qualified Graphics.UI.GLFW as G
-
-import Codec.FFmpeg (initFFmpeg, defaultParams, imageWriter)
-
-import qualified Codec.Picture as JP
 
 import Tracy.Types
 import Tracy.Util
@@ -53,16 +48,6 @@ withWindow mkWindow f = do
 windowTitle :: Int -> String -> String
 windowTitle fn sceneName = sceneName ++ " (frame " ++ show fn ++ ")"
 
-juicyImageFromVec :: Int -> Int -> SV.Vector Color -> JP.Image JP.PixelRGB8
-juicyImageFromVec w h colorVec = flipImageVertically $ JP.Image w h componentVec
-    where
-        componentVec = SV.concatMap toWordVec colorVec
-
-flipImageVertically :: (JP.Pixel a) => JP.Image a -> JP.Image a
-flipImageVertically image = JP.generateImage flippedPixel (JP.imageWidth image) (JP.imageHeight image)
-    where
-        flippedPixel x y = JP.pixelAt image x ((JP.imageHeight image) - 1 - y)
-
 glfwHandler :: MVar () -> Chan DataEvent -> IO ()
 glfwHandler stopMvar chan = withGLFWInit $ do
   DSceneName sceneName <- readChan chan
@@ -71,21 +56,7 @@ glfwHandler stopMvar chan = withGLFWInit $ do
   DRowRanges rowRanges <- readChan chan
   DFrameRange (firstFrame, lastFrame) <- readChan chan
 
-  -- Set up frame writer: if we are rendering more than one frame,
-  -- assume we are writing a movie and set up a streaming video encoder.
-  (frameWriter, finishOutput) <- case lastFrame > firstFrame of
-      True -> do
-          initFFmpeg
-          let eps = defaultParams (toEnum $ fromEnum cols)
-                                  (toEnum $ fromEnum rows)
-          juicyImageWriteFunc <- imageWriter eps (buildMovieFilename sceneName firstFrame lastFrame)
-          let writeFrame vec _ = do
-                let img = juicyImageFromVec cols rows vec
-                juicyImageWriteFunc $ Just img
-          return (writeFrame, juicyImageWriteFunc Nothing)
-      False -> do
-          let writeFrame vec fn = writeImage vec cols rows (buildImageFilename sceneName fn)
-          return (writeFrame, return ())
+  (frameWriter, finishOutput) <- setupFrameOutput (firstFrame, lastFrame) (cols, rows) sceneName
 
   ref <- newIORef $ MyState cols rows
 
@@ -199,12 +170,6 @@ display ref imageData = do
     rasterPos2i (GL.Vertex2 0 0)
     let img = GL.PixelData GL.RGB GL.UnsignedByte imageData
     GL.drawPixels sz img
-
-toWordVec :: Colour -> SV.Vector Word8
-toWordVec (Colour r g b) = SV.fromList [ (toEnum $ fromEnum (r * 255.0))
-                                       , (toEnum $ fromEnum (g * 255.0))
-                                       , (toEnum $ fromEnum (b * 255.0))
-                                       ]
 
 toColor3 :: Colour -> GL.Color3 GL.GLubyte
 toColor3 (Colour r g b) = GL.Color3 (toEnum $ fromEnum (r * 255.0))

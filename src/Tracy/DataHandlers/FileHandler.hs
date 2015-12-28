@@ -3,6 +3,7 @@ module Tracy.DataHandlers.FileHandler
   , writeImage
   , buildImageFilename
   , buildMovieFilename
+  , setupFrameOutput
   )
   where
 
@@ -12,6 +13,11 @@ import qualified Data.Map as M
 import qualified Data.ByteString as B
 import Codec.BMP
 import qualified Data.Vector.Storable as SV
+import Data.Word (Word8)
+import Data.Colour
+
+import Codec.FFmpeg (initFFmpeg, defaultParams, imageWriter)
+import qualified Codec.Picture as JP
 
 import Tracy.Types
 import Tracy.Util
@@ -20,7 +26,7 @@ buildImageFilename :: String -> Frame -> FilePath
 buildImageFilename sn (Frame fn) = sn ++ "-" ++ show fn ++ ".bmp"
 
 buildMovieFilename :: String -> Frame -> Frame -> FilePath
-buildMovieFilename sn _ _ = sn ++ ".mov"
+buildMovieFilename sn _ _ = sn ++ ".mp4"
 
 fileHandler :: Chan DataEvent -> IO ()
 fileHandler chan = do
@@ -28,9 +34,9 @@ fileHandler chan = do
   DSampleRoot _ <- readChan chan
   DImageSize (Width cols) (Height rows) <- readChan chan
   DRowRanges rowRanges <- readChan chan
-  -- XXX right now we don't support movie output in the file handler
-  DFrameRange _ <- readChan chan
+  DFrameRange frameRange <- readChan chan
 
+  (frameWriter, finishOutput) <- setupFrameOutput frameRange (cols, rows) sceneName
   merged <- createMergeBuffer rows cols
 
   let sCountMap = M.fromList $ zip (fst <$> rowRanges) $ repeat 0
@@ -46,10 +52,10 @@ fileHandler chan = do
             DFinished frameNum -> do
                 vec <- vectorFromMergeBuffer merged
                 let vec2 = SV.map maxToOne vec
-                writeImage vec2 cols rows (buildImageFilename sceneName frameNum)
+                frameWriter vec2 frameNum
                 -- Reset sample count state
                 work sCountMap
-            DShutdown -> return ()
+            DShutdown -> finishOutput >> return ()
             DStarted _ -> work m
             _ -> error "FileHandler: unexpected event!"
 
@@ -61,3 +67,37 @@ writeImage dat cols rows filename = do
       img = packRGBA32ToBMP (fromEnum cols) (fromEnum rows) imgBytes
 
   writeBMP filename img
+
+setupFrameOutput :: (Frame, Frame) -> (Int, Int) -> String -> IO (SV.Vector Color -> Frame -> IO (), IO ())
+setupFrameOutput (firstFrame, lastFrame) (cols, rows) sceneName = do
+  -- Set up frame writer: if we are rendering more than one frame,
+  -- assume we are writing a movie and set up a streaming video encoder.
+  case lastFrame > firstFrame of
+      True -> do
+          initFFmpeg
+          let eps = defaultParams (toEnum $ fromEnum cols)
+                                  (toEnum $ fromEnum rows)
+          juicyImageWriteFunc <- imageWriter eps (buildMovieFilename sceneName firstFrame lastFrame)
+          let writeFrame vec _ = do
+                let img = juicyImageFromVec cols rows vec
+                juicyImageWriteFunc $ Just img
+          return (writeFrame, juicyImageWriteFunc Nothing)
+      False -> do
+          let writeFrame vec fn = writeImage vec cols rows (buildImageFilename sceneName fn)
+          return (writeFrame, return ())
+
+juicyImageFromVec :: Int -> Int -> SV.Vector Color -> JP.Image JP.PixelRGB8
+juicyImageFromVec w h colorVec = flipImageVertically $ JP.Image w h componentVec
+    where
+        componentVec = SV.concatMap toWordVec colorVec
+
+flipImageVertically :: (JP.Pixel a) => JP.Image a -> JP.Image a
+flipImageVertically image = JP.generateImage flippedPixel (JP.imageWidth image) (JP.imageHeight image)
+    where
+        flippedPixel x y = JP.pixelAt image x ((JP.imageHeight image) - 1 - y)
+
+toWordVec :: Colour -> SV.Vector Word8
+toWordVec (Colour r g b) = SV.fromList [ (toEnum $ fromEnum (r * 255.0))
+                                       , (toEnum $ fromEnum (g * 255.0))
+                                       , (toEnum $ fromEnum (b * 255.0))
+                                       ]
