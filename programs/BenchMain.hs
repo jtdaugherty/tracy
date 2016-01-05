@@ -5,6 +5,7 @@ module Main where
 import Criterion.Main
 import Control.DeepSeq (NFData(..))
 import Control.Lens
+import Data.Monoid (mconcat)
 import qualified Data.Vector as V
 import Data.Colour
 import Linear (V3(V3))
@@ -19,10 +20,12 @@ import Tracy.Objects.BVH
 import Tracy.Objects.Triangle
 import Tracy.Objects.Torus
 import Tracy.Objects.Rectangle
+import Tracy.Objects.Instance
 import Tracy.Objects.Plane
 import Tracy.Objects.Compound
 import Tracy.Objects.Grid
 import Tracy.Materials.Matte
+import Tracy.Transformations
 
 instance NFData Object where
     rnf o = (o^.objectMaterial) `seq`
@@ -37,7 +40,7 @@ instance NFData BVH where
     rnf (Node b o1 o2) = b `seq` o1 `seq` o2 `seq` ()
 
 instance NFData Shade where
-    rnf (Shade lhp n _ sh d) = lhp `seq` n `seq` sh `seq` d `seq` ()
+    rnf (Shade lhp n _ sh d u v) = lhp `seq` n `seq` sh `seq` d `seq` u `seq` v `seq` ()
 
 mkSamplerGroup :: (NFData a) => GenIO -> String -> Sampler a -> Benchmark
 mkSamplerGroup gen name s =
@@ -51,13 +54,14 @@ bvhObjects :: Int -> [Object]
 bvhObjects n =
     (flip map) [1..n] $ \i ->
         let v = toEnum i
-        in sphere (V3 v v v) 0.5 $ matteFromColor cWhite
+        in inst (mconcat [translate v v v, scaleUni 0.5]) Nothing $
+                sphere $ matteFromColor cWhite
 
 sphere1 :: Object
-sphere1 = sphere (V3 0 0 0) 10 $ matteFromColor cWhite
+sphere1 = inst (scaleUni 10) Nothing $ sphere $ matteFromColor cWhite
 
 box1 :: Object
-box1 = box (V3 1 1 1) (V3 (-1) (-1) (-1)) $ matteFromColor cWhite
+box1 = inst (scaleUni 2) Nothing $ box $ matteFromColor cWhite
 
 tri1 :: Object
 tri1 = tri (V3 1 (-1) 0) (V3 0 1 0) (V3 (-1) (-1) 0) $ matteFromColor cWhite
@@ -66,10 +70,12 @@ torus1 :: Object
 torus1 = torus 10 1 $ matteFromColor cWhite
 
 rect1 :: Object
-rect1 = rectangle (V3 (-1) (-1) 0) (V3 0 2 0) (V3 2 0 0) False $ matteFromColor cWhite
+rect1 =
+    let trans = scaleUni 2
+    in inst trans Nothing $ rectangle False $ matteFromColor cWhite
 
 plane1 :: Object
-plane1 = plane (V3 0 0 0) (V3 0 0 1) $ matteFromColor cWhite
+plane1 = plane $ matteFromColor cWhite
 
 compound1 :: Object
 compound1 = compound v $ matteFromColor cWhite
@@ -87,7 +93,12 @@ spheres = do
     let rad = 1
     x <- [-1, 0, 1]
     y <- [-1, 0, 1]
-    return $ sphere (V3 (3 * rad * x) (3 * rad * y) 0) rad $ matteFromColor cWhite
+    -- return $ sphere (V3 (3 * rad * x) (3 * rad * y) 0) rad $ matteFromColor cWhite
+    let mat = matteFromColor cWhite
+        trans = mconcat [ scaleUni rad
+                        , translate (3 * rad * x) (3 * rad * y) 0
+                        ]
+    return $ inst trans (Just mat) $ sphere mat
 
 bbox1 :: BBox
 bbox1 = boundingBox (V3 1 1 1) (V3 (-1) (-1) (-1))
