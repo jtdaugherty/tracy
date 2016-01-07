@@ -56,21 +56,21 @@ thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRa
       !hitFuncs = V.fromList $ w^..objects.folded.hit
       !shadowHitFuncs = V.fromList $ w^..objects.folded.shadow_hit
       getCol col =
-          let !squareSampleSet = (sampleData^.squareSampleSets) V.! sampleSetIndex
-              !diskSampleSet = (sampleData^.diskSampleSets) V.! sampleSetIndex
-              !objectSampleSet = (sampleData^.objectSampleSets) V.! sampleSetIndex
-              !pixelSampleSet = (sampleData^.pixelSampleSets) V.! sampleSetIndex
-              !sampleSetIndex = sampleSetIndices V.! ((fromEnum col) `mod` sampleData^.numSets)
+          let !squareSampleSet = (sampleData^.squareSampleSets) `V.unsafeIndex` sampleSetIndex
+              !diskSampleSet = (sampleData^.diskSampleSets) `V.unsafeIndex` sampleSetIndex
+              !objectSampleSet = (sampleData^.objectSampleSets) `V.unsafeIndex` sampleSetIndex
+              !pixelSampleSet = (sampleData^.pixelSampleSets) `V.unsafeIndex` sampleSetIndex
+              !sampleSetIndex = sampleSetIndices `V.unsafeIndex` ((fromEnum col) `mod` sampleData^.numSets)
 
           in (V.sum (results col pixelSampleSet squareSampleSet diskSampleSet objectSampleSet) * exposure)
 
       results :: Double -> V.Vector (Double, Double) -> V.Vector (Double, Double)
               -> V.Vector (Double, Double) -> V.Vector (Double, Double) -> V.Vector Color
       results col pixelSamples squareSamples diskSamples objectSamples =
-          V.map (\idx -> result col (pixelSamples V.! idx)
-                                    (squareSamples V.! idx)
-                                    (diskSamples V.! idx)
-                                    (objectSamples V.! idx)
+          V.map (\idx -> result col (pixelSamples `V.unsafeIndex` idx)
+                                    (squareSamples `V.unsafeIndex` idx)
+                                    (diskSamples `V.unsafeIndex` idx)
+                                    (objectSamples `V.unsafeIndex` idx)
                 ) sampleIndices
 
       result col (px, py) (sx, sy) (dx, dy) (ox, oy) =
