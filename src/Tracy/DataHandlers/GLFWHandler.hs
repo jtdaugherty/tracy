@@ -85,7 +85,7 @@ glfwHandler stopMvar chan = withGLFWInit $ do
 
                     forM_ [startIndex..stopIndex] $ \i -> do
                         val <- peekElemOff (castPtr combinedPtr) i
-                        pokeElemOff imageArray i $ toColor3 $ maxToOne val
+                        pokeElemOff imageArray i $! toColor3 $! maxToOne val
 
                     display ref imageArray
                     G.swapBuffers window
