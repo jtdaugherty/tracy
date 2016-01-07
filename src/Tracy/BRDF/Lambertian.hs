@@ -15,7 +15,7 @@ lambertian t kd =
     BRDF (lambFunc t kd) (lambSample t kd) (lambRhoFunc t kd)
 
 lambFunc :: Texture -> Double -> Shade -> V3 Double -> V3 Double -> Color
-lambFunc t kd sh _ _ = (grey kd) * ((t^.getColor) sh) * (grey invPI)
+lambFunc t kd sh _ _ = ((t^.getColor) sh) * (grey $ invPI * kd)
 
 lambSample :: Texture -> Double -> Shade -> V3 Double -> TraceM (Double, Color, V3 Double)
 lambSample t kd sh _ = do
@@ -28,7 +28,7 @@ lambSample t kd sh _ = do
         pdf = (sh^.normal) `dot` (wi ^* invPI)
 
     return ( pdf
-           , grey kd * ((t^.getColor) sh) * (grey invPI)
+           , ((t^.getColor) sh) * (grey $ kd * invPI)
            , wi
            )
 
