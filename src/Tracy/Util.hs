@@ -19,7 +19,6 @@ module Tracy.Util
   ) where
 
 import Control.Applicative
-import Control.Lens
 import Data.Colour
 import Linear
 import qualified Data.ByteString as B
@@ -44,9 +43,14 @@ maxToOne (Colour r g b) = Colour r' g' b'
 flipNormal :: V3 Double -> V3 Double -> V3 Double
 flipNormal !dir !n = if dir `dot` n > 0 then -1 *^ n else n
 
+{-# INLINE getColorBytes #-}
 getColorBytes :: Colour -> B.ByteString
 getColorBytes (Colour r g b) =
-    B.pack $ (toEnum . fromEnum) <$> [ r * 255, g * 255, b * 255, 255 ]
+    B.pack [ round $ r * 255
+           , round $ g * 255
+           , round $ b * 255
+           , 255
+           ]
 
 defaultShade :: Shade
 defaultShade =
@@ -64,22 +68,25 @@ clamp v mnB mxB = if v < mnB
                   then mnB else if v > mxB
                                 then mxB else v
 
+{-# INLINE mx #-}
 mx :: (Ord a) => a -> a -> a
 mx a b = if a > b then a else b
 
+{-# INLINE mn #-}
 mn :: (Ord a) => a -> a -> a
 mn a b = if a < b then a else b
 
+{-# INLINE max3 #-}
 max3 :: (Ord a) => a -> a -> a -> a
 max3 a b c = mx a $ mx b c
 
+{-# INLINE min3 #-}
 min3 :: (Ord a) => a -> a -> a -> a
 min3 a b c = mn a $ mn b c
 
 dSquared :: (Floating a, Num a) => V3 a -> V3 a -> a
-dSquared v1 v2 = (v1^._x - v2^._x) ** 2 +
-                 (v1^._y - v2^._y) ** 2 +
-                 (v1^._z - v2^._z) ** 2
+dSquared (V3 x1 y1 z1) (V3 x2 y2 z2) =
+    (x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2
 
 createMergeBuffer :: Int -> Int -> IO (Int, Int, Ptr Double)
 createMergeBuffer rows cols = do
@@ -103,13 +110,16 @@ vectorFromMergeBuffer (rows, cols, merged) =
 foreign import ccall unsafe "running_average"
   c_running_average :: CDouble -> CDouble -> CInt -> Ptr Double -> Ptr Double -> IO ()
 
+{-# INLINE toV4 #-}
 toV4 :: (Num a) => V3 a -> V4 a
-toV4 v = V4 (v^._x) (v^._y) (v^._z) 0
+toV4 (V3 x y z) = V4 x y z 0
 
+{-# INLINE toV3 #-}
 toV3 :: V4 a -> V3 a
-toV3 v = V3 (v^._x) (v^._y) (v^._z)
+toV3 (V4 x y z _) = V3 x y z
 
+{-# INLINE (!*.) #-}
 (!*.) :: M44 Double -> V3 Double -> V3 Double
-m !*. v = toV3 $ m !* v'
+m !*. (V3 x y z) = toV3 $ m !* v'
     where
-      v' = V4 (v^._x) (v^._y) (v^._z) 1
+      v' = V4 x y z 1

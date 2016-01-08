@@ -72,57 +72,55 @@ glfwHandler stopMvar chan = withGLFWInit $ do
         work sampleCounts = do
           shouldClose <- G.windowShouldClose window
           shouldStop <- not <$> isEmptyMVar stopMvar
-          case shouldClose || shouldStop of
-              True -> finishOutput
-              False -> do
-                ev <- readChan chan
-                next <- case ev of
-                    DStarted (Frame fn) -> do
-                        G.setWindowTitle window $ windowTitle fn sceneName
-                        return $ Just $ work sampleCounts
-                    DChunkFinished (startRow@(Row startRowI), Row stopRow) (Count sc) rs -> do
-                        let numSamples = sampleCounts M.! startRow
-                            newSampleCount = numSamples + sc
-                            startIndex = startRowI * cols
-                            stopIndex = ((stopRow + 1) * cols) - 1
+          when (not $ shouldClose || shouldStop) $ do
+              ev <- readChan chan
+              next <- case ev of
+                  DStarted (Frame fn) -> do
+                      G.setWindowTitle window $ windowTitle fn sceneName
+                      return $ Just $ work sampleCounts
+                  DChunkFinished (startRow@(Row startRowI), Row stopRow) (Count sc) rs -> do
+                      let numSamples = sampleCounts M.! startRow
+                          newSampleCount = numSamples + sc
+                          startIndex = startRowI * cols
+                          stopIndex = ((stopRow + 1) * cols) - 1
 
-                        mergeChunks numSamples newSampleCount startRow combinedArray rs
+                      mergeChunks numSamples newSampleCount startRow combinedArray rs
 
-                        forM_ [startIndex..stopIndex] $ \i -> do
-                            val <- peekElemOff (castPtr combinedPtr) i
-                            pokeElemOff imageArray i $ toColor3 $ maxToOne val
+                      forM_ [startIndex..stopIndex] $ \i -> do
+                          val <- peekElemOff (castPtr combinedPtr) i
+                          pokeElemOff imageArray i $! toColor3 $! maxToOne val
 
-                        display ref imageArray
-                        G.swapBuffers window
+                      display ref imageArray
+                      G.swapBuffers window
 
-                        return $ Just $ work $
-                          M.alter (\(Just v) -> Just (v + sc)) startRow sampleCounts
+                      return $ Just $ work $
+                        M.alter (\(Just v) -> Just (v + sc)) startRow sampleCounts
 
-                    DFinished frameNum -> do
-                        -- Write the current accumulation buffer to disk
-                        vec <- vectorFromMergeBuffer combinedArray
-                        let vec2 = SV.map maxToOne vec
-                        frameWriter vec2 frameNum
+                  DFinished frameNum -> do
+                      -- Write the current accumulation buffer to disk
+                      vec <- vectorFromMergeBuffer combinedArray
+                      let vec2 = SV.map maxToOne vec
+                      frameWriter vec2 frameNum
 
-                        -- If we just wrote the last frame in the sequence,
-                        -- shut down the output stream
-                        when (frameNum == lastFrame) finishOutput
+                      -- If we just wrote the last frame in the sequence,
+                      -- shut down the output stream
+                      when (frameNum == lastFrame) finishOutput
 
-                        -- Start over with a new sample count map
-                        return $ Just $ work sCountMap
-                    DShutdown -> do
-                        let waitForQuit = do
-                                wsc <- G.windowShouldClose window
-                                e <- not <$> isEmptyMVar stopMvar
-                                when (not $ wsc || e) $ G.pollEvents >> threadDelay 100000 >> waitForQuit
-                        waitForQuit
-                        return Nothing
-                    _ -> return $ Just $ work sampleCounts
+                      -- Start over with a new sample count map
+                      return $ Just $ work sCountMap
+                  DShutdown -> do
+                      let waitForQuit = do
+                              wsc <- G.windowShouldClose window
+                              e <- not <$> isEmptyMVar stopMvar
+                              when (not $ wsc || e) $ G.pollEvents >> threadDelay 100000 >> waitForQuit
+                      waitForQuit
+                      return Nothing
+                  _ -> return $ Just $ work sampleCounts
 
-                G.pollEvents
-                case next of
-                    Nothing -> return ()
-                    Just act -> act
+              G.pollEvents
+              case next of
+                  Nothing -> return ()
+                  Just act -> act
 
     G.setKeyCallback window (Just handleKeys)
     G.setFramebufferSizeCallback window (Just resizeFb)

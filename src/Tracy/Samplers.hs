@@ -52,7 +52,7 @@ jittered = Sampler $ \gen root -> do
   let sampleArrs = do
         j <- [0..root-1]
         k <- [0..root-1]
-        let !t = vs V.! (fromEnum $ k * root + j)
+        let !t = vs `V.unsafeIndex` (fromEnum $ k * root + j)
         return ( (k + fst t) / root
                , (j + snd t) / root
                )

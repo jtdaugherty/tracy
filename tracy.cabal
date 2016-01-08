@@ -142,6 +142,7 @@ executable tracy-bench
     diagrams-solve,
     distributive,
     either,
+    JuicyPixels,
     lens,
     linear >= 1.17,
     mtl,
