@@ -33,7 +33,7 @@ library
     diagrams-solve,
     distributive,
     either,
-    ffmpeg-light >= 0.9,
+    ffmpeg-light >= 0.10,
     JuicyPixels,
     lens,
     linear >= 1.17,
