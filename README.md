@@ -27,6 +27,7 @@ Features:
  * Live GUI window with progressive rendering
  * YAML-based scene file format
  * Basic animation support for some scalar and vector parameters
+ * Movie output when rendering more than one frame
  * Multi-core rendering engine using Haskell's `parMap` evaluation
    strategy
  * Network rendering (run `tracy -d tcp://slave:9000` on the master,
