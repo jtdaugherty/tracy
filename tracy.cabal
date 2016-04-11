@@ -170,7 +170,7 @@ executable tracy
     base == 4.*,
     lens,
     tracy,
-    brick >= 0.2,
+    brick >= 0.4,
     containers,
     time,
     vty,
