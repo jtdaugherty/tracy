@@ -90,7 +90,7 @@ glfwHandler stopMvar chan = withGLFWInit $ do
                           val <- peekElemOff (castPtr combinedPtr) i
                           pokeElemOff imageArray i $! toColor3 $! maxToOne val
 
-                      display ref imageArray
+                      display window ref imageArray
                       G.swapBuffers window
 
                       return $ Just $ work $
@@ -125,13 +125,8 @@ glfwHandler stopMvar chan = withGLFWInit $ do
     G.setKeyCallback window (Just handleKeys)
     G.setFramebufferSizeCallback window (Just resizeFb)
 
-    (wx, wy) <- G.getWindowSize window
     (fbx, fby) <- G.getFramebufferSize window
-    let (xZoom, yZoom) = (toEnum fbx / toEnum wx, toEnum fby / toEnum wy)
-    GL.pixelZoom $= (xZoom, yZoom)
-
-    (fbW, fbH) <- G.getFramebufferSize window
-    resizeFb window fbW fbH
+    resizeFb window fbx fby
 
     GL.clearColor $= GL.Color4 100 100 200 0
     GL.shadeModel $= GL.Flat
@@ -156,16 +151,21 @@ handleKeys w key _ _ _ =
         G.Key'Q -> G.setWindowShouldClose w True
         _ -> return ()
 
-display :: IORef MyState -> Ptr (GL.Color3 GL.GLubyte) -> IO ()
-display ref imageData = do
+display :: G.Window -> IORef MyState -> Ptr (GL.Color3 GL.GLubyte) -> IO ()
+display window ref imageData = do
     st <- readIORef ref
 
     let rasterPos2i = GL.rasterPos :: GL.Vertex2 GL.GLint -> IO ()
         sz = GL.Size (toEnum $ windowWidth st)
                      (toEnum $ windowHeight st)
 
+    (wx, wy) <- G.getWindowSize window
+    (fbx, fby) <- G.getFramebufferSize window
+    let (xZoom, yZoom) = (toEnum fbx / toEnum wx, toEnum fby / toEnum wy)
+    GL.pixelZoom $= (xZoom, yZoom)
+
     GL.clear [GL.ColorBuffer]
-    rasterPos2i (GL.Vertex2 0 0)
+    rasterPos2i (GL.Vertex2 (-1) (-1))
     let img = GL.PixelData GL.RGB GL.UnsignedByte imageData
     GL.drawPixels sz img
 
