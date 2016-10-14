@@ -163,6 +163,9 @@ data AppEvent = Info InfoEvent
               | VtyEvent Event
               | GUIShutdown
 
+data Name = Name
+          deriving (Eq, Ord, Show)
+
 data St =
     St { _renderConfig :: RenderConfig
        , _preConfig :: PreConfig
@@ -210,7 +213,7 @@ theMap = attrMap (white `on` black)
     , (hBorderLabelAttr,                fg cyan)
     ]
 
-appEvent :: St -> AppEvent -> EventM (Next St)
+appEvent :: St -> AppEvent -> EventM Name (Next St)
 appEvent st (VtyEvent (EvKey KEsc [])) = halt st
 appEvent st (VtyEvent (EvKey (KChar 'q') [])) = halt st
 appEvent st (Info i) =
@@ -255,7 +258,7 @@ statusFinishedAttr = "statusFinished"
 statusStartedAttr :: AttrName
 statusStartedAttr = "statusStarted"
 
-drawUI :: St -> [Widget]
+drawUI :: St -> [Widget Name]
 drawUI st = [withBorderStyle unicode ui]
     where
         ui = vBox [ hBorderWithLabel $ str "tracy"
@@ -263,12 +266,12 @@ drawUI st = [withBorderStyle unicode ui]
                   , drawInfoState (st^.preConfig) (st^.infoState)
                   ]
 
-mkNodeEntry :: (String, NodeState) -> Widget
+mkNodeEntry :: (String, NodeState) -> Widget Name
 mkNodeEntry (name, st) =
     (str $ take 25 name) <+>
     (padLeft Max (withAttr (nodeStateAttr st) $ str $ show st))
 
-drawInfoState :: PreConfig -> InfoState -> Widget
+drawInfoState :: PreConfig -> InfoState -> Widget Name
 drawInfoState pcfg st =
     let curFrameStatus = case st^.lastChunkFinished of
             Nothing -> 0.0
@@ -325,21 +328,21 @@ drawInfoState pcfg st =
                            <=> fill ' '
              ]
 
-mValue :: Maybe Widget -> Widget
+mValue :: Maybe (Widget Name) -> Widget Name
 mValue Nothing = str "-"
 mValue (Just w) = w
 
-labeledValue :: String -> Widget -> Widget
+labeledValue :: String -> Widget Name -> Widget Name
 labeledValue label a = padRight Max $
                        (hLimit 25 $ padRight Max $ str label) <+>
                        (padRight Max a)
 
-showValue :: (Show a) => String -> a -> Widget
+showValue :: (Show a) => String -> a -> Widget Name
 showValue label a = padRight Max $
                     (hLimit 25 $ padRight Max $ str label) <+>
                     (padRight Max $ str $ show a)
 
-drawPreConfig :: PreConfig -> Widget
+drawPreConfig :: PreConfig -> Widget Name
 drawPreConfig cfg =
     hBox [ vBox [ showValue "Sample root:" (argSampleRoot cfg)
                 , case argCpuCount cfg of
@@ -357,7 +360,7 @@ drawPreConfig cfg =
                 ]
          ]
 
-app :: App St AppEvent
+app :: App St AppEvent Name
 app =
     App { appDraw = drawUI
         , appChooseCursor = neverShowCursor
