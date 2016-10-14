@@ -48,7 +48,7 @@ library
     text,
     time,
     vector,
-    vector-binary-instances,
+    cereal-vector,
     yaml,
     zeromq4-haskell
 
@@ -155,7 +155,7 @@ executable tracy-bench
     text,
     time,
     vector,
-    vector-binary-instances,
+    cereal-vector,
     yaml,
     zeromq4-haskell
 

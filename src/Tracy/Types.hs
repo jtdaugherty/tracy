@@ -21,7 +21,7 @@ import System.Random.MWC
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.Ptr
-import Data.Vector.Cereal ()
+import Data.Vector.Serialize ()
 import qualified Data.Yaml as Y
 import qualified Data.Text as T
 import Codec.Picture (Image(..), DynamicImage(..), PixelRGB8, decodePng, encodePng)
