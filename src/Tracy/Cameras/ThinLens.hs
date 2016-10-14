@@ -47,20 +47,20 @@ thinLensRayDir cam pixelPoint lensPoint =
 
 thinLensRender :: CameraRenderer ThinLens
 thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRange =
-  let !newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
-      !sampleIndices = V.fromList [fst sampleRange .. snd sampleRange]
-      !exposure = grey (cam^.exposureTime)
-      !vp = w^.viewPlane
-      !row = toEnum theRow
-      !colors = SV.generate (fromEnum $ vp^.hres) (getCol . toEnum)
-      !hitFuncs = V.fromList $ w^..objects.folded.hit
-      !shadowHitFuncs = V.fromList $ w^..objects.folded.shadow_hit
+  let newPixSize = vp^.pixelSize / cam^.cameraZoomFactor
+      sampleIndices = V.fromList [fst sampleRange .. snd sampleRange]
+      exposure = grey (cam^.exposureTime)
+      vp = w^.viewPlane
+      row = toEnum theRow
+      colors = SV.generate (fromEnum $ vp^.hres) (getCol . toEnum)
+      hitFuncs = V.fromList $ w^..objects.folded.hit
+      shadowHitFuncs = V.fromList $ w^..objects.folded.shadow_hit
       getCol col =
-          let !squareSampleSet = (sampleData^.squareSampleSets) `V.unsafeIndex` sampleSetIndex
-              !diskSampleSet = (sampleData^.diskSampleSets) `V.unsafeIndex` sampleSetIndex
-              !objectSampleSet = (sampleData^.objectSampleSets) `V.unsafeIndex` sampleSetIndex
-              !pixelSampleSet = (sampleData^.pixelSampleSets) `V.unsafeIndex` sampleSetIndex
-              !sampleSetIndex = sampleSetIndices `V.unsafeIndex` ((fromEnum col) `mod` sampleData^.numSets)
+          let squareSampleSet = (sampleData^.squareSampleSets) `V.unsafeIndex` sampleSetIndex
+              diskSampleSet = (sampleData^.diskSampleSets) `V.unsafeIndex` sampleSetIndex
+              objectSampleSet = (sampleData^.objectSampleSets) `V.unsafeIndex` sampleSetIndex
+              pixelSampleSet = (sampleData^.pixelSampleSets) `V.unsafeIndex` sampleSetIndex
+              sampleSetIndex = sampleSetIndices `V.unsafeIndex` ((fromEnum col) `mod` sampleData^.numSets)
 
           in (V.sum (results col pixelSampleSet squareSampleSet diskSampleSet objectSampleSet) * exposure)
 
@@ -74,21 +74,21 @@ thinLensRender cam _ w tracer sampleData (Row theRow, sampleSetIndices) sampleRa
                 ) sampleIndices
 
       result col (px, py) (sx, sy) (dx, dy) (ox, oy) =
-          let !x = newPixSize * (col - (0.5 * vp^.hres) + px)
-              !y = newPixSize * (row - (0.5 * vp^.vres) + py)
+          let x = newPixSize * (col - (0.5 * vp^.hres) + px)
+              y = newPixSize * (row - (0.5 * vp^.vres) + py)
 
-              !lx = dx * cam^.cameraData.lensRadius
-              !ly = dy * cam^.cameraData.lensRadius
+              lx = dx * cam^.cameraData.lensRadius
+              ly = dy * cam^.cameraData.lensRadius
 
-              !o = cam^.cameraEyePoint +
-                  (lx *^ cam^.cameraU) +
-                  (ly *^ cam^.cameraV)
+              o = cam^.cameraEyePoint +
+                 (lx *^ cam^.cameraU) +
+                 (ly *^ cam^.cameraV)
 
-              !d_1 = V2 x y
-              !d_2 = V2 lx ly
-              !d = (cam^.cameraData.lensRayDir) cam d_1 d_2
+              d_1 = V2 x y
+              d_2 = V2 lx ly
+              d = (cam^.cameraData.lensRayDir) cam d_1 d_2
 
-              !ray = Ray { _origin = o
+              ray = Ray { _origin = o
                         , _direction = d
                         }
               st = TD { _tdHemiSample = toUnitHemi 1 (sx, sy)
