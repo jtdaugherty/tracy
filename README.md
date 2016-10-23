@@ -35,7 +35,7 @@ Features:
 
 | Demo | Image |
 |------|-------|
-| Basic shapes with ambient occlusion | <a href="demos/demo1.png"><img src="/demos/demo.png" width="150" height="150"/></a> |
+| Basic shapes with ambient occlusion | <a href="demos/demo.png"><img src="/demos/demo.png" width="150" height="150"/></a> |
 | Thin-lens depth of field            | <a href="demos/demo2.png"><img src="/demos/demo2.png" width="150" height="150"/></a> |
 | Stanford Bunny                      | <a href="demos/demo3.png"><img src="/demos/demo3.png" width="150" height="150"/></a> |
 | Dragon mesh                         | <a href="demos/demo4.png"><img src="/demos/demo4.png" width="150" height="150"/></a> |
