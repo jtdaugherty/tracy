@@ -6,7 +6,6 @@ import Control.Applicative ((<$>))
 import Control.Concurrent
 import Control.Monad
 import Control.Lens
-import Data.Default
 import Data.Monoid
 import qualified Data.Map as M
 import System.Console.GetOpt
@@ -31,6 +30,7 @@ import Brick.Main
 import Brick.Util
 import Brick.AttrMap
 import Brick.Types
+import Brick.BChan
 import Brick.Widgets.Core
 import Brick.Widgets.ProgressBar
 import Brick.Widgets.Border
@@ -160,7 +160,6 @@ usage = do
   exitFailure
 
 data AppEvent = Info InfoEvent
-              | VtyEvent Event
               | GUIShutdown
 
 data Name = Name
@@ -213,10 +212,10 @@ theMap = attrMap (white `on` black)
     , (hBorderLabelAttr,                fg cyan)
     ]
 
-appEvent :: St -> AppEvent -> EventM Name (Next St)
+appEvent :: St -> BrickEvent Name AppEvent -> EventM Name (Next St)
 appEvent st (VtyEvent (EvKey KEsc [])) = halt st
 appEvent st (VtyEvent (EvKey (KChar 'q') [])) = halt st
-appEvent st (Info i) =
+appEvent st (AppEvent (Info i)) =
     case i of
         ISampleRoot _ -> continue st
         ITraceMaxDepth _ -> continue st
@@ -244,7 +243,7 @@ appEvent st (Info i) =
         IFinished fn -> continue $ st & infoState.lastFrameFinished .~ Just fn
         IShutdown -> continue $ st & infoState.finished .~ True
 
-appEvent st GUIShutdown = halt st
+appEvent st (AppEvent GUIShutdown) = halt st
 appEvent st _ = continue st
 
 nodeStateAttr :: NodeState -> AttrName
@@ -366,15 +365,14 @@ app =
         , appChooseCursor = neverShowCursor
         , appStartEvent = return
         , appHandleEvent = appEvent
-        , appLiftVtyEvent = VtyEvent
         , appAttrMap = const theMap
         }
 
-brickHandler :: Chan InfoEvent -> Chan AppEvent -> IO ()
+brickHandler :: Chan InfoEvent -> BChan AppEvent -> IO ()
 brickHandler infoChan appChan =
     forever $ do
         ev <- Info <$> readChan infoChan
-        writeChan appChan ev
+        writeBChan appChan ev
 
 main :: IO ()
 main = do
@@ -413,7 +411,7 @@ main = do
 
         iChan <- newChan
         dChan <- newChan
-        appChan <- newChan
+        appChan <- newBChan 100
 
         -- Modify the scene description according to the command-line
         -- parameters
@@ -460,15 +458,15 @@ main = do
         case UseGUI `elem` os of
             False -> do
                 void $ forkIO $ fileHandler dChan
-                void $ customMain (mkVty def) appChan app initialState
+                void $ customMain (mkVty defaultConfig) (Just appChan) app initialState
             True -> do
                 mv <- newEmptyMVar
                 stopMVar <- newEmptyMVar
                 void $ forkIO $ do
-                    void $ customMain (mkVty def) appChan app initialState
+                    void $ customMain (mkVty defaultConfig) (Just appChan) app initialState
                     putMVar stopMVar ()
                     putMVar mv ()
 
                 glfwHandler stopMVar dChan
-                writeChan appChan GUIShutdown
+                writeBChan appChan GUIShutdown
                 void $ takeMVar mv
