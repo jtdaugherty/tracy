@@ -1,6 +1,5 @@
 module Main where
 
-import Control.Applicative
 import Control.Lens
 import Control.Monad.State
 import Codec.BMP

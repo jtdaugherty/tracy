@@ -6,7 +6,6 @@ import Control.Applicative ((<$>))
 import Control.Concurrent
 import Control.Monad
 import Control.Lens
-import Data.Monoid
 import qualified Data.Map as M
 import System.Console.GetOpt
 import System.Environment
@@ -201,6 +200,9 @@ data InfoState =
 
 makeLenses ''St
 makeLenses ''InfoState
+
+hBorderLabelAttr :: AttrName
+hBorderLabelAttr = "hBorderLabelAttr"
 
 theMap :: AttrMap
 theMap = attrMap (white `on` black)
