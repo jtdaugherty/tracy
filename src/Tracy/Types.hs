@@ -14,7 +14,6 @@ import qualified Data.Vector.Unboxed as VU
 import GHC.Generics
 import Linear
 import Data.Colour
-import Data.Monoid
 import Data.Word
 import Data.Scientific (toRealFloat)
 import System.Random.MWC
@@ -134,10 +133,12 @@ data TransformationDesc =
     | RotateZ Double
     deriving (Eq, Show, Read, Generic)
 
+instance Semigroup Transformation where
+    (Trans (f1, i1)) <> (Trans (f2, i2)) =
+        Trans (f1 !*! f2, i2 !*! i1)
+
 instance Monoid Transformation where
     mempty = Trans (identity, identity)
-    (Trans (f1, i1)) `mappend` (Trans (f2, i2)) =
-        Trans (f1 !*! f2, i2 !*! i1)
 
 data Shade =
     Shade { _localHitPoint :: !(V3 Double)
