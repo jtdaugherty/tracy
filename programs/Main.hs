@@ -457,15 +457,17 @@ main = do
         _ <- forkIO $ brickHandler iChan appChan
         _ <- forkIO $ TM.render toRender renderCfg configuredSceneDesc cfgFrameRange numNodes manager iChan dChan
 
+        initialVty <- mkVty defaultConfig
+
         case UseGUI `elem` os of
             False -> do
                 void $ forkIO $ fileHandler dChan
-                void $ customMain (mkVty defaultConfig) (Just appChan) app initialState
+                void $ customMain initialVty (mkVty defaultConfig) (Just appChan) app initialState
             True -> do
                 mv <- newEmptyMVar
                 stopMVar <- newEmptyMVar
                 void $ forkIO $ do
-                    void $ customMain (mkVty defaultConfig) (Just appChan) app initialState
+                    void $ customMain initialVty (mkVty defaultConfig) (Just appChan) app initialState
                     putMVar stopMVar ()
                     putMVar mv ()
 
