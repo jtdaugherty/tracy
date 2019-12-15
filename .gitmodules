@@ -1,0 +1,3 @@
+[submodule "ffmpeg-light"]
+	path = ffmpeg-light
+	url = git@github.com:acowley/ffmpeg-light.git
