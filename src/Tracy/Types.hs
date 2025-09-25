@@ -6,6 +6,7 @@ import Control.Applicative
 import Control.Lens
 import Data.Serialize
 import Data.Time.Clock
+import Control.Monad (when)
 import Control.Monad.Reader
 import Data.Map (Map)
 import qualified Data.Vector.Storable as SV
