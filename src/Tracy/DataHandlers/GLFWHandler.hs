@@ -6,6 +6,7 @@ module Tracy.DataHandlers.GLFWHandler
 import Control.Concurrent.Chan
 import Control.Concurrent
 import Control.Monad
+import Data.Maybe (fromJust)
 import qualified Data.Map as M
 import qualified Data.Vector.Storable as SV
 import Data.IORef
@@ -93,7 +94,7 @@ glfwHandler stopMvar chan = withGLFWInit $ do
                       G.swapBuffers window
 
                       return $ Just $ work $
-                        M.alter (\(Just v) -> Just (v + sc)) startRow sampleCounts
+                        M.alter (\val -> Just (fromJust val + sc)) startRow sampleCounts
 
                   DFinished frameNum -> do
                       -- Write the current accumulation buffer to disk
