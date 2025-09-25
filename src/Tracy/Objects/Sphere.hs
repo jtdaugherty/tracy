@@ -4,7 +4,6 @@ module Tracy.Objects.Sphere
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Linear
 

@@ -4,7 +4,6 @@ module Tracy.Objects.Mesh
   , loadMeshes
   ) where
 
-import Control.Applicative
 import Control.Concurrent
 import Control.Monad (forM)
 import Data.List (nub)

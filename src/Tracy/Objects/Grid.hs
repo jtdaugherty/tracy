@@ -13,7 +13,6 @@ import Tracy.Objects.Compound
 import Data.Maybe
 import qualified Data.Vector as V
 import Control.Lens hiding (ix, inside)
-import Control.Applicative
 import Control.Monad.State
 import qualified Data.Map as M
 import Linear

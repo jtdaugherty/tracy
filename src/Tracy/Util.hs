@@ -18,7 +18,6 @@ module Tracy.Util
   , (!*.)
   ) where
 
-import Control.Applicative
 import Data.Colour
 import Linear
 import qualified Data.ByteString as B

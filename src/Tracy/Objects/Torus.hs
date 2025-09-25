@@ -4,7 +4,6 @@ module Tracy.Objects.Torus
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Data.List
 import Data.Maybe

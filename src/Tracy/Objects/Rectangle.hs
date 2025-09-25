@@ -3,7 +3,6 @@ module Tracy.Objects.Rectangle
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Linear
 
