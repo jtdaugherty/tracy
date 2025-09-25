@@ -3,7 +3,6 @@ module Tracy.Lights.AmbientOccluder
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Data.Colour
 import Data.Maybe
