@@ -12,7 +12,6 @@ module Tracy.Samplers
   )
   where
 
-import Control.Applicative
 import Control.Monad
 import Data.Array.IO
 import Data.List (transpose)
