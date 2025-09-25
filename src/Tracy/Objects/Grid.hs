@@ -78,7 +78,7 @@ setupCells b os (nx, ny, nz) = mkCompounds $ V.foldr addObject M.empty os
       p0 = b^.bboxP0
       p1 = b^.bboxP1
       addObject :: Object -> M.Map (Int, Int, Int) (V.Vector Object) -> M.Map (Int, Int, Int) (V.Vector Object)
-      addObject o m = let Just !ob = o^.bounding_box
+      addObject o m = let !ob = fromJust $ o^.bounding_box
 
                           !ixmin = clamp (fromEnum $ (ob^.bboxP0._x - p0^._x) * (toEnum nx) / (p1^._x - p0^._x)) 0 (nx - 1)
                           !iymin = clamp (fromEnum $ (ob^.bboxP0._y - p0^._y) * (toEnum ny) / (p1^._y - p0^._y)) 0 (ny - 1)
