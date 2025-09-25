@@ -103,7 +103,7 @@ objectFromDesc ig _ fn (Plane m) =
 objectFromDesc ig mg fn (Mesh src m) = do
     mData <- case M.lookup src mg of
                Just md -> return md
-               Nothing -> fail $ "Could not find preloaded mesh for " ++ show src
+               Nothing -> Left $ "Could not find preloaded mesh for " ++ show src
     theMesh <- mesh mData <$> materialFromDesc ig fn m Nothing
     return [theMesh]
 objectFromDesc ig mg fn (Grid os) =
@@ -149,7 +149,7 @@ lightFromDesc ig mg fn (Area sh oDesc p) = do
     v <- objectFromDesc ig mg fn oDesc
     case v of
       [o] -> return $ areaLight sh o p
-      _ -> fail "Could not create area light from multiple objects"
+      _ -> Left "Could not create area light from multiple objects"
 
 materialFromDesc :: ImageGroup -> Frame -> MaterialDesc -> Maybe Transformation -> LoadM Material
 materialFromDesc ig _ (Matte td) trans =
@@ -192,7 +192,7 @@ textureFromDesc _ (SphereChecker cnt) trans = do
 textureFromDesc ig (ImageTexture fp mappingDesc) trans = do
     img <- case M.lookup fp ig of
         Just img -> return img
-        Nothing -> fail $ "Could not find image at path " ++ show fp
+        Nothing -> Left $ "Could not find image at path " ++ show fp
     mapping <- case mappingDesc of
         Nothing -> return Nothing
         Just md -> Just <$> mappingFromDesc md
