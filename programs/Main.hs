@@ -25,6 +25,7 @@ import Tracy.RenderManagers.Local
 import Tracy.RenderManagers.Network
 
 import Graphics.Vty
+import Graphics.Vty.Platform.Unix (mkVty)
 import Brick.Main
 import Brick.Util
 import Brick.AttrMap
@@ -202,7 +203,7 @@ makeLenses ''St
 makeLenses ''InfoState
 
 hBorderLabelAttr :: AttrName
-hBorderLabelAttr = "hBorderLabelAttr"
+hBorderLabelAttr = attrName "hBorderLabelAttr"
 
 theMap :: AttrMap
 theMap = attrMap (white `on` black)
@@ -214,50 +215,52 @@ theMap = attrMap (white `on` black)
     , (hBorderLabelAttr,                fg cyan)
     ]
 
-appEvent :: St -> BrickEvent Name AppEvent -> EventM Name (Next St)
-appEvent st (VtyEvent (EvKey KEsc [])) = halt st
-appEvent st (VtyEvent (EvKey (KChar 'q') [])) = halt st
-appEvent st (AppEvent (Info i)) =
+appEvent :: BrickEvent Name AppEvent -> EventM Name St ()
+appEvent (VtyEvent (EvKey KEsc [])) = halt
+appEvent (VtyEvent (EvKey (KChar 'q') [])) = halt
+appEvent (AppEvent (Info i)) =
     case i of
-        ISampleRoot _ -> continue st
-        ITraceMaxDepth _ -> continue st
-        IConnected node -> continue $ st & infoState.nodes.at node .~ Just Connected
-        IConnecting node -> continue $ st & infoState.nodes.at node .~ Just Connecting
-        INodeReady node -> continue $ st & infoState.nodes.at node .~ Just Ready
-        ISceneName name -> continue $ st & infoState.sceneName .~ Just name
-        IFrameRange range -> continue $ st & infoState.frameRange .~ Just range
-        INumObjects n -> continue $ st & infoState.numObjects .~ Just n
-        IShadows s -> continue $ st & infoState.shadows .~ Just s
-        INumCPUs n -> continue $ st & infoState.numCPUs .~ Just n
-        IChunkFinished fn start stop total -> continue $ st &  infoState.lastChunkFinished .~ Just (fn, start, stop, total)
-        IStartTime start -> continue $ st & infoState.startTime .~ Just start
-        IFinishTime finish -> continue $ st & infoState.finishTime .~ Just finish
-        ITotalTime total -> continue $ st & infoState.totalTime .~ Just total
-        IImageSize w h -> continue $ st & infoState.imageSize .~ Just (w, h)
-        ILoadedMeshes n -> continue $ st & infoState.loadedMeshes .~ Just n
-                                         & infoState.meshesLoaded .~ True
-        ILoadedTextures n -> continue $ st & infoState.loadedTextures .~ Just n
-                                           & infoState.texturesLoaded .~ True
-        ILoadingMeshes -> continue $ st & infoState.meshesLoaded .~ False
-        ILoadingTextures -> continue $ st & infoState.texturesLoaded .~ False
-        ISettingScene -> continue $ st & infoState.setScene .~ True
-        IStarted -> continue $ st & infoState.started .~ True
-        IFinished fn -> continue $ st & infoState.lastFrameFinished .~ Just fn
-        IShutdown -> continue $ st & infoState.finished .~ True
+        ISampleRoot _ -> return ()
+        ITraceMaxDepth _ -> return ()
+        IConnected node -> infoState.nodes.at node .= Just Connected
+        IConnecting node -> infoState.nodes.at node .= Just Connecting
+        INodeReady node -> infoState.nodes.at node .= Just Ready
+        ISceneName name -> infoState.sceneName .= Just name
+        IFrameRange range -> infoState.frameRange .= Just range
+        INumObjects n -> infoState.numObjects .= Just n
+        IShadows s -> infoState.shadows .= Just s
+        INumCPUs n -> infoState.numCPUs .= Just n
+        IChunkFinished fn start stop total -> infoState.lastChunkFinished .= Just (fn, start, stop, total)
+        IStartTime start -> infoState.startTime .= Just start
+        IFinishTime finish -> infoState.finishTime .= Just finish
+        ITotalTime total -> infoState.totalTime .= Just total
+        IImageSize w h -> infoState.imageSize .= Just (w, h)
+        ILoadedMeshes n -> do
+            infoState.loadedMeshes .= Just n
+            infoState.meshesLoaded .= True
+        ILoadedTextures n -> do
+            infoState.loadedTextures .= Just n
+            infoState.texturesLoaded .= True
+        ILoadingMeshes -> infoState.meshesLoaded .= False
+        ILoadingTextures -> infoState.texturesLoaded .= False
+        ISettingScene -> infoState.setScene .= True
+        IStarted -> infoState.started .= True
+        IFinished fn -> infoState.lastFrameFinished .= Just fn
+        IShutdown -> infoState.finished .= True
 
-appEvent st (AppEvent GUIShutdown) = halt st
-appEvent st _ = continue st
+appEvent (AppEvent GUIShutdown) = halt
+appEvent _ = return ()
 
 nodeStateAttr :: NodeState -> AttrName
-nodeStateAttr Connecting = "nodeStateConnecting"
-nodeStateAttr Connected = "nodeStateConnected"
-nodeStateAttr Ready = "nodeStateReady"
+nodeStateAttr Connecting = attrName "nodeStateConnecting"
+nodeStateAttr Connected = attrName "nodeStateConnected"
+nodeStateAttr Ready = attrName "nodeStateReady"
 
 statusFinishedAttr :: AttrName
-statusFinishedAttr = "statusFinished"
+statusFinishedAttr = attrName "statusFinished"
 
 statusStartedAttr :: AttrName
-statusStartedAttr = "statusStarted"
+statusStartedAttr = attrName "statusStarted"
 
 drawUI :: St -> [Widget Name]
 drawUI st = [withBorderStyle unicode ui]
@@ -365,7 +368,7 @@ app :: App St AppEvent Name
 app =
     App { appDraw = drawUI
         , appChooseCursor = neverShowCursor
-        , appStartEvent = return
+        , appStartEvent = return ()
         , appHandleEvent = appEvent
         , appAttrMap = const theMap
         }
@@ -457,17 +460,17 @@ main = do
         _ <- forkIO $ brickHandler iChan appChan
         _ <- forkIO $ TM.render toRender renderCfg configuredSceneDesc cfgFrameRange numNodes manager iChan dChan
 
-        initialVty <- mkVty defaultConfig
+        initialVty <- mkVty =<< userConfig
 
         case UseGUI `elem` os of
             False -> do
                 void $ forkIO $ fileHandler dChan
-                void $ customMain initialVty (mkVty defaultConfig) (Just appChan) app initialState
+                void $ customMain initialVty (mkVty =<< userConfig) (Just appChan) app initialState
             True -> do
                 mv <- newEmptyMVar
                 stopMVar <- newEmptyMVar
                 void $ forkIO $ do
-                    void $ customMain initialVty (mkVty defaultConfig) (Just appChan) app initialState
+                    void $ customMain initialVty (mkVty =<< userConfig) (Just appChan) app initialState
                     putMVar stopMVar ()
                     putMVar mv ()
 

@@ -170,10 +170,11 @@ executable tracy
     base == 4.*,
     lens,
     tracy,
-    brick >= 0.4,
+    brick >= 2.9,
     containers,
     time,
     vty,
+    vty-unix,
     data-default
 
 executable tracy-node
