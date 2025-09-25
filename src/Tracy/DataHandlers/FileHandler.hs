@@ -18,7 +18,7 @@ import Data.Colour
 import System.IO (stderr)
 import System.IO.Silently
 
-import Codec.FFmpeg (initFFmpeg, defaultParams, imageWriter)
+-- import Codec.FFmpeg (initFFmpeg, defaultParams, imageWriter)
 import qualified Codec.Picture as JP
 
 import Tracy.Types
@@ -74,17 +74,17 @@ setupFrameOutput :: (Frame, Frame) -> (Int, Int) -> String -> IO (SV.Vector Colo
 setupFrameOutput (firstFrame, lastFrame) (cols, rows) sceneName = hSilence [stderr] $ do
   -- Set up frame writer: if we are rendering more than one frame,
   -- assume we are writing a movie and set up a streaming video encoder.
-  case lastFrame > firstFrame of
-      True -> do
-          initFFmpeg
-          let eps = defaultParams (toEnum $ fromEnum cols)
-                                  (toEnum $ fromEnum rows)
-          juicyImageWriteFunc <- imageWriter eps (buildMovieFilename sceneName firstFrame lastFrame)
-          let writeFrame vec _ = do
-                let img = juicyImageFromVec cols rows vec
-                juicyImageWriteFunc $ Just img
-          return (\v f -> hSilence [stderr] $ writeFrame v f, hSilence [stderr] $ juicyImageWriteFunc Nothing)
-      False -> do
+  -- case lastFrame > firstFrame of
+  --     True -> do
+  --         initFFmpeg
+  --         let eps = defaultParams (toEnum $ fromEnum cols)
+  --                                 (toEnum $ fromEnum rows)
+  --         juicyImageWriteFunc <- imageWriter eps (buildMovieFilename sceneName firstFrame lastFrame)
+  --         let writeFrame vec _ = do
+  --               let img = juicyImageFromVec cols rows vec
+  --               juicyImageWriteFunc $ Just img
+  --         return (\v f -> hSilence [stderr] $ writeFrame v f, hSilence [stderr] $ juicyImageWriteFunc Nothing)
+  --     False -> do
           let writeFrame vec fn = writeImage vec cols rows (buildImageFilename sceneName fn)
           return (writeFrame, return ())
 
