@@ -2,6 +2,7 @@ module Main where
 
 import Control.Lens
 import Control.Monad.State
+import Control.Monad (forM_)
 import Codec.BMP
 import System.Environment
 import System.Exit
