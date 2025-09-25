@@ -33,7 +33,7 @@ getRandomUnit gen = do
     return $ v - offset
 
 pureRandom :: Sampler (Double, Double)
-pureRandom = Sampler $ \gen root -> uniformVector gen (fromEnum $ root * root)
+pureRandom = Sampler $ \gen root -> V.fromList <$> (replicateM (fromEnum $ root * root) $ uniform gen)
 
 regular :: Sampler (Double, Double)
 regular = Sampler $ \_ root -> do
@@ -46,7 +46,7 @@ regular = Sampler $ \_ root -> do
 
 jittered :: Sampler (Double, Double)
 jittered = Sampler $ \gen root -> do
-  vs <- uniformVector gen (fromEnum $ root * root)
+  vs <- V.fromList <$> (replicateM (fromEnum $ root * root) $ uniform gen)
 
   let sampleArrs = do
         j <- [0..root-1]
