@@ -397,7 +397,7 @@ main = do
       Nothing -> return ()
       Just f -> when (f < argFrameStart preCfg) $ usage
 
-  let [toRender] = rest
+  let toRender = head rest
 
   case argCpuCount preCfg of
       Just c -> setNumCapabilities c
