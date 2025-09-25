@@ -3,7 +3,6 @@ module Tracy.DataHandlers.GLFWHandler
   )
   where
 
-import Control.Applicative
 import Control.Concurrent.Chan
 import Control.Concurrent
 import Control.Monad

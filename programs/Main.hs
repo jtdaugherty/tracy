@@ -2,7 +2,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Main where
 
-import Control.Applicative ((<$>))
 import Control.Concurrent
 import Control.Monad
 import Control.Lens

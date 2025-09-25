@@ -3,7 +3,6 @@ module Tracy.Lights.Environment
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Data.Maybe
 import Linear

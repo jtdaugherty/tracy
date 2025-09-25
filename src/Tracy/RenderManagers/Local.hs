@@ -4,7 +4,6 @@ module Tracy.RenderManagers.Local
   )
   where
 
-import Control.Applicative
 import Control.Concurrent.Chan
 import Control.Lens
 import Control.Monad

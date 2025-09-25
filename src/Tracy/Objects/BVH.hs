@@ -8,7 +8,6 @@ module Tracy.Objects.BVH
   )
 where
 
-import Control.Applicative
 import Control.Lens
 import Data.List
 import qualified Data.Map as M

@@ -3,10 +3,7 @@ module Tracy.SceneBuilder
   )
   where
 
-import Control.Applicative
 import Control.Lens ((^.))
-import Data.Traversable (sequenceA)
-import Data.Monoid
 import qualified Data.Map as M
 import qualified Data.Vector as V
 

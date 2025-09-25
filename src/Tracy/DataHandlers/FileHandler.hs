@@ -7,7 +7,6 @@ module Tracy.DataHandlers.FileHandler
   )
   where
 
-import Control.Applicative
 import Control.Concurrent.Chan
 import qualified Data.Map as M
 import qualified Data.ByteString as B

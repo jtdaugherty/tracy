@@ -3,7 +3,6 @@ module Tracy.Materials.Mix
   )
   where
 
-import Control.Applicative
 import Control.Lens
 import Data.Colour
 

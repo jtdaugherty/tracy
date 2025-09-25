@@ -6,7 +6,6 @@ module Tracy.Objects.Compound
 import Tracy.Types
 import Data.Maybe
 import Control.Lens
-import Control.Applicative
 import Data.Ord (comparing)
 import qualified Data.Vector as V
 
