@@ -9,6 +9,7 @@ import Data.Time.Clock
 import Control.Monad (when)
 import Control.Monad.Reader
 import Data.Map (Map)
+import Data.String (fromString)
 import qualified Data.Vector.Storable as SV
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
@@ -705,7 +706,8 @@ instance Y.FromJSON MappingDesc where
 
 parseColorOrTexture :: T.Text -> Y.Object -> Y.Parser TextureDesc
 parseColorOrTexture pfx v =
-    (ConstantColor <$> v Y..: (pfx <> "Color")) <|> (v Y..: (pfx <> "Texture"))
+    (ConstantColor <$> v Y..: (fromString $ T.unpack pfx <> "Color")) <|>
+    (v Y..: (fromString $ T.unpack pfx <> "Texture"))
 
 instance Y.FromJSON MaterialDesc where
     parseJSON (Y.Object v) = do
