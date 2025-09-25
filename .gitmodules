@@ -1,3 +1,6 @@
 [submodule "ffmpeg-light"]
 	path = ffmpeg-light
 	url = git@github.com:acowley/ffmpeg-light.git
+[submodule "ply-loader"]
+	path = ply-loader
+	url = git@github.com:jtdaugherty/ply-loader.git

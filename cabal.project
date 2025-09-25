@@ -1,2 +1,3 @@
 packages: .
           ffmpeg-light/
+          ply-loader/
